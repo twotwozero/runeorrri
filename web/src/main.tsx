@@ -56,7 +56,7 @@ function Topbar() {
   const latest = issues[0];
   return (
     <header className="topbar">
-      <a className="brand" href={latest ? issuePath(latest) : '/'}>
+      <a className="brand" href="/">
         @runeorrri
       </a>
       <nav className="nav" aria-label="주요 메뉴">
