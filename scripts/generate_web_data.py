@@ -31,6 +31,9 @@ def clean_intro(text, first_story_start):
     intro = re.sub(r"^구성:.*$", "", intro, flags=re.MULTILINE)
     intro = re.sub(r"^미드런 노트:.*$", "", intro, flags=re.MULTILINE)
     intro = re.sub(r"^이번 호 관점:.*$", "", intro, flags=re.MULTILINE)
+    intro = re.sub(r"^이메일 인트로:.*$", "", intro, flags=re.MULTILINE)
+    intro = re.sub(r"^이번 호 중심:.*$", "", intro, flags=re.MULTILINE)
+    intro = re.sub(r"^메인 에디토리얼:.*$", "", intro, flags=re.MULTILINE)
     return intro.strip()
 
 
@@ -85,6 +88,9 @@ def parse_newsletter(path):
         "number": issue_number_from_title(title),
         "title": title,
         "intro": intro,
+        "emailIntro": parse_meta_field(text, "이메일 인트로"),
+        "issueFocus": parse_meta_field(text, "이번 호 중심"),
+        "mainEditorial": parse_meta_field(text, "메인 에디토리얼"),
         "midRunNote": parse_meta_field(text, "미드런 노트"),
         "perspective": parse_meta_field(text, "이번 호 관점"),
         "stories": stories,

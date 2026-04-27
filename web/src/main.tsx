@@ -22,6 +22,9 @@ type Issue = {
   number: string;
   title: string;
   intro: string;
+  emailIntro?: string;
+  issueFocus?: string;
+  mainEditorial?: string;
   midRunNote?: string;
   perspective?: string;
   stories: Story[];
@@ -41,7 +44,7 @@ function issuePath(issue: Issue) {
 function formatCategory(story: Story) {
   const regionLabel = story.region === 'korea' ? '국내' : story.region === 'global' ? '해외' : story.region;
   const categoryLabels: Record<string, string> = {
-    event: '대회/이벤트',
+    event: '이벤트',
     race: '레이스',
     news: '뉴스',
     gear: '장비',
@@ -171,6 +174,7 @@ function IssuePage({ issue }: { issue: Issue }) {
           <p className="eyebrow">{issue.date}</p>
           <h1>오늘의 러닝 브리핑 {issue.number}</h1>
           <p>{issue.intro}</p>
+          {issue.issueFocus ? <p className="issue-focus">{issue.issueFocus}</p> : null}
         </header>
 
         <img className="wide-art" src={issue.assets.hero} alt={`오늘의 러닝 브리핑 ${issue.number}`} />
@@ -188,6 +192,7 @@ function IssuePage({ issue }: { issue: Issue }) {
             <p className="eyebrow">MAIN STORY</p>
             <h2>{mainStory.title}</h2>
             <p>{mainStory.summary}</p>
+            {issue.mainEditorial ? <p className="main-editorial">{issue.mainEditorial}</p> : null}
             <div className="comment-box">
               <b>러너리 코멘트</b>
               <span>{mainStory.why}</span>

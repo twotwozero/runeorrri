@@ -93,7 +93,7 @@ def region_label(row):
 
 def category_label(row):
     labels = {
-        "event": "대회/이벤트",
+        "event": "이벤트",
         "race": "레이스",
         "news": "뉴스",
         "gear": "장비",
@@ -161,7 +161,13 @@ def action_list(rows):
     """
 
 
-def html_email(image_cids, issue_url):
+def html_email(image_cids, issue_url, issue_data=None):
+    issue_data = issue_data or {}
+    email_intro = issue_data.get("emailIntro", "안녕하세요, 러너리입니다.")
+    issue_focus = issue_data.get("issueFocus", "")
+    main_editorial = issue_data.get("mainEditorial", "")
+    mid_run_note = issue_data.get("midRunNote", "")
+    perspective = issue_data.get("perspective", "")
     number = issue_number()
     rows = selected_rows()
     main = rows[0] if rows else {}
@@ -206,14 +212,10 @@ def html_email(image_cids, issue_url):
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td style="padding:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;color:#323332;">
-                    <div style="font-size:16px;line-height:1.8;font-weight:700;">
-                      안녕하세요, 러너리입니다. 오늘은 “이번 주말 뭘 확인해야 하지?”라는 질문에 답이 될 만한 러닝 소식을 골랐습니다.
-                      단순히 기사 제목을 모은 게 아니라, 지금 러너가 어떤 행동을 하면 좋을지까지 이어지도록 정리했어요.
+                    <div style=”font-size:16px;line-height:1.8;font-weight:700;”>
+                      {escape(email_intro)}
                     </div>
-                    <div style="margin-top:14px;font-size:16px;line-height:1.8;font-weight:650;">
-                      이번 호의 중심은 <b>참여형 러닝 이벤트의 확장</b>입니다. 대회가 더 이상 기록만 겨루는 장이 아니라,
-                      커뮤니티를 만나고 브랜드 경험을 체험하고, 때로는 기부나 여행과 연결되는 콘텐츠가 되고 있습니다.
-                    </div>
+                    {f'<div style=”margin-top:14px;font-size:16px;line-height:1.8;font-weight:650;”>{escape(issue_focus)}</div>' if issue_focus else ''}
                   </td>
                 </tr>
               </table>
@@ -247,11 +249,7 @@ def html_email(image_cids, issue_url):
               <div style="font-size:13px;line-height:1.3;font-weight:900;color:#ff6b4a;">MAIN STORY</div>
               <div style="margin-top:8px;font-size:28px;line-height:1.25;font-weight:950;color:#111514;">{escape(main.get('title', ''))}</div>
               <div style="margin-top:16px;font-size:16px;line-height:1.8;font-weight:650;color:#323332;">{escape(main.get('summary', ''))}</div>
-              <div style="margin-top:14px;font-size:16px;line-height:1.8;font-weight:650;color:#323332;">
-                이 소식은 러닝 행사가 어떤 방향으로 바뀌는지 보여줍니다. 최근 러닝 이벤트는 완주 기록보다
-                <b>누구와, 어떤 분위기에서, 어떤 이야기를 만들며 달리느냐</b>를 더 강하게 내세우고 있습니다.
-                그래서 러너 입장에서는 참가비와 기념품만 보는 대신, 운영 동선·안전 관리·현장 프로그램까지 함께 보는 눈이 필요합니다.
-              </div>
+              {f'<div style="margin-top:14px;font-size:16px;line-height:1.8;font-weight:650;color:#323332;">{escape(main_editorial)}</div>' if main_editorial else ''}
               <div style="margin-top:16px;padding:16px 18px;background:#111514;color:#f7f4ec;font-size:15px;line-height:1.75;font-weight:750;">
                 <span style="display:block;color:#49dcb1;font-size:13px;font-weight:900;margin-bottom:6px;">러너리 코멘트</span>
                 {escape(main.get('why_it_matters', ''))}
@@ -268,7 +266,7 @@ def html_email(image_cids, issue_url):
                   <td style="padding:18px 20px 8px 20px;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;">
                     <div style="font-size:13px;line-height:1.4;font-weight:900;color:#ff6b4a;">MID-RUN NOTE</div>
                     <div style="margin-top:6px;font-size:15px;line-height:1.75;font-weight:700;color:#323332;">
-                      참가형 소식은 흥미로운 콘셉트만 보지 말고, 접수 시간·현장 수령·이동 동선까지 같이 체크하면 훨씬 덜 허둥댑니다.
+                      {escape(mid_run_note)}
                     </div>
                   </td>
                 </tr>
@@ -281,9 +279,8 @@ def html_email(image_cids, issue_url):
                 <tr>
                   <td style="padding:18px 0 18px 0;">
                     <div style="font-size:15px;line-height:1.7;font-weight:900;color:#111514;">이번 호를 읽는 관점</div>
-                    <div style="margin-top:8px;font-size:15px;line-height:1.8;font-weight:650;color:#323332;">
-                      오늘의 다섯 소식은 모두 “러닝이 혼자 하는 운동을 넘어 어떻게 사람을 모으는 콘텐츠가 되는가”와 연결됩니다.
-                      접수 일정은 실용적으로 챙기되, 그 뒤에 있는 커뮤니티·브랜드·도시 경험의 변화를 함께 보면 더 잘 읽힙니다.
+                    <div style=”margin-top:8px;font-size:15px;line-height:1.8;font-weight:650;color:#323332;”>
+                      {escape(perspective)}
                     </div>
                   </td>
                 </tr>
@@ -292,7 +289,7 @@ def html_email(image_cids, issue_url):
           </tr>
           <tr>
             <td style="padding:0 24px 8px 24px;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;">
-              <div style="font-size:13px;line-height:1.3;font-weight:900;color:#ff6b4a;">RUNNERLY BRIEFS</div>
+              <div style="font-size:13px;line-height:1.3;font-weight:900;color:#ff6b4a;">RUNEORRRI BRIEFS</div>
             </td>
           </tr>
           <tr>
@@ -366,7 +363,8 @@ def main():
     if not NEWSLETTER.exists():
         raise SystemExit(f"Newsletter not found: {NEWSLETTER}")
 
-    build_web_data()
+    issues = build_web_data()
+    current_issue_data = next((i for i in issues if i["date"] == TODAY), {})
     issue_url = runeorrri_issue_url(site_base_url)
 
     msg = EmailMessage()
@@ -381,7 +379,7 @@ def main():
     if missing_art:
         raise SystemExit(f"Missing newsletter art files: {', '.join(str(path) for path in missing_art)}")
     image_cids = {key: f"runeorrri-{key}-{TODAY}" for key in art}
-    msg.add_alternative(html_email(image_cids, issue_url), subtype="html")
+    msg.add_alternative(html_email(image_cids, issue_url, current_issue_data), subtype="html")
     html_part = msg.get_payload()[-1]
     for key, png in art.items():
         html_part.add_related(

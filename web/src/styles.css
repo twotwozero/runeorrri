@@ -227,6 +227,23 @@ main {
   border-top: 1px solid var(--line);
 }
 
+.issue-focus {
+  max-width: 760px;
+  margin: 12px 0 0;
+  font-size: 16px;
+  line-height: 1.8;
+  font-weight: 650;
+  color: #303432;
+}
+
+.main-editorial {
+  margin-top: 14px;
+  font-size: 16px;
+  line-height: 1.8;
+  font-weight: 650;
+  color: #303432;
+}
+
 .main-story h2 {
   max-width: 920px;
   margin: 8px 0 16px;
