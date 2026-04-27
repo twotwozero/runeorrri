@@ -5,6 +5,7 @@ __pycache__/
 **/__pycache__/
 *.pyc
 docs/.Rhistory
+.Rhistory
 web/node_modules/
 web/dist/
 web/*.tsbuildinfo

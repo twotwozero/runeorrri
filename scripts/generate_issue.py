@@ -51,7 +51,7 @@ def format_newsletter_item(index, row):
     source = row["source"].strip()
     region = "국내" if row["region"].strip().lower() == "korea" else "해외"
     category = row["category"].strip()
-    card_copy = row["card_copy"].strip()
+    one_liner = row["one_liner"].strip()
 
     return (
         f"## {index}. {title}\n\n"
@@ -59,16 +59,7 @@ def format_newsletter_item(index, row):
         f"- 요약: {summary}\n"
         f"- 러너에게 중요한 이유: {why}\n"
         f"- 원문: [{source}]({url})\n"
-        f"- 카드 한 줄: {card_copy}\n"
-    )
-
-
-def format_instagram_card(index, row):
-    return (
-        f"### 카드 {index}\n\n"
-        f"{row['title'].strip()}\n\n"
-        f"{row['card_copy'].strip()}\n\n"
-        f"{row['why_it_matters'].strip()}\n"
+        f"- 한 줄 관점: {one_liner}\n"
     )
 
 

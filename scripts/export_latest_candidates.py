@@ -20,7 +20,7 @@ ARCHIVE_FIELDS = [
     "url",
     "source",
     "published_at",
-    "card_copy",
+    "one_liner",
     "verification_status",
     "notes",
 ]

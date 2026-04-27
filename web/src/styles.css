@@ -87,10 +87,9 @@ main {
 }
 
 .home-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(360px, 1.1fr);
-  gap: 34px;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
   padding: 44px 0 34px;
 }
 
@@ -424,7 +423,6 @@ main {
   }
 
   .home-hero {
-    grid-template-columns: 1fr;
     padding-top: 30px;
   }
 }

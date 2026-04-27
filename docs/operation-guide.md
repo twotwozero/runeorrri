@@ -57,9 +57,9 @@ python3 scripts/run_newsletter_pipeline.py --collect --allow-auto-collected --no
 기본 출력 파일:
 
 - `issues/YYYY-MM-DD-running-newsletter.md`
-- `issues/YYYY-MM-DD-cards/*.svg`
 - `issues/YYYY-MM-DD-art/*.png`
 - `web/src/data/issues.json`
+- `web/public/assets/issues/YYYY-MM-DD/*.png`
 
 ## 5. 최종 편집
 
@@ -69,11 +69,11 @@ python3 scripts/run_newsletter_pipeline.py --collect --allow-auto-collected --no
 - 2~3문장 요약
 - 러너에게 중요한 이유 1문장
 - 원문 링크
-- 인스타 카드 전환용 한 줄 카피
+- 웹과 메일에 들어갈 한 줄 관점
 
 문장은 짧게 씁니다. “대단하다”보다 “무엇을 확인하면 좋은지”를 말합니다.
 
-## 6. 발행 및 기록
+## 6. 발행 및 확인
 
 메일 발송까지 진행할 때는 SMTP 환경변수 설정 후 아래 명령을 사용합니다.
 
@@ -95,17 +95,4 @@ RUNEORRRI_SITE_BASE_URL=https://runeorrri.pages.dev
 
 메일 상단의 `@runeorrri`, 제목, 히어로 이미지는 모두 해당 회차 웹페이지로 연결됩니다.
 
-발행 후 `data/pilot-metrics.csv`에 성과를 기록합니다.
-
-기록 항목:
-
-- 발행일
-- 발행 채널
-- 소식 수
-- 국내/해외 비중
-- 클릭 수
-- 저장 수
-- 공유 수
-- 댓글 또는 DM 반응
-- 제작 시간
-- 다음 회차 개선 메모
+발행 후에는 웹사이트에서 최신 회차가 `/NN`과 `/issues/YYYY-MM-DD` 양쪽 경로로 열리는지 확인합니다. 메일 발송을 한 경우에는 히어로 이미지, 라인업 이미지, 체크포인트 이미지가 모두 보이고 상단 링크가 해당 회차 웹페이지로 연결되는지 확인합니다.

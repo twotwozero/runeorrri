@@ -60,7 +60,7 @@ ARCHIVE_FIELDS = [
     "url",
     "source",
     "published_at",
-    "card_copy",
+    "one_liner",
     "verification_status",
     "notes",
 ]
@@ -284,7 +284,7 @@ def why_it_matters(item):
     return "국내 러너가 러닝 문화와 시장 변화를 빠르게 훑는 데 도움이 되는 소식입니다."
 
 
-def card_copy(item):
+def one_liner(item):
     title = item["title"]
     return title if len(title) <= 38 else f"{title[:37]}..."
 
@@ -458,7 +458,7 @@ def build_archive_row(issue_id, issue_date, item, selected):
         "url": item["url"],
         "source": item["source"],
         "published_at": item["published_at"],
-        "card_copy": card_copy(item),
+        "one_liner": one_liner(item),
         "verification_status": "auto_collected",
         "notes": (
             f"Auto-collected from Google News query: {item['query']}. "

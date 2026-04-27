@@ -14,7 +14,7 @@ type Story = {
     name: string;
     url: string;
   };
-  cardCopy: string;
+  oneLiner: string;
 };
 
 type Issue = {

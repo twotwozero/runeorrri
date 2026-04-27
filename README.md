@@ -2,7 +2,7 @@
 
 국내 일반 러너를 위한 화/목/토 오전 8시 러닝 뉴스레터 운영 키트입니다.
 
-목표는 최신 러닝 소식을 빠르게 모으고, 사람이 최종 검수한 뒤 카카오 채널과 인스타그램에 바로 재가공할 수 있는 짧은 뉴스레터를 발행하는 것입니다.
+목표는 최신 러닝 소식을 빠르게 모으고, 사람이 최종 검수한 뒤 이메일과 웹사이트에 바로 발행할 수 있는 짧은 뉴스레터를 만드는 것입니다.
 
 ## 운영 원칙
 
@@ -19,12 +19,11 @@
 - `data/sources.csv`: 주요 국내외 출처 목록
 - `data/candidates.csv`: 최신 회차 생성용 후보 소식 파일
 - `data/candidates_archive.csv`: 모든 회차 후보 소식 누적 기록
-- `data/pilot-metrics.csv`: 2주 파일럿 성과 기록표
 - `templates/newsletter-issue.md`: 회차별 뉴스레터 원고 템플릿
-- `templates/instagram-cards.md`: 인스타 카드뉴스 문구 템플릿
-- `issues/`: 생성된 발행 초안 저장 위치
+- `issues/`: 회차별 뉴스레터 원고와 메일/웹용 아트 저장 위치
 - `scripts/run_newsletter_pipeline.py`: 후보 검증부터 원고·이미지·웹 데이터 생성과 선택적 메일 발송까지 실행하는 표준 파이프라인
 - `scripts/generate_issue.py`: 후보 CSV에서 뉴스레터 초안을 생성하는 스크립트
+- `scripts/generate_newsletter_art.py`: 회차별 메일/웹용 이미지를 생성하는 스크립트
 - `scripts/generate_web_data.py`: 발행본을 러너리 웹사이트용 데이터와 이미지로 변환하는 스크립트
 - `web/`: 러너리 뉴스레터 웹사이트
 
@@ -56,14 +55,13 @@ python3 scripts/export_latest_candidates.py
 python3 scripts/generate_issue.py
 ```
 
-4. 카드뉴스 SVG와 메일/웹용 이미지를 생성합니다. 기본 Python에 Pillow가 없다면 `python3 -m pip install Pillow`를 먼저 실행합니다.
+5. 메일/웹용 이미지를 생성합니다. 기본 Python에 Pillow가 없다면 `python3 -m pip install Pillow`를 먼저 실행합니다.
 
 ```bash
-python3 scripts/generate_cardnews_svg.py
 python3 scripts/generate_newsletter_art.py
 ```
 
-5. 러너리 웹사이트용 데이터를 생성합니다.
+6. 러너리 웹사이트용 데이터를 생성합니다.
 
 ```bash
 python3 scripts/generate_web_data.py
@@ -74,7 +72,7 @@ python3 scripts/generate_web_data.py
 - `web/src/data/issues.json`: 웹앱이 읽는 회차 데이터
 - `web/public/assets/issues/YYYY-MM-DD/`: 웹사이트용 이미지 복사본
 
-6. 웹사이트를 로컬에서 확인합니다.
+7. 웹사이트를 로컬에서 확인합니다.
 
 ```bash
 cd web
@@ -89,8 +87,8 @@ cd web
 npm run build
 ```
 
-7. 생성된 `issues/YYYY-MM-DD-running-newsletter.md`, `issues/YYYY-MM-DD-cards/`, `web/`을 열어 사람이 최종 검수합니다.
-8. SMTP 환경변수와 `RUNEORRRI_SITE_BASE_URL`을 설정했다면 메일을 보냅니다.
+8. 생성된 `issues/YYYY-MM-DD-running-newsletter.md`, `issues/YYYY-MM-DD-art/`, `web/`을 열어 사람이 최종 검수합니다.
+9. SMTP 환경변수와 `RUNEORRRI_SITE_BASE_URL`을 설정했다면 메일을 보냅니다.
 
 ```bash
 python3 scripts/send_issue_email.py
@@ -98,13 +96,11 @@ python3 scripts/send_issue_email.py
 
 메일 발송 전 `scripts/send_issue_email.py`는 웹사이트 데이터를 다시 생성하고, 메일 상단 `@runeorrri`, 제목, 히어로 이미지를 `RUNEORRRI_SITE_BASE_URL/issues/YYYY-MM-DD`로 연결합니다.
 
-이전 `scripts/generate_archive_site.py`와 `site/` 출력물은 더 이상 발송 흐름에서 사용하지 않는 레거시 정적 아카이브입니다.
-
-뉴스레터 본문은 카카오 채널에, 카드 이미지는 인스타그램 게시물 제작에 사용합니다.
+뉴스레터 원고는 이메일 본문 텍스트와 웹사이트 데이터의 원천으로 사용하고, `issues/YYYY-MM-DD-art/` 이미지는 메일 인라인 이미지와 웹사이트 대표 이미지로 사용합니다.
 
 ## 표준 자동화 파이프라인
 
-아래 명령 하나가 발행 전 후보 검증, 원고 생성, 카드뉴스 SVG 생성, 메일/웹 이미지 생성, 웹 데이터 생성을 순서대로 실행합니다.
+아래 명령 하나가 발행 전 후보 검증, 원고 생성, 메일/웹 이미지 생성, 웹 데이터 생성을 순서대로 실행합니다.
 
 ```bash
 python3 scripts/run_newsletter_pipeline.py --issue-id today --no-email

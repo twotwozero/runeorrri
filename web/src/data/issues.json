@@ -21,7 +21,7 @@
           "name": "컬처런 공식",
           "url": "https://culturerun.net/apply/apply.php"
         },
-        "cardCopy": "컬처런 접수 5/1 마감, 영종도 5천 명"
+        "oneLiner": "컬처런 접수 5/1 마감, 영종도 5천 명"
       },
       {
         "index": 2,
@@ -34,7 +34,7 @@
           "name": "iM뱅크 마라톤 공식",
           "url": "https://imrun.kr/marathon/code/8046/"
         },
-        "cardCopy": "iM뱅크 마라톤 6/7 여의도, 추첨 5/10"
+        "oneLiner": "iM뱅크 마라톤 6/7 여의도, 추첨 5/10"
       },
       {
         "index": 3,
@@ -47,7 +47,7 @@
           "name": "머니투데이",
           "url": "https://www.mt.co.kr/society/2026/04/20/2026042014515122864"
         },
-        "cardCopy": "봄 29도 마라톤, 12명 쓰러져 주의"
+        "oneLiner": "봄 29도 마라톤, 12명 쓰러져 주의"
       },
       {
         "index": 4,
@@ -60,7 +60,7 @@
           "name": "AsiaOne",
           "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxQR0FBT3EyaGxEQkh5TWVKT1FZZDVJS054Q0hKUkNOZ1FCSExRV1Z2Q1ZoXzB4TE5OWWQtUUZTM3FRa2hFb3RNaFpnY3d1b1NXM19HLXhRR0dnc2I5RkFqLV9lMFFseXRZUUNhUDZIRE9qdzBXRUNFTkNWUEdJRXp5MWl0SVZ6UVloWVphR3hDdXhvNFY1eEVzWl8zOFBKS080aTE4eUU4MU1TbTZzY2dkUzVISno?oc=5"
         },
-        "cardCopy": "싱가포르마라톤 접수 오픈, 풀코스 $188"
+        "oneLiner": "싱가포르마라톤 접수 오픈, 풀코스 $188"
       },
       {
         "index": 5,
@@ -73,7 +73,7 @@
           "name": "London Marathon Events",
           "url": "https://www.londonmarathonevents.co.uk/london-marathon/article/tigst-assefa-smashes-women-only-world-record-historic-tcs-london-marathon"
         },
-        "cardCopy": "아세파, 여자 세계기록 2:15:41 런던"
+        "oneLiner": "아세파, 여자 세계기록 2:15:41 런던"
       }
     ],
     "assets": {
@@ -104,7 +104,7 @@
           "name": "서울특별시",
           "url": "https://www.seoul.go.kr/news/news_report.do?nttNo=456772&srchCtgry=466"
         },
-        "cardCopy": "4/26 서울하프: 통제 7:20~10:30 체크!"
+        "oneLiner": "4/26 서울하프: 통제 7:20~10:30 체크!"
       },
       {
         "index": 2,
@@ -117,7 +117,7 @@
           "name": "하트시그널 러닝 페스타(공식)",
           "url": "https://heartsignalrunfesta.com/"
         },
-        "cardCopy": "하시런페 2차 접수, 4/27 23:59 마감."
+        "oneLiner": "하시런페 2차 접수, 4/27 23:59 마감."
       },
       {
         "index": 3,
@@ -130,7 +130,7 @@
           "name": "KorMarathon",
           "url": "https://www.kormarathon.com/ko/races/2026-infinite-challenge-run-with-coupang-play"
         },
-        "cardCopy": "무도런 6/7, 접수는 5/7 ‘하루’ 표기."
+        "oneLiner": "무도런 6/7, 접수는 5/7 ‘하루’ 표기."
       },
       {
         "index": 4,
@@ -143,7 +143,7 @@
           "name": "The Guardian",
           "url": "https://www.theguardian.com/sport/2026/apr/24/silent-assassin-sabastian-sawe-targets-world-record-in-london-marathon"
         },
-        "cardCopy": "런던마라톤, 남자 세계기록 페이스가 나올까?"
+        "oneLiner": "런던마라톤, 남자 세계기록 페이스가 나올까?"
       },
       {
         "index": 5,
@@ -156,7 +156,7 @@
           "name": "adidas News",
           "url": "https://news.adidas.com/running/adidas-unveils-its-first-sub-100-gram-supershoe--the-adizero-adios-pro-evo-3/s/ded7b6a2-952a-4246-b675-4129f78787c4"
         },
-        "cardCopy": "97g 슈퍼슈즈, 4/25 제한 판매 시작."
+        "oneLiner": "97g 슈퍼슈즈, 4/25 제한 판매 시작."
       }
     ],
     "assets": {

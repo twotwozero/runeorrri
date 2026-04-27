@@ -28,7 +28,7 @@ ARCHIVE_FIELDS = [
     "url",
     "source",
     "published_at",
-    "card_copy",
+    "one_liner",
     "verification_status",
     "notes",
 ]
@@ -179,7 +179,7 @@ def enrichment_schema():
             "title": {"type": "string"},
             "summary": {"type": "string"},
             "why_it_matters": {"type": "string"},
-            "card_copy": {"type": "string"},
+            "one_liner": {"type": "string"},
             "editor_note": {"type": "string"},
         },
         "required": [
@@ -189,7 +189,7 @@ def enrichment_schema():
             "title",
             "summary",
             "why_it_matters",
-            "card_copy",
+            "one_liner",
             "editor_note",
         ],
     }
@@ -290,7 +290,7 @@ def enrich_row(row, index, total):
         row["category"] = result["category"]
         row["summary"] = normalize_text(result["summary"])
         row["why_it_matters"] = normalize_text(result["why_it_matters"])
-        row["card_copy"] = normalize_text(result["card_copy"])[:44]
+        row["one_liner"] = normalize_text(result["one_liner"])[:44]
         row["verification_status"] = "reviewed"
     else:
         row["verification_status"] = "rejected"

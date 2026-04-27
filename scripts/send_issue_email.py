@@ -27,8 +27,6 @@ def issue_date():
 
 TODAY = issue_date()
 NEWSLETTER = ROOT / "issues" / f"{TODAY}-running-newsletter.md"
-CARDS_DIR = ROOT / "issues" / f"{TODAY}-cards"
-CARD_ALBUM = ROOT / "issues" / f"{TODAY}-running-cardnews-album.html"
 ART_DIR = ROOT / "issues" / f"{TODAY}-art"
 
 
@@ -57,16 +55,6 @@ def issue_number():
     issue_id = CURRENT_ISSUE.read_text(encoding="utf-8").strip()
     suffix = issue_id.rsplit("-", 1)[-1]
     return suffix.zfill(2) if suffix.isdigit() else "01"
-
-
-def card_images():
-    if not CARDS_DIR.exists():
-        return []
-    preferred_cards = sorted(CARDS_DIR.glob("*.svg.png"))
-    fallback_cards = sorted(
-        png for png in CARDS_DIR.glob("*.png") if not png.name.endswith(".svg.png")
-    )
-    return preferred_cards or fallback_cards
 
 
 def art_images():
@@ -175,7 +163,7 @@ def html_email(image_cids, issue_url, issue_data=None):
 </head>
 <body style="-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;margin:0;padding:0;background:#F7F5F1;">
   <div style="display:none;max-height:0;overflow:hidden;font-size:0;line-height:0;color:#F7F5F1;">
-    국내외 러닝 소식 5개를 카드뉴스로 정리했습니다.
+    국내외 러닝 소식 5개를 짧게 정리했습니다.
   </div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#F7F5F1;">
     <tr>
@@ -203,10 +191,10 @@ def html_email(image_cids, issue_url, issue_data=None):
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td style="padding:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;color:#323332;">
-                    <div style=”font-size:16px;line-height:1.8;font-weight:700;”>
+                    <div style="font-size:16px;line-height:1.8;font-weight:700;">
                       {escape(email_intro)}
                     </div>
-                    {f'<div style=”margin-top:14px;font-size:16px;line-height:1.8;font-weight:650;”>{escape(issue_focus)}</div>' if issue_focus else ''}
+                    {f'<div style="margin-top:14px;font-size:16px;line-height:1.8;font-weight:650;">{escape(issue_focus)}</div>' if issue_focus else ''}
                   </td>
                 </tr>
               </table>
@@ -270,7 +258,7 @@ def html_email(image_cids, issue_url, issue_data=None):
                 <tr>
                   <td style="padding:18px 0 18px 0;">
                     <div style="font-size:15px;line-height:1.7;font-weight:900;color:#111514;">이번 호를 읽는 관점</div>
-                    <div style=”margin-top:8px;font-size:15px;line-height:1.8;font-weight:650;color:#323332;”>
+                    <div style="margin-top:8px;font-size:15px;line-height:1.8;font-weight:650;color:#323332;">
                       {escape(perspective)}
                     </div>
                   </td>
@@ -366,14 +354,6 @@ def main():
             cid=f"<{image_cids[key]}>",
             filename=png.name,
             disposition="inline",
-        )
-
-    if CARD_ALBUM.exists():
-        msg.add_attachment(
-            CARD_ALBUM.read_bytes(),
-            maintype="text",
-            subtype="html",
-            filename=CARD_ALBUM.name,
         )
 
     with smtplib.SMTP(smtp_host, smtp_port) as smtp:

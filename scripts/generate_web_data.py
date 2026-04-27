@@ -63,7 +63,7 @@ def parse_newsletter(path):
             "summary": "",
             "why": "",
             "source": {"name": "", "url": ""},
-            "cardCopy": "",
+            "oneLiner": "",
         }
         for line in block.splitlines():
             line = line.strip()
@@ -79,8 +79,8 @@ def parse_newsletter(path):
                 story["why"] = line.split(":", 1)[1].strip()
             elif line.startswith("- 원문:"):
                 story["source"] = parse_source(line.split(":", 1)[1].strip())
-            elif line.startswith("- 카드 한 줄:"):
-                story["cardCopy"] = line.split(":", 1)[1].strip()
+            elif line.startswith("- 한 줄 관점:"):
+                story["oneLiner"] = line.split(":", 1)[1].strip()
         stories.append(story)
 
     return {
