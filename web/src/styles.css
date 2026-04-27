@@ -37,17 +37,31 @@ main {
 }
 
 .topbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: 20px;
   padding: 28px 0 18px;
   border-bottom: 2px solid var(--ink);
 }
 
+.topbar-side {
+  display: flex;
+  align-items: center;
+}
+
+.topbar-left {
+  justify-content: flex-start;
+}
+
+.topbar-right {
+  justify-content: flex-end;
+}
+
 .brand {
   display: inline-flex;
   align-items: center;
+  justify-self: center;
   font-size: 26px;
   font-weight: 950;
 }
@@ -63,26 +77,20 @@ main {
   stroke-linejoin: round;
 }
 
-.nav {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  font-weight: 900;
-  color: var(--muted);
-}
-
-.nav a {
+.nav-link {
   border: 2px solid var(--ink);
   background: var(--white);
   padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--muted);
 }
 
 .nav-instagram {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 7px !important;
+  color: var(--ink);
   line-height: 0;
 }
 
@@ -425,7 +433,6 @@ main {
     width: calc(100% - 24px);
   }
 
-  .topbar,
   .section-heading {
     align-items: flex-start;
     flex-direction: column;

@@ -86,12 +86,13 @@ function Topbar() {
   const latest = issues[0];
   return (
     <header className="topbar">
+      <div className="topbar-side topbar-left">
+        {latest ? <a className="nav-link" href={issuePath(latest)}>최신호</a> : null}
+      </div>
       <a className="brand" href="/" aria-label="runeorrri 홈">
         runeorrri
       </a>
-      <nav className="nav" aria-label="주요 메뉴">
-        <a href="/">브리핑</a>
-        {latest ? <a href={issuePath(latest)}>최신호</a> : null}
+      <div className="topbar-side topbar-right">
         <a
           href="https://www.instagram.com/runeorrri"
           target="_blank"
@@ -101,7 +102,7 @@ function Topbar() {
         >
           <InstagramIcon />
         </a>
-      </nav>
+      </div>
     </header>
   );
 }
