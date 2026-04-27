@@ -98,33 +98,26 @@ def parse_newsletter(path):
     }
 
 
-def copy_asset(src, dst, public_path):
-    if not src.exists():
-        return ""
-    dst.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(src, dst)
-    return public_path
-
-
 def copy_issue_assets(issue_date):
     art_dir = ISSUES_DIR / f"{issue_date}-art"
     asset_dir = WEB_ASSETS / issue_date
+
+    def get_path(name):
+        public_path = f"/assets/issues/{issue_date}/{name}"
+        src = art_dir / name
+        dst = asset_dir / name
+        if src.exists():
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dst)
+            return public_path
+        if dst.exists():
+            return public_path
+        return ""
+
     return {
-        "hero": copy_asset(
-            art_dir / "hero.png",
-            asset_dir / "hero.png",
-            f"/assets/issues/{issue_date}/hero.png",
-        ),
-        "lineup": copy_asset(
-            art_dir / "lineup.png",
-            asset_dir / "lineup.png",
-            f"/assets/issues/{issue_date}/lineup.png",
-        ),
-        "checkpoints": copy_asset(
-            art_dir / "checkpoints.png",
-            asset_dir / "checkpoints.png",
-            f"/assets/issues/{issue_date}/checkpoints.png",
-        ),
+        "hero": get_path("hero.png"),
+        "lineup": get_path("lineup.png"),
+        "checkpoints": get_path("checkpoints.png"),
     }
 
 
