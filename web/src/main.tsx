@@ -163,8 +163,6 @@ function HomePage() {
 function IssuePage({ issue }: { issue: Issue }) {
   const mainStory = issue.stories[0];
   const briefs = issue.stories.slice(1);
-  const eventCount = issue.stories.filter(s => ['event', 'race'].includes(s.category.toLowerCase())).length;
-  const gearCount = issue.stories.filter(s => s.category.toLowerCase() === 'gear').length;
 
   return (
     <main>
@@ -237,14 +235,7 @@ function IssuePage({ issue }: { issue: Issue }) {
         <section className="checkpoint-section">
           <div className="section-heading">
             <p className="eyebrow">CHECKPOINTS</p>
-            <h2>이번 호에서 바로 할 일</h2>
-          </div>
-          <div className="action-list">
-            <ul>
-              {eventCount > 0 && <li>접수·일정형 소식 {eventCount}개는 마감일과 장소를 먼저 확인하세요.</li>}
-              <li>해외 소식은 당장 참가보다 러닝 시장의 방향을 읽는 용도로 보면 좋습니다.</li>
-              {gearCount > 0 && <li>장비 소식 {gearCount}개는 구매 추천이 아니라 기술 흐름 참고용으로 정리했습니다.</li>}
-            </ul>
+            <h2>체크포인트</h2>
           </div>
           <img className="wide-art" src={issue.assets.checkpoints} alt="러너리 체크포인트" />
         </section>

@@ -151,15 +151,6 @@ def source_links(rows):
     )
 
 
-def action_list(rows):
-    event_count = sum(1 for row in rows if row.get("category", "").strip().lower() in {"event", "race"})
-    gear_count = sum(1 for row in rows if row.get("category", "").strip().lower() == "gear")
-    return f"""
-      <li style="margin:0 0 8px 0;">접수·일정형 소식 {event_count}개는 마감일과 장소를 먼저 확인하세요.</li>
-      <li style="margin:0 0 8px 0;">해외 소식은 당장 참가보다 러닝 시장의 방향을 읽는 용도로 보면 좋습니다.</li>
-      <li style="margin:0;">장비 소식 {gear_count}개는 구매 추천이 아니라 기술 흐름 참고용으로 정리했습니다.</li>
-    """
-
 
 def html_email(image_cids, issue_url, issue_data=None):
     issue_data = issue_data or {}
@@ -296,20 +287,6 @@ def html_email(image_cids, issue_url, issue_data=None):
             <td style="padding:0 24px 28px 24px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 {brief_items(other_rows)}
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:0 24px 30px 24px;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fff7ec;border:1px solid #f0d7c1;">
-                <tr>
-                  <td style="padding:18px 20px;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;color:#323332;">
-                    <div style="font-size:16px;line-height:1.45;font-weight:900;color:#111514;">이번 호에서 바로 할 일</div>
-                    <ul style="margin:12px 0 0 20px;padding:0;font-size:14px;line-height:1.65;font-weight:700;">
-                      {action_list(rows)}
-                    </ul>
-                  </td>
-                </tr>
               </table>
             </td>
           </tr>
