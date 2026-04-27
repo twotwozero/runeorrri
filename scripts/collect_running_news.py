@@ -80,11 +80,15 @@ def write_archive(rows):
 
 def next_issue_id(issue_date):
     rows = read_csv(ARCHIVE)
-    existing = sorted(row.get("issue_id", "") for row in rows if row.get("issue_id", "").startswith(f"{issue_date}-"))
-    if not existing:
+    issue_numbers = []
+    for row in rows:
+        issue_id = row.get("issue_id", "")
+        match = re.match(r"\d{4}-\d{2}-\d{2}-(\d{2})$", issue_id)
+        if match:
+            issue_numbers.append(int(match.group(1)))
+    if not issue_numbers:
         return f"{issue_date}-01"
-    last = existing[-1].rsplit("-", 1)[-1]
-    number = int(last) + 1 if last.isdigit() else len(existing) + 1
+    number = max(issue_numbers) + 1
     return f"{issue_date}-{number:02d}"
 
 

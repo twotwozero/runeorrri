@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import csv
+import os
 import re
 from datetime import date
 from pathlib import Path
@@ -23,6 +24,7 @@ def issue_date():
 
 ISSUE_DATE = issue_date()
 OUT_DIR = ROOT / "issues" / f"{ISSUE_DATE}-art"
+OVERWRITE_ART = os.environ.get("RUNEORRRI_OVERWRITE_ART") == "1"
 FONT_CANDIDATES = [
     "/System/Library/Fonts/AppleSDGothicNeo.ttc",
     "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
@@ -80,6 +82,9 @@ def draw_text(draw, xy, text, font_obj, fill, max_width, line_height=None, max_l
 def save(img, name):
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     path = OUT_DIR / name
+    if path.exists() and not OVERWRITE_ART:
+        print(f"{path} exists; keeping existing image")
+        return
     img.save(path, "PNG")
     print(path)
 

@@ -128,7 +128,7 @@ def main():
     issues = build_web_data()
     print(WEB_DATA)
     for issue in issues:
-        print(f"{issue['date']} -> /issues/{issue['date']}")
+        print(f"{issue['date']} -> /{issue['number']}")
 
 
 if __name__ == "__main__":

@@ -33,7 +33,7 @@ type Issue = {
 const issues = issuesData as Issue[];
 
 function issuePath(issue: Issue) {
-  return `/issues/${issue.date}`;
+  return `/${issue.number}`;
 }
 
 function formatCategory(story: Story) {
@@ -42,10 +42,16 @@ function formatCategory(story: Story) {
 
 function App() {
   const path = window.location.pathname.replace(/\/$/, '') || '/';
-  const issueMatch = path.match(/^\/issues\/(\d{4}-\d{2}-\d{2})$/);
+  const issueNumberMatch = path.match(/^\/(\d{2})$/);
+  const legacyDateMatch = path.match(/^\/issues\/(\d{4}-\d{2}-\d{2})$/);
 
-  if (issueMatch) {
-    const issue = issues.find((item) => item.date === issueMatch[1]);
+  if (issueNumberMatch) {
+    const issue = issues.find((item) => item.number === issueNumberMatch[1]);
+    return issue ? <IssuePage issue={issue} /> : <NotFound />;
+  }
+
+  if (legacyDateMatch) {
+    const issue = issues.find((item) => item.date === legacyDateMatch[1]);
     return issue ? <IssuePage issue={issue} /> : <NotFound />;
   }
 
