@@ -107,7 +107,7 @@ def selected_rows():
     return [row for row in rows if row.get("selected", "").strip().lower() == "yes"]
 
 
-def validate_candidates(issue_id):
+def validate_candidates(issue_id, allow_auto_collected=False):
     rows = selected_rows()
     errors = []
     if len(rows) != 5:
@@ -117,8 +117,13 @@ def validate_candidates(issue_id):
             if not row.get(field, "").strip():
                 errors.append(f"row {index}: missing {field}")
         status = row.get("verification_status", "").strip().lower()
-        if status and status != "reviewed":
-            errors.append(f"row {index}: verification_status must be reviewed, got {status}")
+        allowed_statuses = {"reviewed"}
+        if allow_auto_collected:
+            allowed_statuses.add("auto_collected")
+        if status and status not in allowed_statuses:
+            errors.append(
+                f"row {index}: verification_status must be one of {sorted(allowed_statuses)}, got {status}"
+            )
     if errors:
         detail = "\n".join(f"- {error}" for error in errors)
         raise SystemExit(f"Candidate validation failed for {issue_id}:\n{detail}")
@@ -133,15 +138,27 @@ def main():
     )
     parser.add_argument("--send-email", action="store_true", help="Send the newsletter via SMTP after generation.")
     parser.add_argument("--no-email", action="store_true", help="Generate files only. This is the default.")
+    parser.add_argument("--collect", action="store_true", help="Collect recent running news before generation.")
+    parser.add_argument(
+        "--allow-auto-collected",
+        action="store_true",
+        help="Allow candidates with verification_status=auto_collected.",
+    )
     args = parser.parse_args()
 
-    issue_id = resolve_issue_id(args.issue_id)
-    if args.issue_id != "current":
+    if args.collect:
+        run([sys.executable, "scripts/collect_running_news.py", "--issue-date", TODAY])
+        issue_value = "current"
+    else:
+        issue_value = args.issue_id
+
+    issue_id = resolve_issue_id(issue_value)
+    if issue_value != "current":
         run([sys.executable, "scripts/export_latest_candidates.py", issue_id])
     elif CURRENT_ISSUE.exists() and CURRENT_ISSUE.read_text(encoding="utf-8").strip() != issue_id:
         raise SystemExit(f"current_issue_id.txt does not match requested issue id: {issue_id}")
 
-    validate_candidates(issue_id)
+    validate_candidates(issue_id, allow_auto_collected=args.allow_auto_collected)
     run([sys.executable, "scripts/generate_issue.py"])
     run([sys.executable, "scripts/generate_cardnews_svg.py"])
     art_python = python_with_pillow()

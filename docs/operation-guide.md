@@ -11,7 +11,14 @@
 - 장비, 브랜드, 기어
 - 해외 트렌드 또는 엘리트 러닝
 
-`data/candidates_archive.csv`에 새 `issue_id`로 후보를 추가합니다. `issue_date`는 실제 발행일로 맞추고, 최종 검수 후 `verification_status`를 `reviewed`로 둡니다. 오늘 날짜 후보가 없으면 자동 파이프라인은 발송하지 않습니다.
+자동 수집은 Google News RSS 검색 피드 기반으로 실행합니다.
+
+```bash
+python3 scripts/collect_running_news.py --dry-run
+python3 scripts/collect_running_news.py
+```
+
+수집 쿼리는 `data/collection_queries.csv`에서 관리합니다. 자동 수집 후보는 `verification_status=auto_collected`로 저장됩니다. 사람이 직접 검수한 뒤 발행하려면 `verification_status`를 `reviewed`로 바꿉니다.
 
 ## 2. 1차 필터
 
@@ -41,6 +48,12 @@
 python3 scripts/run_newsletter_pipeline.py --issue-id today --no-email
 ```
 
+자동 수집 후보까지 허용하려면 아래처럼 실행합니다.
+
+```bash
+python3 scripts/run_newsletter_pipeline.py --collect --allow-auto-collected --no-email
+```
+
 기본 출력 파일:
 
 - `issues/YYYY-MM-DD-running-newsletter.md`
@@ -66,6 +79,12 @@ python3 scripts/run_newsletter_pipeline.py --issue-id today --no-email
 
 ```bash
 python3 scripts/run_newsletter_pipeline.py --issue-id today --send-email
+```
+
+완전 자동 수집과 메일 발송을 함께 실행하려면 아래 명령을 사용합니다.
+
+```bash
+python3 scripts/run_newsletter_pipeline.py --collect --allow-auto-collected --send-email
 ```
 
 웹사이트 배포 URL은 `.env`의 `RUNEORRRI_SITE_BASE_URL`에 저장합니다. 예:

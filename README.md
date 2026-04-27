@@ -32,6 +32,17 @@
 
 1. 최근 러닝 소식을 조사해 `data/candidates_archive.csv`에 새 `issue_id`로 이번 회차 후보 소식 5개를 추가합니다.
    `issue_date`는 실제 발행일, `verification_status`는 검수 완료 후 `reviewed`로 둡니다.
+   자동 수집을 쓰려면 아래 명령을 실행합니다.
+
+```bash
+python3 scripts/collect_running_news.py
+```
+
+수집 결과만 미리 보려면 파일을 쓰지 않는 dry-run을 사용합니다.
+
+```bash
+python3 scripts/collect_running_news.py --dry-run
+```
 2. 아래 명령으로 최신 회차를 `data/candidates.csv`로 내보냅니다.
 
 ```bash
@@ -99,17 +110,23 @@ python3 scripts/send_issue_email.py
 python3 scripts/run_newsletter_pipeline.py --issue-id today --no-email
 ```
 
+자동 수집부터 생성까지 한 번에 실행하려면 아래 명령을 사용합니다.
+
+```bash
+python3 scripts/run_newsletter_pipeline.py --collect --allow-auto-collected --no-email
+```
+
 메일까지 보내려면 `.env` 설정 후 아래처럼 실행합니다.
 
 ```bash
-python3 scripts/run_newsletter_pipeline.py --issue-id today --send-email
+python3 scripts/run_newsletter_pipeline.py --collect --allow-auto-collected --send-email
 ```
 
-`--issue-id today`는 `data/candidates_archive.csv`에서 오늘 날짜(`issue_date`)의 후보를 찾습니다. 오늘 후보가 없거나 선택된 후보가 5개가 아니거나 검수가 끝나지 않았으면 발송하지 않고 실패합니다.
+`--issue-id today`는 `data/candidates_archive.csv`에서 오늘 날짜(`issue_date`)의 후보를 찾습니다. 오늘 후보가 없거나 선택된 후보가 5개가 아니거나 검수가 끝나지 않았으면 발송하지 않고 실패합니다. `--collect`를 쓰면 Google News RSS 검색 피드에서 후보를 먼저 수집하고 `verification_status=auto_collected`로 저장합니다.
 
 ## 자동 발송 설정
 
-GitHub Actions 워크플로 `.github/workflows/newsletter.yml`이 화/목/토 오전 8시(KST)에 실행됩니다. 실행 전 오늘 날짜 후보 5개가 `data/candidates_archive.csv`에 준비되어 있어야 하며, 없으면 잘못된 이전 회차를 보내지 않고 중단됩니다.
+GitHub Actions 워크플로 `.github/workflows/newsletter.yml`이 화/목/토 오전 8시(KST)에 실행됩니다. 기본값은 자동 수집을 먼저 실행한 뒤 후보 5개를 생성하고 메일을 보내는 방식입니다. 자동 수집 후보는 `auto_collected`로 기록되므로, 사람이 검수한 후보만 보내고 싶으면 워크플로 수동 실행에서 `collect=false`로 두고 `reviewed` 후보를 준비합니다.
 
 실제 이메일 발송까지 하려면 `.env.example`을 참고해 `.env` 파일에 SMTP 설정과 수신 주소를 넣습니다.
 

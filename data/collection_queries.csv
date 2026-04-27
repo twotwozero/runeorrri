@@ -1,0 +1,9 @@
+region,category,query,language,country,priority,notes
+korea,event,러닝 마라톤 대회 접수,ko,KR,high,국내 대회와 접수 일정
+korea,event,러닝 페스타 마라톤 참가자 모집,ko,KR,high,국내 러닝 이벤트
+korea,gear,러닝화 신제품 러닝 브랜드,ko,KR,medium,국내 장비와 브랜드 소식
+korea,news,러닝 크루 마라톤 러너,ko,KR,medium,국내 러닝 문화와 커뮤니티
+global,event,marathon registration running event,en,US,high,Global race registration and event news
+global,elite,marathon world athletics road running,en,US,medium,Elite and World Athletics road running news
+global,gear,running shoe launch supershoe marathon,en,US,medium,Running shoe and gear launches
+global,news,running community marathon trend,en,US,medium,Global running culture trends
