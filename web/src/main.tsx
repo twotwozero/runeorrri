@@ -36,6 +36,7 @@ type Issue = {
 };
 
 const issues = issuesData as Issue[];
+const archiveDuckImage = '/assets/runeorrri-duck-01-03.png';
 
 function issuePath(issue: Issue) {
   return `/${issue.number}`;
@@ -145,8 +146,7 @@ function HomePage() {
         <div className="issue-grid">
           {issues.map((issue) => (
             <a className="issue-card" href={issuePath(issue)} key={issue.date}>
-              <img src={issue.assets.hero} alt="" />
-              <div>
+              <div className="issue-card-copy">
                 <p className="card-meta">{issue.date} · {issue.stories.length} stories</p>
                 <h3>오늘의 러닝 브리핑 {issue.number}</h3>
                 <ol>
@@ -155,6 +155,7 @@ function HomePage() {
                   ))}
                 </ol>
               </div>
+              <img className="issue-card-duck" src={archiveDuckImage} alt="" />
             </a>
           ))}
         </div>

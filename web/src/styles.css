@@ -199,12 +199,14 @@ main {
 
 .issue-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: 1fr;
   gap: 18px;
 }
 
 .issue-card {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) 148px;
+  align-items: center;
   gap: 14px;
   border: 2px solid var(--ink);
   background: var(--white);
@@ -215,9 +217,11 @@ main {
   outline: 5px solid rgba(255, 107, 74, 0.24);
 }
 
-.issue-card img {
-  border: 1px solid var(--line);
-  background: var(--cream);
+.issue-card-duck {
+  width: 148px;
+  height: 148px;
+  object-fit: contain;
+  justify-self: end;
 }
 
 .issue-card h3 {
@@ -458,5 +462,14 @@ main {
 
   .home-description {
     white-space: normal;
+  }
+
+  .issue-card {
+    grid-template-columns: minmax(0, 1fr) 112px;
+  }
+
+  .issue-card-duck {
+    width: 112px;
+    height: 112px;
   }
 }
