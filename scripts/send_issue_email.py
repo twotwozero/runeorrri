@@ -334,7 +334,7 @@ def main():
 
     msg = EmailMessage()
     running_emoji = "\U0001f3c3\U0001f3fb"
-    msg["Subject"] = f"[러너리] {running_emoji} 오늘의 러닝 브리핑 {issue_number()} - {TODAY}"
+    msg["Subject"] = f"[러너리] {running_emoji} 오늘의 러닝 브리핑 {issue_number()} - RUNNING CAN CHANGE THE WORLD"
     msg["From"] = formataddr((mail_from_name, mail_from))
     msg["To"] = mail_to
     msg.set_content(NEWSLETTER.read_text(encoding="utf-8"))
