@@ -120,6 +120,11 @@ main {
   font-size: clamp(40px, 6.2vw, 76px);
 }
 
+.issue-header h1 {
+  font-size: clamp(30px, 5vw, 52px);
+  white-space: nowrap;
+}
+
 .title-line {
   display: block;
   white-space: nowrap;
