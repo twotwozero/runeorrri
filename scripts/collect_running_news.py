@@ -26,11 +26,24 @@ ISSUES_DIR = ROOT / "issues"
 ISSUES_JSON = ROOT / "web" / "src" / "data" / "issues.json"
 
 COMMON_RUNNING_WORDS = {
-    "마라톤", "러닝", "대회", "접수", "참가", "러너", "달리기", "소식", "뉴스",
-    "개최", "열린", "예정", "진행", "이번", "오픈", "마감", "기록",
-    "코스", "풀코스", "하프", "서울", "한국", "국내", "국제",
-    "marathon", "running", "race", "runner", "event",
-    "the", "and", "of", "in", "to", "a", "is", "for", "with", "at", "on",
+    "마라톤", "러닝", "러너", "달리기", "러닝화", "기록", "풀코스", "하프", "10km", "DNF", "PB", "페이스",
+    "marathon", "running", "race", "runner", "pace", "half", "full",
+}
+
+# Korean → English synonyms for published-entity dedup across languages
+ENTITY_SYNONYMS: dict[str, set[str]] = {
+    "사웨": {"sawe"},
+    "아디다스": {"adidas"},
+    "나이키": {"nike"},
+    "아식스": {"asics"},
+    "호카": {"hoka"},
+    "슈퍼슈즈": {"supershoe", "supershoes"},
+    "런던": {"london"},
+    "보스턴": {"boston"},
+    "도쿄": {"tokyo"},
+    "시카고": {"chicago"},
+    "싱가포르": {"singapore"},
+    "뉴욕": {"york"},
 }
 
 _published_entities: set = set()
@@ -93,19 +106,33 @@ def load_dotenv():
 
 
 def published_entity_words():
-    if not ISSUES_JSON.exists():
-        return set()
-    try:
-        issues = json.loads(ISSUES_JSON.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return set()
     entities = set()
-    for issue in issues:
-        for story in issue.get("stories", []):
-            title = story.get("title", "").lower()
-            for word in re.findall(r"[가-힣a-zA-Z0-9]+", title):
-                if len(word) >= 2 and word not in COMMON_RUNNING_WORDS:
-                    entities.add(word)
+
+    # Korean titles from issues.json (+ English synonyms for cross-language dedup)
+    if ISSUES_JSON.exists():
+        try:
+            issues = json.loads(ISSUES_JSON.read_text(encoding="utf-8"))
+            for issue in issues:
+                for story in issue.get("stories", []):
+                    for word in re.findall(r"[가-힣a-zA-Z0-9]+", story.get("title", "").lower()):
+                        if len(word) >= 2 and word not in COMMON_RUNNING_WORDS:
+                            entities.add(word)
+                            for en_word in ENTITY_SYNONYMS.get(word, set()):
+                                entities.add(en_word)
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    # English titles from archive notes (RSS context lines)
+    if ARCHIVE.exists():
+        for row in read_csv(ARCHIVE):
+            notes = row.get("notes", "")
+            m = re.search(r"RSS context:\s*(.+)", notes)
+            if m:
+                rss_text = m.group(1).lower()
+                for word in re.findall(r"[a-z]{3,}", rss_text):
+                    if word not in COMMON_RUNNING_WORDS:
+                        entities.add(word)
+
     return entities
 
 
