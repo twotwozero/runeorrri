@@ -33,8 +33,7 @@ ARCHIVE_FIELDS = [
     "notes",
 ]
 
-OPENAI_URL = "https://api.openai.com/v1/responses"
-DEFAULT_MODEL = "gpt-5.2-mini"
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 MIN_SCORE = 65
 
 
@@ -95,6 +94,37 @@ def normalize_text(value):
     return re.sub(r"\s+", " ", unescape(value or "")).strip()
 
 
+def load_dotenv():
+    env_file = ROOT / ".env"
+    if not env_file.exists():
+        return
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+def load_editorial_guidelines():
+    path = ROOT / "docs" / "editorial-guidelines.md"
+    return path.read_text(encoding="utf-8") if path.exists() else ""
+
+
+def build_system_prompt():
+    guidelines = load_editorial_guidelines()
+    return f"""당신은 한국 러닝 뉴스레터 '러너리(runeorrri)'의 편집자입니다.
+
+아래 편집 가이드를 반드시 따르세요:
+
+{guidelines}
+
+핵심 원칙:
+- 확인되지 않은 날짜, 금액, 경로, 제품 스펙, 접수 정보는 절대 쓰지 않습니다.
+- 번역투·홍보 문구·과장된 표현을 피합니다.
+- 원문에서 충분한 정보를 얻을 수 없으면 keep=false로 표시합니다."""
+
+
 def read_archive():
     if not ARCHIVE.exists():
         raise SystemExit(f"Missing archive: {ARCHIVE}")
@@ -139,57 +169,9 @@ def fetch_article_text(url):
     return article, f"article_url: {final_url}; extracted_chars: {len(article)}"
 
 
-def openai_json(prompt, schema):
-    api_key = os.environ.get("OPENAI_API_KEY", "").strip()
-    if not api_key:
-        raise SystemExit(
-            "OPENAI_API_KEY is required for automatic newsletter enrichment. "
-            "Set it as a GitHub Actions secret before the 08:00 run."
-        )
-    model = os.environ.get("OPENAI_MODEL", "").strip() or DEFAULT_MODEL
-    body = {
-        "model": model,
-        "instructions": (
-            "You are a Korean running-newsletter editor. Produce accurate, concise Korean copy. "
-            "Use only the provided source text and metadata. If the source is too thin, mark keep=false. "
-            "Do not invent dates, fees, routes, product specs, or registration details."
-        ),
-        "input": prompt,
-        "text": {
-            "format": {
-                "type": "json_schema",
-                "name": "candidate_enrichment",
-                "strict": True,
-                "schema": schema,
-            }
-        },
-    }
-    request = urllib.request.Request(
-        OPENAI_URL,
-        data=json.dumps(body).encode("utf-8"),
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        method="POST",
-    )
-    with urllib.request.urlopen(request, timeout=60) as response:
-        payload = json.loads(response.read().decode("utf-8"))
-    output_text = payload.get("output_text")
-    if not output_text:
-        output_text = "".join(
-            content.get("text", "")
-            for item in payload.get("output", [])
-            for content in item.get("content", [])
-            if content.get("type") == "output_text"
-        )
-    return json.loads(output_text)
-
-
 def enrichment_schema():
     return {
         "type": "object",
-        "additionalProperties": False,
         "properties": {
             "keep": {"type": "boolean"},
             "quality_score": {"type": "integer"},
@@ -214,22 +196,7 @@ def enrichment_schema():
 
 
 def build_prompt(row, article_text):
-    return f"""
-JSON으로만 응답하세요.
-
-목표:
-- 러너리 뉴스레터에 실을 후보인지 판단합니다.
-- 한국 러너가 바로 이해할 수 있게 자연스러운 한국어로 다시 씁니다.
-- 핵심 날짜, 접수 마감, 장소, 비용, 제품명, 기록, 주최 등 확인된 사실을 우선합니다.
-- 단순 사건사고, 지역성이 너무 약한 기사, 맥락 없는 광고성 기사, 원문 정보가 부족한 기사는 keep=false로 둡니다.
-
-출력 규칙:
-- quality_score는 0~100.
-- title은 뉴스레터 제목으로 42자 이내.
-- summary는 2문장, 180~260자.
-- why_it_matters는 1~2문장, 한국 러너 관점.
-- card_copy는 32자 이내의 카드뉴스 문구.
-- 확인되지 않은 정보는 쓰지 않습니다.
+    return f"""다음 기사 후보를 러너리 뉴스레터 기준으로 평가하고 편집해 주세요.
 
 후보 메타데이터:
 - region: {row.get('region', '')}
@@ -241,8 +208,43 @@ JSON으로만 응답하세요.
 - rss_notes: {row.get('notes', '')}
 
 원문 추출 텍스트:
-{article_text or '(원문 추출 실패 또는 정보 부족)'}
-""".strip()
+{article_text or '(원문 추출 실패 또는 정보 부족)'}"""
+
+
+def gemini_json(prompt, schema, retries=4):
+    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    if not api_key:
+        raise SystemExit(
+            "GEMINI_API_KEY is required for newsletter enrichment. "
+            "Set it as a GitHub Actions secret or in the .env file."
+        )
+    body = {
+        "system_instruction": {"parts": [{"text": build_system_prompt()}]},
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "response_mime_type": "application/json",
+            "response_schema": schema,
+        },
+    }
+    request = urllib.request.Request(
+        f"{GEMINI_URL}?key={api_key}",
+        data=json.dumps(body).encode("utf-8"),
+        headers={"content-type": "application/json"},
+        method="POST",
+    )
+    for attempt in range(retries):
+        try:
+            with urllib.request.urlopen(request, timeout=60) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+            text = payload["candidates"][0]["content"]["parts"][0]["text"]
+            return json.loads(text)
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and attempt < retries - 1:
+                wait = 60 * (attempt + 1)
+                print(f"  rate limit, waiting {wait}s...", flush=True)
+                time.sleep(wait)
+            else:
+                raise
 
 
 def quality_sort_key(row):
@@ -280,7 +282,7 @@ def choose_selected(rows, count):
 def enrich_row(row, index, total):
     article_text, extraction_note = fetch_article_text(row.get("url", ""))
     prompt = build_prompt(row, article_text)
-    result = openai_json(prompt, enrichment_schema())
+    result = gemini_json(prompt, enrichment_schema())
     row["_keep"] = "yes" if result["keep"] else "no"
     row["_quality_score"] = str(max(0, min(100, int(result["quality_score"]))))
     if result["keep"]:
@@ -297,7 +299,7 @@ def enrich_row(row, index, total):
         f"{extraction_note}; editor_note: {normalize_text(result['editor_note'])}"
     )
     print(f"[{index}/{total}] {row['_quality_score']} {row['_keep']} {row['source']} - {row['title']}", flush=True)
-    time.sleep(0.2)
+    time.sleep(5)
 
 
 def main():
@@ -306,21 +308,29 @@ def main():
     parser.add_argument("--select", type=int, default=5)
     args = parser.parse_args()
 
+    load_dotenv()
+
     rows = read_archive()
     issue_rows = [row for row in rows if row.get("issue_id") == args.issue_id]
     if not issue_rows:
         raise SystemExit(f"No rows found for issue_id: {args.issue_id}")
 
-    for index, row in enumerate(issue_rows, start=1):
-        enrich_row(row, index, len(issue_rows))
-    choose_selected(issue_rows, args.select)
+    to_enrich = [row for row in issue_rows if row.get("selected") == "yes"]
+    if len(to_enrich) < args.select:
+        raise SystemExit(f"Only {len(to_enrich)} pre-selected candidates; need {args.select}.")
 
-    for row in issue_rows:
+    for index, row in enumerate(to_enrich, start=1):
+        enrich_row(row, index, len(to_enrich))
+
+    kept = [row for row in to_enrich if row.get("_keep") == "yes"]
+    if len(kept) < args.select:
+        raise SystemExit(f"Only {len(kept)} candidates passed AI review; need {args.select}.")
+
+    for row in to_enrich:
         row.pop("_keep", None)
         row.pop("_quality_score", None)
     write_archive(rows)
-    selected = [row for row in issue_rows if row.get("selected") == "yes"]
-    print(f"Enriched {len(issue_rows)} candidates for {args.issue_id}; selected {len(selected)}.")
+    print(f"Enriched {len(to_enrich)} candidates for {args.issue_id}; {len(kept)} passed review.")
 
 
 if __name__ == "__main__":

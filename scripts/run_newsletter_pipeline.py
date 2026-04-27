@@ -166,7 +166,6 @@ def main():
 
     validate_candidates(issue_id, allow_auto_collected=args.allow_auto_collected)
     run([sys.executable, "scripts/generate_issue.py"])
-    run([sys.executable, "scripts/generate_cardnews_svg.py"])
     art_python = python_with_pillow()
     run([art_python, "scripts/generate_newsletter_art.py"])
     run([sys.executable, "scripts/generate_web_data.py"])

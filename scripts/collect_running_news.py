@@ -2,6 +2,8 @@
 import argparse
 import csv
 import hashlib
+import json
+import os
 import re
 import sys
 import urllib.parse
@@ -16,9 +18,22 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 QUERIES = ROOT / "data" / "collection_queries.csv"
+NAVER_SEARCH_URL = "https://openapi.naver.com/v1/search/news.json"
+KORMARATHON_RACES_URL = "https://www.kormarathon.com/ko/races"
 ARCHIVE = ROOT / "data" / "candidates_archive.csv"
 CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
 ISSUES_DIR = ROOT / "issues"
+ISSUES_JSON = ROOT / "web" / "src" / "data" / "issues.json"
+
+COMMON_RUNNING_WORDS = {
+    "마라톤", "러닝", "대회", "접수", "참가", "러너", "달리기", "소식", "뉴스",
+    "개최", "열린", "예정", "진행", "이번", "오픈", "마감", "기록",
+    "코스", "풀코스", "하프", "서울", "한국", "국내", "국제",
+    "marathon", "running", "race", "runner", "event",
+    "the", "and", "of", "in", "to", "a", "is", "for", "with", "at", "on",
+}
+
+_published_entities: set = set()
 
 ARCHIVE_FIELDS = [
     "issue_id",
@@ -63,6 +78,39 @@ LOW_VALUE_SOURCES = [
     "mirror",
     "앳스타일",
 ]
+
+
+def load_dotenv():
+    env_file = ROOT / ".env"
+    if not env_file.exists():
+        return
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+def published_entity_words():
+    if not ISSUES_JSON.exists():
+        return set()
+    try:
+        issues = json.loads(ISSUES_JSON.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return set()
+    entities = set()
+    for issue in issues:
+        for story in issue.get("stories", []):
+            title = story.get("title", "").lower()
+            for word in re.findall(r"[가-힣a-zA-Z0-9]+", title):
+                if len(word) >= 2 and word not in COMMON_RUNNING_WORDS:
+                    entities.add(word)
+    return entities
+
+
+def strip_html_tags(value):
+    return re.sub(r"<[^>]+>", "", value or "").strip()
 
 
 def read_csv(path):
@@ -181,6 +229,9 @@ def score_item(item):
         score += 1
     if any(source_name in source for source_name in LOW_VALUE_SOURCES):
         score -= 3
+    if _published_entities:
+        words = set(re.findall(r"[가-힣a-zA-Z0-9]+", title))
+        score -= len(words & _published_entities) * 2
     return score
 
 
@@ -211,7 +262,7 @@ def card_copy(item):
     return title if len(title) <= 38 else f"{title[:37]}..."
 
 
-def collect_from_query(row):
+def collect_from_google_news(row):
     url = google_news_rss(row["query"], row.get("language", "ko"), row.get("country", "KR"))
     data = fetch(url)
     root = ET.fromstring(data)
@@ -237,6 +288,121 @@ def collect_from_query(row):
         }
         items.append(item)
     return items
+
+
+def collect_from_naver(row):
+    client_id = os.environ.get("NAVER_CLIENT_ID", "").strip()
+    client_secret = os.environ.get("NAVER_CLIENT_SECRET", "").strip()
+    if not client_id or not client_secret:
+        print(f"warning: NAVER_CLIENT_ID/SECRET not set, skipping naver query: {row.get('query')}", file=sys.stderr)
+        return []
+    params = urllib.parse.urlencode({"query": row["query"], "display": 20, "sort": "date"})
+    request = urllib.request.Request(
+        f"{NAVER_SEARCH_URL}?{params}",
+        headers={
+            "X-Naver-Client-Id": client_id,
+            "X-Naver-Client-Secret": client_secret,
+            "User-Agent": "runeorrri-newsletter-bot/1.0 (+https://runeorrri.pages.dev)",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            data = json.loads(response.read().decode("utf-8"))
+    except Exception as exc:
+        print(f"warning: naver news fetch failed for '{row.get('query')}': {exc}", file=sys.stderr)
+        return []
+    items = []
+    for naver_item in data.get("items", []):
+        title = clean_title(strip_html_tags(naver_item.get("title", "")))
+        link = naver_item.get("originallink") or naver_item.get("link", "")
+        if not title or not link:
+            continue
+        category = infer_category(title, row.get("category", "news"))
+        published_at = parse_date(naver_item.get("pubDate", ""))
+        description = strip_html_tags(naver_item.get("description", ""))
+        item = {
+            "region": row.get("region", "korea"),
+            "category": category,
+            "title": title,
+            "description": description,
+            "url": link,
+            "source": "Naver News",
+            "published_at": published_at,
+            "query": row.get("query", ""),
+        }
+        items.append(item)
+    return items
+
+
+class KorMarathonParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.races = []
+        self._in_link = False
+        self._href = ""
+        self._text_parts = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "a":
+            href = dict(attrs).get("href", "")
+            if "/races/" in href and len(href) > 8:
+                self._in_link = True
+                self._href = href if href.startswith("http") else "https://www.kormarathon.com" + href
+                self._text_parts = []
+
+    def handle_endtag(self, tag):
+        if tag == "a" and self._in_link:
+            self._in_link = False
+            text = re.sub(r"\s+", " ", " ".join(self._text_parts)).strip()
+            if text and len(text) >= 6 and self._href:
+                self.races.append({"title": text, "url": self._href})
+
+    def handle_data(self, data):
+        if self._in_link:
+            text = data.strip()
+            if text:
+                self._text_parts.append(text)
+
+
+def collect_from_kormarathon(row):
+    try:
+        data = fetch(KORMARATHON_RACES_URL)
+        html = data.decode("utf-8", errors="replace")
+    except Exception as exc:
+        print(f"warning: kormarathon fetch failed: {exc}", file=sys.stderr)
+        return []
+    parser = KorMarathonParser()
+    parser.feed(html)
+    seen_urls = set()
+    items = []
+    for race in parser.races:
+        url = race["url"]
+        if url in seen_urls:
+            continue
+        seen_urls.add(url)
+        title = clean_title(race["title"])
+        if not title or len(title) < 5:
+            continue
+        items.append({
+            "region": "korea",
+            "category": "event",
+            "title": title,
+            "description": "",
+            "url": url,
+            "source": "KorMarathon",
+            "published_at": "",
+            "query": row.get("query", "kormarathon"),
+        })
+    return items
+
+
+def collect_from_query(row):
+    source = row.get("source", "google_news").strip()
+    if source == "naver_news":
+        return collect_from_naver(row)
+    if source == "kormarathon":
+        return collect_from_kormarathon(row)
+    return collect_from_google_news(row)
 
 
 def dedupe_key(item):
@@ -296,6 +462,11 @@ def main():
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
+    load_dotenv()
+
+    global _published_entities
+    _published_entities = published_entity_words()
+
     query_rows = read_csv(QUERIES)
     if not query_rows:
         raise SystemExit(f"No collection queries found: {QUERIES}")
@@ -318,7 +489,10 @@ def main():
         seen.add(key)
         unique.append(item)
 
-    ranked = sorted(unique, key=score_item, reverse=True)[: args.limit]
+    per_region = max(args.limit // 2, 6)
+    korea = sorted([i for i in unique if i["region"] == "korea"], key=score_item, reverse=True)[:per_region]
+    global_ = sorted([i for i in unique if i["region"] != "korea"], key=score_item, reverse=True)[:per_region]
+    ranked = sorted(korea + global_, key=score_item, reverse=True)[: args.limit]
     if len(ranked) < args.select:
         raise SystemExit(f"Collected only {len(ranked)} new candidates; need at least {args.select}.")
 

@@ -370,7 +370,7 @@ def main():
     issue_url = runeorrri_issue_url(site_base_url)
 
     msg = EmailMessage()
-    running_emoji = "\U0001f3c3\U0001f3fb\u200d\u2640\ufe0f"
+    running_emoji = "\U0001f3c3\U0001f3fb"
     msg["Subject"] = f"[러너리] {running_emoji} 오늘의 러닝 브리핑 {issue_number()} - {TODAY}"
     msg["From"] = formataddr((mail_from_name, mail_from))
     msg["To"] = mail_to
@@ -392,13 +392,6 @@ def main():
             filename=png.name,
             disposition="inline",
         )
-
-    msg.add_attachment(
-        NEWSLETTER.read_bytes(),
-        maintype="text",
-        subtype="markdown",
-        filename=NEWSLETTER.name,
-    )
 
     if CARD_ALBUM.exists():
         msg.add_attachment(

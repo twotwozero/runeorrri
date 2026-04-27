@@ -1,5 +1,83 @@
 [
   {
+    "date": "2026-04-28",
+    "number": "02",
+    "title": "오늘의 러닝 브리핑 02 - 2026-04-28",
+    "intro": "러너리가 국내 러닝 소식 3개와 해외 소식 2개를 골랐습니다. 바쁜 러너가 빠르게 훑고, 필요한 링크만 바로 열어볼 수 있게 정리했습니다.",
+    "stories": [
+      {
+        "index": 1,
+        "title": "사웨 sub-2로 아디다스, 슈퍼슈즈 경쟁서 나이키 추격",
+        "region": "해외",
+        "category": "elite",
+        "summary": "2026 런던마라톤에서 사웨가 공식 경쟁 레이스 사상 첫 2시간 이내 기록을 세우며 아디다스 Pro Evo 3의 성능이 주목받고 있습니다. 아디다스는 이번 기록을 발판으로 슈퍼슈즈 시장에서 나이키와의 격차를 좁히며 카본화 경쟁의 새 국면을 열었습니다.",
+        "why": "레이스데이 슈즈 선택에 영향을 주는 브랜드 경쟁 구도를 이해하는 데 참고할 수 있습니다.",
+        "source": {
+          "name": "The Straits Times",
+          "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxQX0phQ1dBa0hkOVIzaF8za0NKckcycWtZZmlkbVVTR0IzT0FRbENWMVhKWDNXU3NwTEFEU3k1cmpCVHNNeVM1bk1ZRjV0WldTbDhWcFJoMXI3M3Z4R2dVYV9hWHJxcjMxdWVMRUp0RS1tbUZoaW1SUG1vcExQY0hMYnFscVlObEEwSXlFNFpIVGE5S1ZzVlRrRVNqTU9yRG1NQkhPWUUxN2ZkQQ?oc=5"
+        },
+        "cardCopy": "사웨 sub-2, 아디다스 슈퍼슈즈 판도 바꿨다"
+      },
+      {
+        "index": 2,
+        "title": "싱가포르 국제마라톤 접수 오픈…풀코스 $188",
+        "region": "해외",
+        "category": "event",
+        "summary": "BYD 싱가포르 국제마라톤의 참가 접수가 시작됐습니다. 현지인 기준 풀코스 참가비는 188싱가포르달러(약 18만 원)로, 아시아권 마라톤 원정을 계획 중인 러너라면 접수 일정을 확인해볼 만합니다.",
+        "why": "국내 러너가 도전할 수 있는 아시아 메이저 레이스 중 하나로, 접수 오픈 초기에 확인하면 유리합니다.",
+        "source": {
+          "name": "AsiaOne",
+          "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxQR0FBT3EyaGxEQkh5TWVKT1FZZDVJS054Q0hKUkNOZ1FCSExRV1Z2Q1ZoXzB4TE5OWWQtUUZTM3FRa2hFb3RNaFpnY3d1b1NXM19HLXhRR0dnc2I5RkFqLV9lMFFseXRZUUNhUDZIRE9qdzBXRUNFTkNWUEdJRXp5MWl0SVZ6UVloWVphR3hDdXhvNFY1eEVzWl8zOFBKS080aTE4eUU4MU1TbTZzY2dkUzVISno?oc=5"
+        },
+        "cardCopy": "싱가포르마라톤 접수 오픈, 풀코스 $188"
+      },
+      {
+        "index": 3,
+        "title": "이순신 백의종군길 마라톤, 7,800명 황영조·이봉주와 달렸다",
+        "region": "국내",
+        "category": "event",
+        "summary": "아산시가 4월 26일 '제4회 이순신 백의종군길마라톤'을 개최해 전국 동호인 7,800여 명이 참가했습니다. 마라톤 레전드 황영조·이봉주도 함께 달리며 4km·10km·하프·풀코스로 이순신 장군의 발자취를 따라 뛰었습니다.",
+        "why": "레전드 선수와 함께 달리는 역사적 코스가 있는 대회로, 내년 참가를 고려하는 러너에게 미리 알아둘 만한 대회입니다.",
+        "source": {
+          "name": "Naver News",
+          "url": "http://www.newsworker.co.kr/news/articleView.html?idxno=423881"
+        },
+        "cardCopy": "황영조·이봉주와 달린 이순신 마라톤"
+      },
+      {
+        "index": 4,
+        "title": "반기문 마라톤 1만 1,546명 접수…목표치 44% 초과",
+        "region": "국내",
+        "category": "event",
+        "summary": "충북 음성군 음성종합운동장에서 4월 26일 열린 '제20회 반기문마라톤대회'에 1만 1,546명이 접수해 목표 8,000명을 크게 웃돌았습니다. 풀코스 1,002명, 하프 1,820명, 10km 3,833명, 4.2km 건강달리기 4,891명으로 전 종목이 고르게 채워졌습니다.",
+        "why": "지역 대형 대회가 전국 규모로 성장하고 있으며, 내년 참가를 계획한다면 조기 접수가 필요합니다.",
+        "source": {
+          "name": "Naver News",
+          "url": "https://www.gukjenews.com/news/articleView.html?idxno=3566345"
+        },
+        "cardCopy": "반기문 마라톤 1만 명 돌파, 내년 주목"
+      },
+      {
+        "index": 5,
+        "title": "4월 29도 무더위…파주 마라톤서 12명 온열 증상",
+        "region": "국내",
+        "category": "news",
+        "summary": "때이른 무더위가 찾아온 가운데 파주에서 열린 마라톤 대회에서 참가자 12명이 쓰러지는 사고가 발생했습니다. 낮 최고기온 29도에 달하는 날씨에서 온열 증상 참가자가 속출하며 봄 대회의 기온 대응에 대한 경각심이 높아지고 있습니다.",
+        "why": "봄 대회를 앞둔 러너라면 기온 체크, 페이스 조절, 수분 보충 전략을 반드시 미리 점검해야 합니다.",
+        "source": {
+          "name": "Naver News",
+          "url": "https://www.mt.co.kr/society/2026/04/20/2026042014515122864"
+        },
+        "cardCopy": "봄 29도 마라톤, 12명 쓰러져 주의"
+      }
+    ],
+    "assets": {
+      "hero": "/assets/issues/2026-04-28/hero.png",
+      "lineup": "/assets/issues/2026-04-28/lineup.png",
+      "checkpoints": "/assets/issues/2026-04-28/checkpoints.png"
+    }
+  },
+  {
     "date": "2026-04-25",
     "number": "01",
     "title": "오늘의 러닝 브리핑 01 - 2026-04-25",
