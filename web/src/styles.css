@@ -103,6 +103,10 @@ main {
   font-weight: 950;
 }
 
+.title-break {
+  display: block;
+}
+
 .home-copy p,
 .issue-header p,
 .not-found p {
