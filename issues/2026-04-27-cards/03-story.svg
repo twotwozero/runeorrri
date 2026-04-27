@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
+  <rect width="1080" height="1350" fill="#0f2742"/>
+  
+  <rect x="760" y="1030" width="470" height="470" fill="none" stroke="#ffbe3d" stroke-width="68" transform="rotate(18 995 1265)" opacity="0.92"/>
+  <text x="86" y="120" fill="#eaf3ff" font-size="28" font-weight="900" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif">@runeorrri · 03</text>
+  <text x="760" y="120" fill="#eaf3ff" font-size="28" font-weight="900" text-anchor="start" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif">국내 / event</text>
+  <text x="86" y="300" fill="#ffbe3d" font-size="180" font-weight="950" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif">3</text>
+  <text x="86" y="470" fill="#eaf3ff" font-size="72" font-weight="950" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif"><tspan x="86" dy="0">‘무한도전 Run</tspan><tspan x="86" dy="83">with 쿠팡플레이’</tspan><tspan x="86" dy="83">6/7 개최…접수는</tspan><tspan x="86" dy="83">5/7 하루</tspan></text>
+  <text x="86" y="760" fill="#eaf3ff" font-size="35" font-weight="680" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif"><tspan x="86" dy="0">세계일보(4/24 보도)에 따르면 ‘무한도전 Run</tspan><tspan x="86" dy="50">with 쿠팡플레이’가 6월 7일 서울 상암</tspan><tspan x="86" dy="50">문화비축기지에서 10km 코스로 열립니다. 대회</tspan><tspan x="86" dy="50">정보 페이지에는 접수기간이 5월 7일</tspan><tspan x="86" dy="50">하루(선착순)로 표시돼 있으며, 주최는</tspan></text>
+  <rect x="86" y="1010" width="908" height="220" fill="#ffffff" opacity="0.13" stroke="#ffffff" stroke-opacity="0.24" stroke-width="2"/>
+  <text x="124" y="1070" fill="#ffbe3d" font-size="30" font-weight="900" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif">러너에게 왜 중요?</text>
+  <text x="124" y="1130" fill="#eaf3ff" font-size="31" font-weight="800" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif"><tspan x="124" dy="0">인기 IP·콘셉트형 러닝은 접수 당일 빠르게 마감되는</tspan><tspan x="124" dy="42">경우가 많습니다. 5/7 하루 접수로 표시돼 있어, 관심</tspan><tspan x="124" dy="42">러너라면 알림·결제수단을 미리 준비해두는 게 안전합니다.</tspan></text>
+  <text x="86" y="1290" fill="#eaf3ff" opacity="0.78" font-size="25" font-weight="650" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif">KorMarathon · 2026-04-24</text>
+
+</svg>
