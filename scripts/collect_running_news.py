@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ET
 from datetime import date, datetime, timezone
 from email.utils import parsedate_to_datetime
 from html import unescape
+from html.parser import HTMLParser
 from pathlib import Path
 
 
@@ -115,6 +116,23 @@ def text_of(node, name):
     return unescape(child.text or "").strip() if child is not None else ""
 
 
+class TextExtractor(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.parts = []
+
+    def handle_data(self, data):
+        text = re.sub(r"\s+", " ", data).strip()
+        if text:
+            self.parts.append(text)
+
+
+def clean_html(value):
+    parser = TextExtractor()
+    parser.feed(value or "")
+    return " ".join(parser.parts)
+
+
 def source_of(item):
     source = item.find("source")
     if source is not None and source.text:
@@ -206,10 +224,12 @@ def collect_from_query(row):
         category = infer_category(title, row.get("category", "news"))
         source = source_of(rss_item) or row.get("query", "Google News")
         published_at = parse_date(text_of(rss_item, "pubDate"))
+        description = clean_html(text_of(rss_item, "description"))
         item = {
             "region": row.get("region", "korea"),
             "category": category,
             "title": title,
+            "description": description,
             "url": link,
             "source": source,
             "published_at": published_at,
@@ -247,7 +267,10 @@ def build_archive_row(issue_id, issue_date, item, selected):
         "published_at": item["published_at"],
         "card_copy": card_copy(item),
         "verification_status": "auto_collected",
-        "notes": f"Auto-collected from Google News query: {item['query']}. Review facts before manual publication.",
+        "notes": (
+            f"Auto-collected from Google News query: {item['query']}. "
+            f"RSS context: {item.get('description', '')[:260]}"
+        ),
     }
     return {field: row.get(field, "") for field in ARCHIVE_FIELDS}
 

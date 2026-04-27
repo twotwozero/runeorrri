@@ -140,6 +140,11 @@ def main():
     parser.add_argument("--no-email", action="store_true", help="Generate files only. This is the default.")
     parser.add_argument("--collect", action="store_true", help="Collect recent running news before generation.")
     parser.add_argument(
+        "--skip-enrichment",
+        action="store_true",
+        help="Skip AI enrichment after collecting. Not recommended for automatic publication.",
+    )
+    parser.add_argument(
         "--allow-auto-collected",
         action="store_true",
         help="Allow candidates with verification_status=auto_collected.",
@@ -155,6 +160,8 @@ def main():
     issue_id = resolve_issue_id(issue_value)
     if issue_value == "current" and CURRENT_ISSUE.exists() and CURRENT_ISSUE.read_text(encoding="utf-8").strip() != issue_id:
         raise SystemExit(f"current_issue_id.txt does not match requested issue id: {issue_id}")
+    if args.collect and not args.skip_enrichment:
+        run([sys.executable, "scripts/enrich_collected_candidates.py", issue_id])
     run([sys.executable, "scripts/export_latest_candidates.py", issue_id])
 
     validate_candidates(issue_id, allow_auto_collected=args.allow_auto_collected)
