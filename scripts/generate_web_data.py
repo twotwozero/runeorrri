@@ -83,12 +83,13 @@ def parse_newsletter(path):
                 story["oneLiner"] = line.split(":", 1)[1].strip()
         stories.append(story)
 
+    email_intro = parse_meta_field(text, "이메일 인트로")
     return {
         "date": issue_date,
         "number": issue_number_from_title(title),
         "title": title,
-        "intro": intro,
-        "emailIntro": parse_meta_field(text, "이메일 인트로"),
+        "intro": email_intro if email_intro else intro,
+        "emailIntro": email_intro,
         "issueFocus": parse_meta_field(text, "이번 호 중심"),
         "mainEditorial": parse_meta_field(text, "메인 에디토리얼"),
         "midRunNote": parse_meta_field(text, "미드런 노트"),
