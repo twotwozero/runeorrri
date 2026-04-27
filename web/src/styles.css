@@ -94,6 +94,11 @@ main {
   line-height: 0;
 }
 
+.nav-instagram .brand-icon {
+  width: 26px;
+  height: 26px;
+}
+
 .home-hero {
   display: flex;
   flex-direction: column;
