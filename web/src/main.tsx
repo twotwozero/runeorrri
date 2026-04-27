@@ -36,7 +36,7 @@ type Issue = {
 };
 
 const issues = issuesData as Issue[];
-const archiveDuckImage = '/assets/runeorrri-duck-01-03.png';
+const archiveDuckImage = '/assets/ducks/runeorrri-duck-03.svg';
 
 function issuePath(issue: Issue) {
   return `/${issue.number}`;
