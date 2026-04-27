@@ -29,7 +29,14 @@ def clean_intro(text, first_story_start):
     intro = re.sub(r"^#\s+.+$", "", intro, flags=re.MULTILINE)
     intro = re.sub(r"^발행일:.*$", "", intro, flags=re.MULTILINE)
     intro = re.sub(r"^구성:.*$", "", intro, flags=re.MULTILINE)
+    intro = re.sub(r"^미드런 노트:.*$", "", intro, flags=re.MULTILINE)
+    intro = re.sub(r"^이번 호 관점:.*$", "", intro, flags=re.MULTILINE)
     return intro.strip()
+
+
+def parse_meta_field(text, field_name):
+    match = re.search(rf"^{field_name}:\s*(.+)$", text, re.MULTILINE)
+    return match.group(1).strip() if match else ""
 
 
 def parse_newsletter(path):
@@ -78,6 +85,8 @@ def parse_newsletter(path):
         "number": issue_number_from_title(title),
         "title": title,
         "intro": intro,
+        "midRunNote": parse_meta_field(text, "미드런 노트"),
+        "perspective": parse_meta_field(text, "이번 호 관점"),
         "stories": stories,
         "assets": copy_issue_assets(issue_date),
     }

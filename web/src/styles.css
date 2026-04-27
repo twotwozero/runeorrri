@@ -48,14 +48,13 @@ main {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
   font-size: 26px;
   font-weight: 950;
 }
 
 .brand-icon {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   flex: 0 0 auto;
   fill: none;
   stroke: currentColor;
@@ -66,6 +65,7 @@ main {
 
 .nav {
   display: flex;
+  align-items: center;
   gap: 10px;
   font-size: 14px;
   font-weight: 900;
@@ -76,6 +76,14 @@ main {
   border: 2px solid var(--ink);
   background: var(--white);
   padding: 8px 12px;
+}
+
+.nav-instagram {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px !important;
+  line-height: 0;
 }
 
 .home-hero {
@@ -209,6 +217,8 @@ main {
 
 .lineup-section,
 .main-story,
+.mid-run-note,
+.perspective-section,
 .brief-list,
 .checkpoint-section,
 .sources-panel {
@@ -233,8 +243,7 @@ main {
   font-weight: 650;
 }
 
-.comment-box,
-.soft-comment {
+.comment-box {
   border: 2px solid var(--ink);
   background: var(--ink);
   color: var(--paper);
@@ -242,12 +251,15 @@ main {
   font-size: 15px;
   line-height: 1.75;
   font-weight: 750;
+  margin-top: 16px;
 }
 
 .comment-box b {
   display: block;
   margin-bottom: 6px;
   color: var(--green);
+  font-size: 13px;
+  font-weight: 900;
 }
 
 .brief-item {
@@ -265,7 +277,85 @@ main {
 .soft-comment {
   background: var(--cream);
   color: #303432;
-  border-color: #f0d7c1;
+  border: none;
+  border-left: 4px solid var(--accent);
+  padding: 13px 15px;
+  font-size: 14px;
+  line-height: 1.65;
+  font-weight: 750;
+  margin-top: 12px;
+}
+
+.soft-comment b {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.mid-run-note {
+  background: var(--white);
+  border: 1px solid var(--line);
+  padding: 20px 22px;
+}
+
+.mid-run-note p {
+  margin: 8px 0 0;
+  font-size: 15px;
+  line-height: 1.75;
+  font-weight: 700;
+  color: #303432;
+}
+
+.perspective-section {
+  background: var(--paper);
+  border-top: 3px solid var(--ink) !important;
+  border-bottom: 1px solid var(--line);
+  padding: 20px 22px 20px !important;
+}
+
+.perspective-label {
+  margin: 0 0 8px;
+  font-size: 16px;
+  line-height: 1.45;
+  font-weight: 900;
+  color: var(--ink);
+}
+
+.perspective-section p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.8;
+  font-weight: 650;
+  color: #303432;
+}
+
+.action-list {
+  background: var(--cream);
+  border: 1px solid #f0d7c1;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+
+.action-list p.action-title {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--ink);
+}
+
+.action-list ul {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.65;
+  font-weight: 700;
+  color: #303432;
+}
+
+.action-list li {
+  margin-bottom: 6px;
 }
 
 .source-link {

@@ -22,6 +22,8 @@ type Issue = {
   number: string;
   title: string;
   intro: string;
+  midRunNote?: string;
+  perspective?: string;
   stories: Story[];
   assets: {
     hero: string;
@@ -37,7 +39,26 @@ function issuePath(issue: Issue) {
 }
 
 function formatCategory(story: Story) {
-  return `${story.region || '소식'} / ${story.category || 'running'}`;
+  const regionLabel = story.region === 'korea' ? '국내' : story.region === 'global' ? '해외' : story.region;
+  const categoryLabels: Record<string, string> = {
+    event: '대회/이벤트',
+    race: '레이스',
+    news: '뉴스',
+    gear: '장비',
+    elite: '엘리트',
+  };
+  const categoryLabel = categoryLabels[story.category] || story.category;
+  return `${regionLabel} / ${categoryLabel}`;
+}
+
+function InstagramIcon() {
+  return (
+    <svg className="brand-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="1.2" />
+    </svg>
+  );
 }
 
 function App() {
@@ -62,23 +83,21 @@ function Topbar() {
   const latest = issues[0];
   return (
     <header className="topbar">
-      <a
-        className="brand"
-        href="https://www.instagram.com/runeorrri"
-        target="_blank"
-        rel="noreferrer"
-        aria-label="Instagram에서 runeorrri 보기"
-      >
-        <svg className="brand-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <rect x="3" y="3" width="18" height="18" rx="5" />
-          <circle cx="12" cy="12" r="4" />
-          <circle cx="17.5" cy="6.5" r="1.2" />
-        </svg>
-        <span>runeorrri</span>
+      <a className="brand" href="/" aria-label="runeorrri 홈">
+        runeorrri
       </a>
       <nav className="nav" aria-label="주요 메뉴">
         <a href="/">브리핑</a>
         {latest ? <a href={issuePath(latest)}>최신호</a> : null}
+        <a
+          href="https://www.instagram.com/runeorrri"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Instagram에서 runeorrri 보기"
+          className="nav-instagram"
+        >
+          <InstagramIcon />
+        </a>
       </nav>
     </header>
   );
@@ -141,6 +160,8 @@ function HomePage() {
 function IssuePage({ issue }: { issue: Issue }) {
   const mainStory = issue.stories[0];
   const briefs = issue.stories.slice(1);
+  const eventCount = issue.stories.filter(s => ['event', 'race'].includes(s.category.toLowerCase())).length;
+  const gearCount = issue.stories.filter(s => s.category.toLowerCase() === 'gear').length;
 
   return (
     <main>
@@ -175,9 +196,23 @@ function IssuePage({ issue }: { issue: Issue }) {
           </section>
         ) : null}
 
+        {issue.midRunNote ? (
+          <section className="mid-run-note">
+            <p className="eyebrow">MID-RUN NOTE</p>
+            <p>{issue.midRunNote}</p>
+          </section>
+        ) : null}
+
+        {issue.perspective ? (
+          <section className="perspective-section">
+            <p className="perspective-label">이번 호를 읽는 관점</p>
+            <p>{issue.perspective}</p>
+          </section>
+        ) : null}
+
         <section className="brief-list">
           <div className="section-heading">
-            <p className="eyebrow">RUNNERI BRIEFS</p>
+            <p className="eyebrow">RUNEORRRI BRIEFS</p>
             <h2>나머지 소식</h2>
           </div>
           {briefs.map((story) => (
@@ -185,7 +220,10 @@ function IssuePage({ issue }: { issue: Issue }) {
               <p className="story-meta">{String(story.index).padStart(2, '0')} · {formatCategory(story)}</p>
               <h3>{story.title}</h3>
               <p>{story.summary}</p>
-              <div className="soft-comment">{story.why}</div>
+              <div className="soft-comment">
+                <b>러너리 코멘트</b>
+                <span>{story.why}</span>
+              </div>
               <SourceLink story={story} />
             </article>
           ))}
@@ -195,6 +233,13 @@ function IssuePage({ issue }: { issue: Issue }) {
           <div className="section-heading">
             <p className="eyebrow">CHECKPOINTS</p>
             <h2>이번 호에서 바로 할 일</h2>
+          </div>
+          <div className="action-list">
+            <ul>
+              {eventCount > 0 && <li>접수·일정형 소식 {eventCount}개는 마감일과 장소를 먼저 확인하세요.</li>}
+              <li>해외 소식은 당장 참가보다 러닝 시장의 방향을 읽는 용도로 보면 좋습니다.</li>
+              {gearCount > 0 && <li>장비 소식 {gearCount}개는 구매 추천이 아니라 기술 흐름 참고용으로 정리했습니다.</li>}
+            </ul>
           </div>
           <img className="wide-art" src={issue.assets.checkpoints} alt="러너리 체크포인트" />
         </section>
