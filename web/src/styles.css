@@ -103,8 +103,9 @@ main {
   font-weight: 950;
 }
 
-.title-break {
+.title-line {
   display: block;
+  white-space: nowrap;
 }
 
 .home-copy p,

@@ -117,8 +117,8 @@ function HomePage() {
           <div className="home-copy">
             <p className="eyebrow">RUNEORRRI BRIEFING</p>
             <h1>
-              Running can change
-              <span className="title-break">the world</span>
+              Running can
+              <span className="title-line">change the world</span>
             </h1>
             <p>
               러너리가 고른 국내외 러닝 소식을 한 번에 읽고, 필요한 원문만 바로 열어볼 수 있게
