@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import csv
+import re
 from datetime import date
 from pathlib import Path
 
@@ -8,13 +9,39 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 CANDIDATES = ROOT / "data" / "candidates.csv"
-OUT_DIR = ROOT / "issues" / f"{date.today().isoformat()}-art"
-FONT_PATH = "/System/Library/Fonts/AppleSDGothicNeo.ttc"
+CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
+
+
+def issue_date():
+    if CURRENT_ISSUE.exists():
+        issue_id = CURRENT_ISSUE.read_text(encoding="utf-8").strip()
+        match = re.match(r"(\d{4}-\d{2}-\d{2})-", issue_id)
+        if match:
+            return match.group(1)
+    return date.today().isoformat()
+
+
+ISSUE_DATE = issue_date()
+OUT_DIR = ROOT / "issues" / f"{ISSUE_DATE}-art"
+FONT_CANDIDATES = [
+    "/System/Library/Fonts/AppleSDGothicNeo.ttc",
+    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+    "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
+    "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+]
 DUCK_ASSET = ROOT / "assets" / "runeorrri-duck-character-sheet-2026-04-25-selected.png"
 
 
 def font(size, index=16):
-    return ImageFont.truetype(FONT_PATH, size=size, index=index)
+    for path in FONT_CANDIDATES:
+        if not Path(path).exists():
+            continue
+        try:
+            return ImageFont.truetype(path, size=size, index=index)
+        except OSError:
+            return ImageFont.truetype(path, size=size)
+    return ImageFont.load_default(size=size)
 
 
 def selected_rows():
@@ -111,7 +138,7 @@ def hero(rows):
         48,
         3,
     )
-    draw.text((72, 630), f"{date.today().isoformat()} · {len(rows)} stories", font=font(28), fill="#111514")
+    draw.text((72, 630), f"{ISSUE_DATE} · {len(rows)} stories", font=font(28), fill="#111514")
     save(img, "hero.png")
 
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import csv
+import re
 from datetime import date
 from pathlib import Path
 
@@ -8,6 +9,15 @@ ROOT = Path(__file__).resolve().parents[1]
 CANDIDATES = ROOT / "data" / "candidates.csv"
 CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
 ISSUES_DIR = ROOT / "issues"
+
+
+def issue_date():
+    if CURRENT_ISSUE.exists():
+        issue_id = CURRENT_ISSUE.read_text(encoding="utf-8").strip()
+        match = re.match(r"(\d{4}-\d{2}-\d{2})-", issue_id)
+        if match:
+            return match.group(1)
+    return date.today().isoformat()
 
 
 def is_selected(value: str) -> bool:
@@ -63,7 +73,7 @@ def format_instagram_card(index, row):
 
 
 def build_issue(rows):
-    today = date.today().isoformat()
+    today = issue_date()
     number = issue_number()
     newsletter_items = "\n".join(
         format_newsletter_item(index, row) for index, row in enumerate(rows, start=1)
@@ -85,7 +95,7 @@ def build_issue(rows):
 def main():
     rows = read_selected_candidates()
     ISSUES_DIR.mkdir(exist_ok=True)
-    output = ISSUES_DIR / f"{date.today().isoformat()}-running-newsletter.md"
+    output = ISSUES_DIR / f"{issue_date()}-running-newsletter.md"
     output.write_text(build_issue(rows), encoding="utf-8")
     print(output)
 

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
+  <rect width="1080" height="1350" fill="#f7f4ec"/>
+  
+  <path d="M0 0 H1080 V550 C780 500 590 290 0 360 Z" fill="#d7fff1" opacity="0.74"/>
+  <path d="M1080 1350 H0 V930 C320 960 570 1130 1080 990 Z" fill="#ff6b4a" opacity="0.24"/>
+  <text x="86" y="120" fill="#111514" font-size="34" font-weight="900" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif">@runeorrri</text>
+  <text x="86" y="410" fill="#111514" font-size="108" font-weight="950" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif"><tspan x="86" dy="0">러너리 오늘의</tspan><tspan x="86" dy="111">러닝 브리핑</tspan></text>
+  <text x="86" y="1010" fill="#2d3431" font-size="42" font-weight="760" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif"><tspan x="86" dy="0">국내 3개, 해외 2개. 대회 접수부터</tspan><tspan x="86" dy="56">장비 트렌드까지 짧게 정리했습니다.</tspan></text>
+  <line x1="86" y1="1218" x2="994" y2="1218" stroke="#111514" stroke-width="4"/>
+  <text x="86" y="1280" fill="#111514" font-size="32" font-weight="900" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif">2026-04-25</text>
+  <text x="786" y="1280" fill="#111514" font-size="32" font-weight="900" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif">CARD NEWS</text>
+
+</svg>

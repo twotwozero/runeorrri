@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import csv
 import os
+import re
 import smtplib
 from datetime import date
 from email.message import EmailMessage
@@ -12,11 +13,22 @@ from generate_web_data import build_web_data
 
 
 ROOT = Path(__file__).resolve().parents[1]
-TODAY = date.today().isoformat()
+CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
+
+
+def issue_date():
+    if CURRENT_ISSUE.exists():
+        issue_id = CURRENT_ISSUE.read_text(encoding="utf-8").strip()
+        match = re.match(r"(\d{4}-\d{2}-\d{2})-", issue_id)
+        if match:
+            return match.group(1)
+    return date.today().isoformat()
+
+
+TODAY = issue_date()
 NEWSLETTER = ROOT / "issues" / f"{TODAY}-running-newsletter.md"
 CARDS_DIR = ROOT / "issues" / f"{TODAY}-cards"
 CARD_ALBUM = ROOT / "issues" / f"{TODAY}-running-cardnews-album.html"
-CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
 ART_DIR = ROOT / "issues" / f"{TODAY}-art"
 
 
@@ -65,7 +77,7 @@ def art_images():
     }
 
 
-def runneri_issue_url(base_url):
+def runeorrri_issue_url(base_url):
     return f"{base_url.rstrip('/')}/issues/{TODAY}"
 
 
@@ -342,7 +354,7 @@ def html_email(image_cids, issue_url):
 
 def main():
     load_dotenv()
-    runneri_site_base_url = required_env("RUNNERI_SITE_BASE_URL")
+    site_base_url = os.environ.get("RUNEORRRI_SITE_BASE_URL") or required_env("RUNNERI_SITE_BASE_URL")
     smtp_host = required_env("SMTP_HOST")
     smtp_port = int(os.environ.get("SMTP_PORT", "587"))
     smtp_user = required_env("SMTP_USER")
@@ -355,7 +367,7 @@ def main():
         raise SystemExit(f"Newsletter not found: {NEWSLETTER}")
 
     build_web_data()
-    issue_url = runneri_issue_url(runneri_site_base_url)
+    issue_url = runeorrri_issue_url(site_base_url)
 
     msg = EmailMessage()
     running_emoji = "\U0001f3c3\U0001f3fb\u200d\u2640\ufe0f"

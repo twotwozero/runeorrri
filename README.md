@@ -1,13 +1,13 @@
 # Running Newsletter Operations
 
-국내 일반 러너를 위한 주 2~3회 러닝 뉴스레터 운영 키트입니다.
+국내 일반 러너를 위한 화/목/토 오전 8시 러닝 뉴스레터 운영 키트입니다.
 
 목표는 최신 러닝 소식을 빠르게 모으고, 사람이 최종 검수한 뒤 카카오 채널과 인스타그램에 바로 재가공할 수 있는 짧은 뉴스레터를 발행하는 것입니다.
 
 ## 운영 원칙
 
 - 독자: 국내 일반 러너
-- 발행 주기: 주 2~3회
+- 발행 주기: 주 3회, 화/목/토 오전 8시(KST)
 - 회차 구성: 5개 소식, 기본 비중은 국내 3개 + 해외 2개
 - 톤: 친근한 큐레이터
 - 제작 방식: 반자동. AI 또는 스크립트는 초안까지만 만들고, 최종 선별과 팩트체크는 사람이 합니다.
@@ -23,13 +23,15 @@
 - `templates/newsletter-issue.md`: 회차별 뉴스레터 원고 템플릿
 - `templates/instagram-cards.md`: 인스타 카드뉴스 문구 템플릿
 - `issues/`: 생성된 발행 초안 저장 위치
+- `scripts/run_newsletter_pipeline.py`: 후보 검증부터 원고·이미지·웹 데이터 생성과 선택적 메일 발송까지 실행하는 표준 파이프라인
 - `scripts/generate_issue.py`: 후보 CSV에서 뉴스레터 초안을 생성하는 스크립트
 - `scripts/generate_web_data.py`: 발행본을 러너리 웹사이트용 데이터와 이미지로 변환하는 스크립트
 - `web/`: 러너리 뉴스레터 웹사이트
 
 ## 빠른 시작
 
-1. `data/candidates_archive.csv`에 새 `issue_id`로 이번 회차 후보 소식을 5개 추가합니다.
+1. 최근 러닝 소식을 조사해 `data/candidates_archive.csv`에 새 `issue_id`로 이번 회차 후보 소식 5개를 추가합니다.
+   `issue_date`는 실제 발행일, `verification_status`는 검수 완료 후 `reviewed`로 둡니다.
 2. 아래 명령으로 최신 회차를 `data/candidates.csv`로 내보냅니다.
 
 ```bash
@@ -43,12 +45,11 @@ python3 scripts/export_latest_candidates.py
 python3 scripts/generate_issue.py
 ```
 
-4. 카드뉴스 이미지를 생성합니다. 기본 Python에 Pillow가 없다면 Codex 번들 Python을 사용합니다.
+4. 카드뉴스 SVG와 메일/웹용 이미지를 생성합니다. 기본 Python에 Pillow가 없다면 `python3 -m pip install Pillow`를 먼저 실행합니다.
 
 ```bash
-/Users/heehyeong/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/generate_cardnews_png.py
-python3 scripts/generate_cardnews_album.py
-/Users/heehyeong/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/generate_newsletter_art.py
+python3 scripts/generate_cardnews_svg.py
+python3 scripts/generate_newsletter_art.py
 ```
 
 5. 러너리 웹사이트용 데이터를 생성합니다.
@@ -78,21 +79,37 @@ npm run build
 ```
 
 7. 생성된 `issues/YYYY-MM-DD-running-newsletter.md`, `issues/YYYY-MM-DD-cards/`, `web/`을 열어 사람이 최종 검수합니다.
-8. SMTP 환경변수와 `RUNNERI_SITE_BASE_URL`을 설정했다면 메일을 보냅니다.
+8. SMTP 환경변수와 `RUNEORRRI_SITE_BASE_URL`을 설정했다면 메일을 보냅니다.
 
 ```bash
 python3 scripts/send_issue_email.py
 ```
 
-메일 발송 전 `scripts/send_issue_email.py`는 웹사이트 데이터를 다시 생성하고, 메일 상단 `@runeorrri`, 제목, 히어로 이미지를 `RUNNERI_SITE_BASE_URL/issues/YYYY-MM-DD`로 연결합니다.
+메일 발송 전 `scripts/send_issue_email.py`는 웹사이트 데이터를 다시 생성하고, 메일 상단 `@runeorrri`, 제목, 히어로 이미지를 `RUNEORRRI_SITE_BASE_URL/issues/YYYY-MM-DD`로 연결합니다.
 
 이전 `scripts/generate_archive_site.py`와 `site/` 출력물은 더 이상 발송 흐름에서 사용하지 않는 레거시 정적 아카이브입니다.
 
 뉴스레터 본문은 카카오 채널에, 카드 이미지는 인스타그램 게시물 제작에 사용합니다.
 
+## 표준 자동화 파이프라인
+
+아래 명령 하나가 발행 전 후보 검증, 원고 생성, 카드뉴스 SVG 생성, 메일/웹 이미지 생성, 웹 데이터 생성을 순서대로 실행합니다.
+
+```bash
+python3 scripts/run_newsletter_pipeline.py --issue-id today --no-email
+```
+
+메일까지 보내려면 `.env` 설정 후 아래처럼 실행합니다.
+
+```bash
+python3 scripts/run_newsletter_pipeline.py --issue-id today --send-email
+```
+
+`--issue-id today`는 `data/candidates_archive.csv`에서 오늘 날짜(`issue_date`)의 후보를 찾습니다. 오늘 후보가 없거나 선택된 후보가 5개가 아니거나 검수가 끝나지 않았으면 발송하지 않고 실패합니다.
+
 ## 자동 발송 설정
 
-Codex 앱 자동화는 화/목/토 오전 8시에 실행되도록 등록되어 있습니다. 실행 시점마다 최근 러닝 뉴스를 조사하고, `data/candidates.csv`를 갱신한 뒤 뉴스레터와 카드뉴스 이미지를 생성합니다.
+GitHub Actions 워크플로 `.github/workflows/newsletter.yml`이 화/목/토 오전 8시(KST)에 실행됩니다. 실행 전 오늘 날짜 후보 5개가 `data/candidates_archive.csv`에 준비되어 있어야 하며, 없으면 잘못된 이전 회차를 보내지 않고 중단됩니다.
 
 실제 이메일 발송까지 하려면 `.env.example`을 참고해 `.env` 파일에 SMTP 설정과 수신 주소를 넣습니다.
 

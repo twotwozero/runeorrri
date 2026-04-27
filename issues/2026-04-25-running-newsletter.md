@@ -44,3 +44,4 @@
 - 러너에게 중요한 이유: 슈퍼슈즈의 ‘경량화 경쟁’은 엘리트뿐 아니라 일반 러너의 레이스데이 슈즈 선택에도 영향을 줍니다. 판매 방식(제한 수량/특정 채널)까지 명시돼 있어 국내 구매 가능성·리셀 리스크를 가늠하는 데도 도움이 됩니다.
 - 원문: [adidas News](https://news.adidas.com/running/adidas-unveils-its-first-sub-100-gram-supershoe--the-adizero-adios-pro-evo-3/s/ded7b6a2-952a-4246-b675-4129f78787c4)
 - 카드 한 줄: 97g 슈퍼슈즈, 4/25 제한 판매 시작.
+

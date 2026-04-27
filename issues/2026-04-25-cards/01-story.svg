@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
+  <rect width="1080" height="1350" fill="#103c3f"/>
+  
+  <rect x="760" y="1030" width="470" height="470" fill="none" stroke="#ff6b4a" stroke-width="68" transform="rotate(18 995 1265)" opacity="0.92"/>
+  <text x="86" y="120" fill="#d7fff1" font-size="28" font-weight="900" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif">@runeorrri · 01</text>
+  <text x="760" y="120" fill="#d7fff1" font-size="28" font-weight="900" text-anchor="start" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif">국내 / event</text>
+  <text x="86" y="300" fill="#ff6b4a" font-size="180" font-weight="950" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif">1</text>
+  <text x="86" y="470" fill="#d7fff1" font-size="72" font-weight="950" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif"><tspan x="86" dy="0">서울하프마라톤</tspan><tspan x="86" dy="83">개최…26일 광화문~상암</tspan><tspan x="86" dy="83">도심 일부 통제</tspan></text>
+  <text x="86" y="760" fill="#d7fff1" font-size="35" font-weight="680" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif"><tspan x="86" dy="0">서울시는 4월 26일(일) 오전 7시 30분</tspan><tspan x="86" dy="50">광화문광장을 출발해 여의도공원(10km)·상암</tspan><tspan x="86" dy="50">월드컵공원 평화광장(하프)으로 이어지는 ‘2026</tspan><tspan x="86" dy="50">서울하프마라톤대회’를 개최한다고 안내했습니다. 시</tspan><tspan x="86" dy="50">발표 기준 참가자는 총 2만2천 명이며, 대회 당일</tspan></text>
+  <rect x="86" y="1010" width="908" height="220" fill="#ffffff" opacity="0.13" stroke="#ffffff" stroke-opacity="0.24" stroke-width="2"/>
+  <text x="124" y="1070" fill="#ff6b4a" font-size="30" font-weight="900" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif">러너에게 왜 중요?</text>
+  <text x="124" y="1130" fill="#d7fff1" font-size="31" font-weight="800" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif"><tspan x="124" dy="0">대회 참가자는 레이스 당일 이동·집결 동선과 통제 시간을</tspan><tspan x="124" dy="42">미리 잡을 수 있고, 비참가 러너/시민도 주말</tspan><tspan x="124" dy="42">장거리·롱런 코스(광화문~한강~마포권) 계획을 조정할 수</tspan></text>
+  <text x="86" y="1290" fill="#d7fff1" opacity="0.78" font-size="25" font-weight="650" font-family="-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, Segoe UI, sans-serif">서울특별시 · 2026-04-23</text>
+
+</svg>

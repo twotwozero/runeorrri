@@ -11,7 +11,7 @@
 - 장비, 브랜드, 기어
 - 해외 트렌드 또는 엘리트 러닝
 
-`data/candidates_archive.csv`에 새 `issue_id`로 후보를 추가합니다. 최신 회차만 발행용으로 꺼낼 때는 `python3 scripts/export_latest_candidates.py`를 실행합니다.
+`data/candidates_archive.csv`에 새 `issue_id`로 후보를 추가합니다. `issue_date`는 실제 발행일로 맞추고, 최종 검수 후 `verification_status`를 `reviewed`로 둡니다. 오늘 날짜 후보가 없으면 자동 파이프라인은 발송하지 않습니다.
 
 ## 2. 1차 필터
 
@@ -35,15 +35,18 @@
 
 ## 4. 초안 생성
 
-`selected` 값을 `yes`로 표시한 소식 5개를 기준으로 초안을 생성합니다.
+`selected` 값을 `yes`로 표시한 소식 5개를 기준으로 표준 파이프라인을 실행합니다.
 
 ```bash
-python3 scripts/generate_issue.py
+python3 scripts/run_newsletter_pipeline.py --issue-id today --no-email
 ```
 
 기본 출력 파일:
 
 - `issues/YYYY-MM-DD-running-newsletter.md`
+- `issues/YYYY-MM-DD-cards/*.svg`
+- `issues/YYYY-MM-DD-art/*.png`
+- `web/src/data/issues.json`
 
 ## 5. 최종 편집
 
@@ -59,16 +62,16 @@ python3 scripts/generate_issue.py
 
 ## 6. 발행 및 기록
 
-메일 발송 전에 러너리 웹사이트용 데이터를 생성합니다.
+메일 발송까지 진행할 때는 SMTP 환경변수 설정 후 아래 명령을 사용합니다.
 
 ```bash
-python3 scripts/generate_web_data.py
+python3 scripts/run_newsletter_pipeline.py --issue-id today --send-email
 ```
 
-웹사이트 배포 URL은 `.env`의 `RUNNERI_SITE_BASE_URL`에 저장합니다. 예:
+웹사이트 배포 URL은 `.env`의 `RUNEORRRI_SITE_BASE_URL`에 저장합니다. 예:
 
 ```bash
-RUNNERI_SITE_BASE_URL=https://your-runneri-site.example.com
+RUNEORRRI_SITE_BASE_URL=https://runeorrri.pages.dev
 ```
 
 메일 상단의 `@runeorrri`, 제목, 히어로 이미지는 모두 해당 회차 웹페이지로 연결됩니다.

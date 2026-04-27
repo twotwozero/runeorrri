@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import csv
 import html
+import re
 import subprocess
 from datetime import date
 from pathlib import Path
@@ -8,7 +9,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CANDIDATES = ROOT / "data" / "candidates.csv"
-OUT_DIR = ROOT / "issues" / f"{date.today().isoformat()}-cards"
+CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
+
+
+def issue_date():
+    if CURRENT_ISSUE.exists():
+        issue_id = CURRENT_ISSUE.read_text(encoding="utf-8").strip()
+        match = re.match(r"(\d{4}-\d{2}-\d{2})-", issue_id)
+        if match:
+            return match.group(1)
+    return date.today().isoformat()
+
+
+ISSUE_DATE = issue_date()
+OUT_DIR = ROOT / "issues" / f"{ISSUE_DATE}-cards"
 
 WIDTH = 1080
 HEIGHT = 1350
@@ -145,7 +159,7 @@ def convert_with_qlmanage(svg_path):
 
 def main():
     rows = selected_rows()
-    today = date.today().isoformat()
+    today = ISSUE_DATE
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     pages = [("00-cover", cover(today))]
     pages.extend((f"{i:02d}-story", story(row, i)) for i, row in enumerate(rows, 1))
