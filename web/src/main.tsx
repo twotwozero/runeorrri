@@ -62,8 +62,19 @@ function Topbar() {
   const latest = issues[0];
   return (
     <header className="topbar">
-      <a className="brand" href="/">
-        @runeorrri
+      <a
+        className="brand"
+        href="https://www.instagram.com/runeorrri"
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Instagram에서 runeorrri 보기"
+      >
+        <svg className="brand-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="5" />
+          <circle cx="12" cy="12" r="4" />
+          <circle cx="17.5" cy="6.5" r="1.2" />
+        </svg>
+        <span>runeorrri</span>
       </a>
       <nav className="nav" aria-label="주요 메뉴">
         <a href="/">브리핑</a>
