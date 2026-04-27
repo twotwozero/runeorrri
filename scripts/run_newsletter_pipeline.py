@@ -153,10 +153,9 @@ def main():
         issue_value = args.issue_id
 
     issue_id = resolve_issue_id(issue_value)
-    if issue_value != "current":
-        run([sys.executable, "scripts/export_latest_candidates.py", issue_id])
-    elif CURRENT_ISSUE.exists() and CURRENT_ISSUE.read_text(encoding="utf-8").strip() != issue_id:
+    if issue_value == "current" and CURRENT_ISSUE.exists() and CURRENT_ISSUE.read_text(encoding="utf-8").strip() != issue_id:
         raise SystemExit(f"current_issue_id.txt does not match requested issue id: {issue_id}")
+    run([sys.executable, "scripts/export_latest_candidates.py", issue_id])
 
     validate_candidates(issue_id, allow_auto_collected=args.allow_auto_collected)
     run([sys.executable, "scripts/generate_issue.py"])
