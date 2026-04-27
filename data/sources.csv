@@ -1,0 +1,11 @@
+region,category,name,url,priority,notes
+global,official,World Athletics News,https://worldathletics.org/news,high,국제 육상·로드러닝 공식 소식과 기록 검증에 사용
+global,media,Runner's World,https://www.runnersworld.com/,high,러닝 장비·대회·훈련 트렌드 확인
+global,media,Canadian Running,https://runningmagazine.ca/,medium,북미권 러닝 뉴스와 커뮤니티 트렌드 확인
+global,official,Abbott World Marathon Majors,https://www.worldmarathonmajors.com/,medium,메이저 마라톤 일정·랭킹·대회 관련 소식
+korea,official,Korea Association of Athletics Federations,https://www.kaaf.or.kr/,high,국내 육상 공식 공지 확인
+korea,platform,Runnerble,https://www.runnerble.com/,high,국내 러닝 서비스·대회·커뮤니티 정보 확인
+korea,platform,Kakao Newsroom,https://www.kakaocorp.com/page/news,medium,러닝 관련 카카오 서비스 소식 확인
+korea,search,Naver News Running Search,https://search.naver.com/search.naver?where=news&query=%EB%9F%AC%EB%8B%9D%20%EB%A7%88%EB%9D%BC%ED%86%A4,medium,국내 언론 보도 후보 수집
+korea,search,Google News Korea Running Search,https://news.google.com/search?q=%EB%9F%AC%EB%8B%9D%20%EB%A7%88%EB%9D%BC%ED%86%A4%20when%3A3d&hl=ko&gl=KR&ceid=KR%3Ako,medium,최근 3일 국내외 기사 후보 수집
+korea,event,Marathon Online,https://www.marathon.pe.kr/,medium,국내 마라톤 일정 후보 확인
