@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 QUERIES = ROOT / "data" / "collection_queries.csv"
 ARCHIVE = ROOT / "data" / "candidates_archive.csv"
 CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
+ISSUES_DIR = ROOT / "issues"
 
 ARCHIVE_FIELDS = [
     "issue_id",
@@ -79,11 +80,10 @@ def write_archive(rows):
 
 
 def next_issue_id(issue_date):
-    rows = read_csv(ARCHIVE)
     issue_numbers = []
-    for row in rows:
-        issue_id = row.get("issue_id", "")
-        match = re.match(r"\d{4}-\d{2}-\d{2}-(\d{2})$", issue_id)
+    for path in ISSUES_DIR.glob("*-running-newsletter.md"):
+        text = path.read_text(encoding="utf-8")
+        match = re.search(r"^#\s+오늘의 러닝 브리핑\s+(\d+)", text, re.MULTILINE)
         if match:
             issue_numbers.append(int(match.group(1)))
     if not issue_numbers:
