@@ -103,6 +103,10 @@ main {
   font-weight: 950;
 }
 
+.home-copy h1 {
+  font-size: clamp(40px, 6.2vw, 76px);
+}
+
 .title-line {
   display: block;
   white-space: nowrap;
