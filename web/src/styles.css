@@ -140,6 +140,10 @@ main {
   font-weight: 700;
 }
 
+.home-description {
+  white-space: nowrap;
+}
+
 .eyebrow,
 .card-meta,
 .story-meta {
@@ -450,5 +454,9 @@ main {
 
   .home-hero {
     padding-top: 30px;
+  }
+
+  .home-description {
+    white-space: normal;
   }
 }
