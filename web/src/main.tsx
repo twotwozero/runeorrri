@@ -116,7 +116,7 @@ function HomePage() {
         <section className="home-hero">
           <div className="home-copy">
             <p className="eyebrow">RUNEORRRI BRIEFING</p>
-            <h1>오늘 달리기 전에 볼 것들.</h1>
+            <h2>Running can change the world</h2>
             <p>
               러너리가 고른 국내외 러닝 소식을 한 번에 읽고, 필요한 원문만 바로 열어볼 수 있게
               정리합니다.
