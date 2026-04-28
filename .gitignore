@@ -8,6 +8,8 @@ docs/.Rhistory
 .Rhistory
 web/node_modules/
 web/dist/
+.wrangler/
+**/.wrangler/
 web/*.tsbuildinfo
 web/vite.config.d.ts
 web/vite.config.js

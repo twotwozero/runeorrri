@@ -23,7 +23,7 @@ def issue_date():
 
 
 ISSUE_DATE = issue_date()
-OUT_DIR = ROOT / "issues" / f"{ISSUE_DATE}-art"
+OUT_DIR = ROOT / "web" / "public" / "assets" / "issues" / ISSUE_DATE
 OVERWRITE_ART = os.environ.get("RUNEORRRI_OVERWRITE_ART") == "1"
 FONT_CANDIDATES = [
     "/System/Library/Fonts/AppleSDGothicNeo.ttc",
@@ -112,13 +112,6 @@ def duck_cell(col, row, width, inset=0):
         ),
         width,
     )
-
-
-def spot_duck(name, box, width=360):
-    img = Image.new("RGBA", (420, 300), (0, 0, 0, 0))
-    duck = duck_crop(box, width)
-    img.paste(duck, ((420 - duck.width) // 2, (300 - duck.height) // 2), duck)
-    save(img, name)
 
 
 def hero(rows):
@@ -214,31 +207,11 @@ def action(rows):
     save(img, "checkpoints.png")
 
 
-def spots():
-    if not DUCK_ASSET.exists():
-        return
-    img = Image.new("RGBA", (420, 300), (0, 0, 0, 0))
-    duck = duck_cell(0, 0, 310)
-    img.paste(duck, ((420 - duck.width) // 2, (300 - duck.height) // 2), duck)
-    save(img, "duck-pace.png")
-
-    img = Image.new("RGBA", (420, 300), (0, 0, 0, 0))
-    duck = duck_cell(3, 0, 330)
-    img.paste(duck, ((420 - duck.width) // 2, (300 - duck.height) // 2), duck)
-    save(img, "duck-water.png")
-
-    img = Image.new("RGBA", (420, 300), (0, 0, 0, 0))
-    duck = duck_cell(0, 1, 340)
-    img.paste(duck, ((420 - duck.width) // 2, (300 - duck.height) // 2), duck)
-    save(img, "duck-peek.png")
-
-
 def main():
     rows = selected_rows()
     hero(rows)
     lineup(rows)
     action(rows)
-    spots()
 
 
 if __name__ == "__main__":

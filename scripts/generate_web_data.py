@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import json
 import re
-import shutil
 from pathlib import Path
 
 
@@ -95,25 +94,15 @@ def parse_newsletter(path):
         "midRunNote": parse_meta_field(text, "미드런 노트"),
         "perspective": parse_meta_field(text, "이번 호 관점"),
         "stories": stories,
-        "assets": copy_issue_assets(issue_date),
+        "assets": issue_assets(issue_date),
     }
 
 
-def copy_issue_assets(issue_date):
-    art_dir = ISSUES_DIR / f"{issue_date}-art"
+def issue_assets(issue_date):
     asset_dir = WEB_ASSETS / issue_date
 
     def get_path(name):
-        public_path = f"/assets/issues/{issue_date}/{name}"
-        src = art_dir / name
-        dst = asset_dir / name
-        if src.exists():
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(src, dst)
-            return public_path
-        if dst.exists():
-            return public_path
-        return ""
+        return f"/assets/issues/{issue_date}/{name}" if (asset_dir / name).exists() else ""
 
     return {
         "hero": get_path("hero.png"),

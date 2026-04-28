@@ -27,7 +27,7 @@ def issue_date():
 
 TODAY = issue_date()
 NEWSLETTER = ROOT / "issues" / f"{TODAY}-running-newsletter.md"
-ART_DIR = ROOT / "issues" / f"{TODAY}-art"
+ART_DIR = ROOT / "web" / "public" / "assets" / "issues" / TODAY
 
 
 def load_dotenv():
@@ -66,7 +66,7 @@ def art_images():
 
 
 def runeorrri_issue_url(base_url):
-    return f"{base_url.rstrip('/')}/issues/{TODAY}"
+    return f"{base_url.rstrip('/')}/{issue_number()}"
 
 
 def selected_rows():

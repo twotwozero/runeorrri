@@ -68,15 +68,9 @@ function InstagramIcon() {
 function App() {
   const path = window.location.pathname.replace(/\/$/, '') || '/';
   const issueNumberMatch = path.match(/^\/(\d{2})$/);
-  const legacyDateMatch = path.match(/^\/issues\/(\d{4}-\d{2}-\d{2})$/);
 
   if (issueNumberMatch) {
     const issue = issues.find((item) => item.number === issueNumberMatch[1]);
-    return issue ? <IssuePage issue={issue} /> : <NotFound />;
-  }
-
-  if (legacyDateMatch) {
-    const issue = issues.find((item) => item.date === legacyDateMatch[1]);
     return issue ? <IssuePage issue={issue} /> : <NotFound />;
   }
 
