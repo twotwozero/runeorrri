@@ -84,6 +84,9 @@ EXCLUDE_TERMS = [
     "accident",
     "celebrity",
     "스타",
+    "성료",
+    "성황리",
+    "성황",
 ]
 
 LOW_VALUE_SOURCES = [
@@ -506,6 +509,7 @@ def main():
             print(f"warning: failed to collect query {row.get('query')}: {exc}", file=sys.stderr)
 
     seen = existing_keys()
+    seen_title_tokens: list[frozenset] = []
     unique = []
     for item in collected:
         if is_excluded(item):
@@ -513,7 +517,15 @@ def main():
         key = dedupe_key(item)
         if key in seen:
             continue
+        # title-level near-duplicate check: skip if 60%+ tokens overlap with an already-kept title
+        tokens = frozenset(re.findall(r"[가-힣a-zA-Z0-9]{2,}", item.get("title", "").lower()))
+        if tokens and any(
+            len(tokens & prev) / max(len(tokens | prev), 1) >= 0.6
+            for prev in seen_title_tokens
+        ):
+            continue
         seen.add(key)
+        seen_title_tokens.append(tokens)
         unique.append(item)
 
     per_region = max(args.limit // 2, 6)
@@ -529,7 +541,9 @@ def main():
 
     if args.dry_run:
         print(f"Would collect {len(new_rows)} candidates for {issue_id}; selected {len(selected)}.")
-        for row in new_rows:
+        korea_rows = [r for r in new_rows if r["region"] == "korea"]
+        global_rows = [r for r in new_rows if r["region"] != "korea"]
+        for row in korea_rows + global_rows:
             marker = "*" if row["selected"] == "yes" else "-"
             print(f"{marker} [{row['region']}/{row['category']}] {row['title']} ({row['source']})")
         return
