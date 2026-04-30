@@ -73,6 +73,7 @@ KEYWORDS = {
 }
 
 EXCLUDE_TERMS = [
+    # 정치·사건
     "예비후보",
     "교육감",
     "선거",
@@ -82,17 +83,47 @@ EXCLUDE_TERMS = [
     "death",
     "crime",
     "accident",
+    # 연예·광고
     "celebrity",
     "스타",
+    "모델 발탁",
+    "앰버서더 발탁",
+    # 과거 대회 결과 기사
     "성료",
     "성황리",
     "성황",
+    "성황 속",
+    "성공적으로 마쳤",
+    "성공리에",
+    "무사히 마쳤",
+    "막을 내렸",
+    "幕을 내렸",
+    "개최됐다",
+    "개최됐습니다",
+    "열렸습니다",
+    "치러졌",
+    "완주했",
+    "입지 굳혔",
+    "기세를 이어",
+    # 러닝과 무관한 모집·행사
+    "창업",
+    "채용",
+    "공무원",
+    "통역요원",
+    # 스팸·저품질
+    "cheap sale",
+    "cheap price",
 ]
 
 LOW_VALUE_SOURCES = [
     "msn",
     "mirror",
     "앳스타일",
+    "padelworldpress",
+    "businessnewsthisweek",
+    "aol.com",
+    "yahoo life",
+    "gambling",
 ]
 
 
@@ -245,6 +276,35 @@ def infer_category(title, fallback):
     return best if scores[best] > 0 else fallback
 
 
+UPCOMING_BOOST_TERMS = [
+    # Korean registration/upcoming
+    "접수", "모집", "신청", "오픈", "등록", "마감",
+    "5월", "6월", "7월", "8월",
+    # English registration/upcoming
+    "registration open", "register now", "open for", "upcoming", "registration opens",
+    "sign up", "entries open",
+]
+
+PAST_EVENT_PENALTY_TERMS = [
+    "상금 얼마", "기념품", "홍보", "평생학습", "런앤런",
+    "기세를", "최다", "기록 세워", "대기록", "현장",
+]
+
+
+RUNNING_TITLE_KEYWORDS = {
+    "마라톤", "러닝", "러너", "달리기", "러닝화", "신발", "슈즈",
+    "marathon", "running", "runner", "race", "shoe",
+}
+
+
+def is_relevant(item):
+    """Korean articles must mention a running keyword in the title to be included."""
+    if item.get("region") != "korea":
+        return True
+    title = item["title"].lower()
+    return any(kw in title for kw in RUNNING_TITLE_KEYWORDS)
+
+
 def score_item(item):
     title = item["title"].lower()
     source = item["source"].lower()
@@ -257,6 +317,10 @@ def score_item(item):
         score += 1
     if item["published_at"]:
         score += 1
+    # boost upcoming/registration language in title only
+    score += sum(2 for term in UPCOMING_BOOST_TERMS if term in title)
+    # penalize past-event recap language in title only
+    score -= sum(2 for term in PAST_EVENT_PENALTY_TERMS if term in title)
     if any(source_name in source for source_name in LOW_VALUE_SOURCES):
         score -= 3
     if _published_entities:
@@ -483,16 +547,31 @@ def selected_indexes(ranked, count):
     return set(selected[:count])
 
 
+def is_too_old(item, cutoff_date):
+    """Skip articles published before cutoff_date. Items with no date are kept."""
+    pub = item.get("published_at", "")
+    if not pub:
+        return False
+    try:
+        return date.fromisoformat(pub) < cutoff_date
+    except ValueError:
+        return False
+
+
 def main():
     parser = argparse.ArgumentParser(description="Collect recent running news into candidates_archive.csv.")
     parser.add_argument("--issue-date", default=date.today().isoformat())
     parser.add_argument("--issue-id", default="")
     parser.add_argument("--limit", type=int, default=12)
     parser.add_argument("--select", type=int, default=5)
+    parser.add_argument("--days", type=int, default=10, help="Only collect articles published within this many days of issue-date.")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
     load_dotenv()
+
+    issue_date = date.fromisoformat(args.issue_date)
+    cutoff_date = date.fromordinal(issue_date.toordinal() - args.days)
 
     global _published_entities
     _published_entities = published_entity_words()
@@ -513,6 +592,10 @@ def main():
     unique = []
     for item in collected:
         if is_excluded(item):
+            continue
+        if not is_relevant(item):
+            continue
+        if is_too_old(item, cutoff_date):
             continue
         key = dedupe_key(item)
         if key in seen:
@@ -545,7 +628,8 @@ def main():
         global_rows = [r for r in new_rows if r["region"] != "korea"]
         for row in korea_rows + global_rows:
             marker = "*" if row["selected"] == "yes" else "-"
-            print(f"{marker} [{row['region']}/{row['category']}] {row['title']} ({row['source']})")
+            pub = f" [{row['published_at']}]" if row.get("published_at") else ""
+            print(f"{marker} [{row['region']}/{row['category']}]{pub} {row['title']} ({row['source']})")
         return
 
     archive = read_csv(ARCHIVE)

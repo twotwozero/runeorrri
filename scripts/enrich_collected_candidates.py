@@ -33,7 +33,8 @@ ARCHIVE_FIELDS = [
     "notes",
 ]
 
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+CLAUDE_URL = "https://api.anthropic.com/v1/messages"
+CLAUDE_MODEL = "claude-haiku-4-5-20251001"
 MIN_SCORE = 65
 
 
@@ -211,37 +212,46 @@ def build_prompt(row, article_text):
 {article_text or '(원문 추출 실패 또는 정보 부족)'}"""
 
 
-def gemini_json(prompt, schema, retries=4):
-    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+def claude_json(prompt, schema, retries=4):
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
     if not api_key:
         raise SystemExit(
-            "GEMINI_API_KEY is required for newsletter enrichment. "
+            "ANTHROPIC_API_KEY is required for newsletter enrichment. "
             "Set it as a GitHub Actions secret or in the .env file."
         )
     body = {
-        "system_instruction": {"parts": [{"text": build_system_prompt()}]},
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {
-            "response_mime_type": "application/json",
-            "response_schema": schema,
-        },
+        "model": CLAUDE_MODEL,
+        "max_tokens": 1024,
+        "system": build_system_prompt(),
+        "tools": [
+            {
+                "name": "enrich_candidate",
+                "description": "러닝 뉴스 후보를 평가하고 뉴스레터용 콘텐츠를 생성합니다.",
+                "input_schema": schema,
+            }
+        ],
+        "tool_choice": {"type": "tool", "name": "enrich_candidate"},
+        "messages": [{"role": "user", "content": prompt}],
     }
     request = urllib.request.Request(
-        f"{GEMINI_URL}?key={api_key}",
+        CLAUDE_URL,
         data=json.dumps(body).encode("utf-8"),
-        headers={"content-type": "application/json"},
+        headers={
+            "content-type": "application/json",
+            "x-api-key": api_key,
+            "anthropic-version": "2023-06-01",
+        },
         method="POST",
     )
     for attempt in range(retries):
         try:
             with urllib.request.urlopen(request, timeout=60) as response:
                 payload = json.loads(response.read().decode("utf-8"))
-            text = payload["candidates"][0]["content"]["parts"][0]["text"]
-            return json.loads(text)
+            return payload["content"][0]["input"]
         except urllib.error.HTTPError as e:
-            if e.code == 429 and attempt < retries - 1:
+            if e.code == 529 and attempt < retries - 1:
                 wait = 60 * (attempt + 1)
-                print(f"  rate limit, waiting {wait}s...", flush=True)
+                print(f"  overloaded, waiting {wait}s...", flush=True)
                 time.sleep(wait)
             else:
                 raise
@@ -282,7 +292,7 @@ def choose_selected(rows, count):
 def enrich_row(row, index, total):
     article_text, extraction_note = fetch_article_text(row.get("url", ""))
     prompt = build_prompt(row, article_text)
-    result = gemini_json(prompt, enrichment_schema())
+    result = claude_json(prompt, enrichment_schema())
     row["_keep"] = "yes" if result["keep"] else "no"
     row["_quality_score"] = str(max(0, min(100, int(result["quality_score"]))))
     if result["keep"]:
