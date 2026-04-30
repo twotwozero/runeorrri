@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 QUERIES = ROOT / "data" / "collection_queries.csv"
 NAVER_SEARCH_URL = "https://openapi.naver.com/v1/search/news.json"
 DAUM_SEARCH_URL = "https://dapi.kakao.com/v2/search/news"
-KORMARATHON_RACES_URL = "https://www.kormarathon.com/ko/races"
+KORMARATHON_SITEMAP_URL = "https://www.kormarathon.com/sitemaps/races.xml"
 MARATHON_PE_KR_URL = "https://marathon.pe.kr/bbs/board.php?bo_table=schedule"
 ARCHIVE = ROOT / "data" / "candidates_archive.csv"
 CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
@@ -445,60 +445,54 @@ def collect_from_naver(row):
     return items
 
 
-class KorMarathonParser(HTMLParser):
-    def __init__(self):
-        super().__init__()
-        self.races = []
-        self._in_link = False
-        self._href = ""
-        self._text_parts = []
+def _kormarathon_race_urls(year_filter="2026", limit=30):
+    """Return upcoming Korean race URLs from kormarathon.com sitemap."""
+    try:
+        data = fetch(KORMARATHON_SITEMAP_URL, relax_ssl=True)
+        root = ET.fromstring(data)
+    except Exception as exc:
+        print(f"warning: kormarathon sitemap fetch failed: {exc}", file=sys.stderr)
+        return []
+    ns = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+    all_urls = [el.text for el in root.findall(".//s:loc", ns) if el.text]
+    ko_urls = [u for u in all_urls if "/ko/races/" in u and year_filter in u]
+    return ko_urls[:limit]
 
-    def handle_starttag(self, tag, attrs):
-        if tag == "a":
-            href = dict(attrs).get("href", "")
-            if "/races/" in href and len(href) > 8:
-                self._in_link = True
-                self._href = href if href.startswith("http") else "https://www.kormarathon.com" + href
-                self._text_parts = []
 
-    def handle_endtag(self, tag):
-        if tag == "a" and self._in_link:
-            self._in_link = False
-            text = re.sub(r"\s+", " ", " ".join(self._text_parts)).strip()
-            if text and len(text) >= 6 and self._href:
-                self.races.append({"title": text, "url": self._href})
-
-    def handle_data(self, data):
-        if self._in_link:
-            text = data.strip()
-            if text:
-                self._text_parts.append(text)
+def _fetch_og(url):
+    """Return (title, description) from Open Graph tags of a page."""
+    try:
+        html = fetch(url, timeout=8, relax_ssl=True).decode("utf-8", errors="replace")
+    except Exception:
+        return "", ""
+    title = ""
+    description = ""
+    for m in re.finditer(r'<meta[^>]+(?:property|name)=["\']([^"\']+)["\'][^>]+content=["\']([^"\']*)["\']', html):
+        key, val = m.group(1).lower(), m.group(2)
+        if key in ("og:title", "twitter:title") and not title:
+            title = val.strip()
+        if key in ("og:description", "twitter:description", "description") and not description:
+            description = val.strip()
+    return title, description
 
 
 def collect_from_kormarathon(row):
-    try:
-        data = fetch(KORMARATHON_RACES_URL)
-        html = data.decode("utf-8", errors="replace")
-    except Exception as exc:
-        print(f"warning: kormarathon fetch failed: {exc}", file=sys.stderr)
+    urls = _kormarathon_race_urls(limit=25)
+    if not urls:
         return []
-    parser = KorMarathonParser()
-    parser.feed(html)
-    seen_urls = set()
     items = []
-    for race in parser.races:
-        url = race["url"]
-        if url in seen_urls:
+    for url in urls:
+        title, description = _fetch_og(url)
+        if not title:
             continue
-        seen_urls.add(url)
-        title = clean_title(race["title"])
-        if not title or len(title) < 5:
+        title = clean_title(title.split("|")[0])  # strip " | KorMarathon" suffix
+        if not title or len(title) < 4:
             continue
         items.append({
             "region": "korea",
             "category": "event",
             "title": title,
-            "description": "",
+            "description": description[:260] if description else "",
             "url": url,
             "source": "KorMarathon",
             "published_at": "",
@@ -507,15 +501,14 @@ def collect_from_kormarathon(row):
     return items
 
 
-def collect_from_daum(row):
-    """Daum News via Kakao Developer REST API (KAKAO_REST_API_KEY required)."""
+def _kakao_search(endpoint, query, size=20):
+    """Call Kakao search API. endpoint: 'web', 'cafe', 'blog'."""
     api_key = os.environ.get("KAKAO_REST_API_KEY", "").strip()
     if not api_key:
-        print(f"warning: KAKAO_REST_API_KEY not set, skipping daum query: {row.get('query')}", file=sys.stderr)
-        return []
-    params = urllib.parse.urlencode({"query": row["query"], "sort": "recency", "size": 20})
+        return None, "KAKAO_REST_API_KEY not set"
+    params = urllib.parse.urlencode({"query": query, "sort": "recency", "size": size})
     request = urllib.request.Request(
-        f"{DAUM_SEARCH_URL}?{params}",
+        f"https://dapi.kakao.com/v2/search/{endpoint}?{params}",
         headers={
             "Authorization": f"KakaoAK {api_key}",
             "User-Agent": "runeorrri-newsletter-bot/1.0 (+https://runeorrri.pages.dev)",
@@ -523,32 +516,47 @@ def collect_from_daum(row):
     )
     try:
         with urllib.request.urlopen(request, timeout=20) as response:
-            data = json.loads(response.read().decode("utf-8"))
+            return json.loads(response.read().decode("utf-8")), None
     except Exception as exc:
-        print(f"warning: daum news fetch failed for '{row.get('query')}': {exc}", file=sys.stderr)
+        return None, str(exc)
+
+
+def _parse_kakao_datetime(raw):
+    if not raw:
+        return ""
+    try:
+        return datetime.fromisoformat(raw.replace("Z", "+00:00")).date().isoformat()
+    except ValueError:
+        return ""
+
+
+def collect_from_daum(row):
+    """Daum web/cafe search via Kakao Developer REST API."""
+    source_type = row.get("source", "daum_web")
+    endpoint = "cafe" if source_type == "daum_cafe" else "web"
+    query = row.get("query", "")
+    data, err = _kakao_search(endpoint, query)
+    if data is None:
+        print(f"warning: daum {endpoint} fetch failed for '{query}': {err}", file=sys.stderr)
         return []
     items = []
+    source_label = "Daum 카페" if endpoint == "cafe" else "Daum"
     for doc in data.get("documents", []):
-        title = clean_title(strip_html_tags(doc.get("title", "")))
+        title = clean_title(strip_html_tags(doc.get("title") or doc.get("name", "")))
         link = doc.get("url", "")
         if not title or not link:
             continue
-        published_at = ""
-        raw_date = doc.get("datetime", "")
-        if raw_date:
-            try:
-                published_at = datetime.fromisoformat(raw_date.replace("Z", "+00:00")).date().isoformat()
-            except ValueError:
-                pass
+        published_at = _parse_kakao_datetime(doc.get("datetime") or doc.get("postdate", ""))
+        description = strip_html_tags(doc.get("contents") or doc.get("text", ""))
         items.append({
             "region": row.get("region", "korea"),
             "category": infer_category(title, row.get("category", "news")),
             "title": title,
-            "description": strip_html_tags(doc.get("contents", "")),
+            "description": description[:260],
             "url": link,
-            "source": "Daum News",
+            "source": source_label,
             "published_at": published_at,
-            "query": row.get("query", ""),
+            "query": query,
         })
     return items
 
@@ -687,7 +695,7 @@ def collect_from_query(row):
     source = row.get("source", "google_news").strip()
     if source == "naver_news":
         return collect_from_naver(row)
-    if source == "daum_news":
+    if source in ("daum_web", "daum_cafe", "daum_news"):
         return collect_from_daum(row)
     if source == "kormarathon":
         return collect_from_kormarathon(row)

@@ -1,29 +1,27 @@
 region,category,query,language,country,priority,notes,source
-korea,event,마라톤 대회 접수 모집 2026,ko,KR,high,국내 대회 접수·모집 일정,google_news
-korea,event,러닝 페스타 마라톤 참가 신청,ko,KR,high,국내 러닝 이벤트 참가 모집,google_news
-korea,gear,러닝화 신제품 출시 2026,ko,KR,medium,국내 장비와 브랜드 소식,google_news
-korea,news,러닝 크루 마라톤 러너,ko,KR,medium,국내 러닝 문화와 커뮤니티,google_news
-global,event,marathon 2026 registration open upcoming,en,US,high,Global race registration and upcoming event news,google_news
-global,elite,boston marathon 2026 results winner,en,US,high,보스턴마라톤 2026 결과,google_news
-global,elite,marathon world record 2026,en,US,medium,세계기록 및 엘리트 레이스 소식,google_news
-global,gear,running shoe new release 2026,en,US,medium,Running shoe new launch news,google_news
-global,news,running community marathon trend 2026,en,US,medium,Global running culture trends,google_news
-global,event,hamburg berlin rotterdam marathon 2026,en,US,high,유럽 봄 마라톤 대회 소식,google_news
-global,gear,nike adidas asics hoka new balance running shoe release,en,US,medium,글로벌 브랜드 러닝화 출시,google_news
-korea,event,마라톤 대회 접수 2026,ko,KR,high,네이버 국내 대회 접수 일정,naver_news
-korea,event,러닝 이벤트 참가 신청 모집,ko,KR,high,네이버 러닝 이벤트 모집,naver_news
-korea,event,5월 6월 마라톤 대회 접수,ko,KR,high,네이버 5·6월 대회 접수 일정,naver_news
-korea,gear,러닝화 출시 신발 리뷰,ko,KR,medium,네이버 장비 및 신발 소식,naver_news
-korea,news,마라톤 러닝 훈련 건강,ko,KR,medium,네이버 훈련 및 건강 소식,naver_news
-korea,news,러닝크루 달리기 커뮤니티,ko,KR,medium,네이버 러닝 커뮤니티 소식,naver_news
-korea,event,서울 마라톤 대회 접수 모집,ko,KR,high,네이버 서울 지역 대회,naver_news
-korea,gear,나이키 아디다스 아식스 러닝화,ko,KR,medium,네이버 브랜드 러닝화 소식,naver_news
-korea,event,마라톤 대회 접수 2026,ko,KR,high,다음 국내 대회 접수 일정,daum_news
-korea,event,러닝 이벤트 마라톤 모집 신청,ko,KR,high,다음 러닝 이벤트 모집,daum_news
-korea,gear,러닝화 신발 출시 러닝,ko,KR,medium,다음 러닝화 소식,daum_news
-korea,news,마라톤 러닝 커뮤니티 뉴스,ko,KR,medium,다음 러닝 커뮤니티 소식,daum_news
-korea,event,kormarathon_races,,,high,KorMarathon 국내 대회 목록 직접 크롤링 (현재 404 - 모니터링 중),kormarathon
-global,elite,https://worldathletics.org/news/rss,en,,high,World Athletics 공식 뉴스,rss_feed
-global,news,https://www.runnersworld.com/rss/all.xml,en,,medium,Runner's World 전체 피드,rss_feed
-global,news,https://www.outsideonline.com/rss,en,,medium,Outside Online 전체 피드,rss_feed
-global,gear,https://believeintherun.com/feed/,en,,medium,Believe in the Run 러닝화 리뷰,rss_feed
+korea,event,마라톤 대회 접수 모집 2026,ko,KR,high,국내 대회 접수·모집,google_news
+korea,event,러닝 페스타 마라톤 참가 신청,ko,KR,high,국내 러닝 이벤트,google_news
+korea,gear,러닝화 신제품 출시 2026,ko,KR,medium,국내 신제품,google_news
+korea,news,러닝 커뮤니티 크루 마라톤,ko,KR,medium,러닝 문화·커뮤니티,google_news
+korea,event,마라톤 대회 접수 2026,ko,KR,high,네이버 대회 접수,naver_news
+korea,event,5월 6월 7월 마라톤 대회 접수 모집,ko,KR,high,네이버 5·6·7월 대회,naver_news
+korea,event,러닝 이벤트 참가 신청 모집,ko,KR,high,네이버 러닝 이벤트,naver_news
+korea,gear,러닝화 신발 출시 신제품,ko,KR,medium,네이버 러닝화,naver_news
+korea,news,마라톤 러닝 훈련 건강 팁,ko,KR,medium,네이버 훈련·건강,naver_news
+korea,news,러닝크루 달리기 커뮤니티,ko,KR,medium,네이버 커뮤니티,naver_news
+korea,event,마라톤 대회 접수 2026,ko,KR,high,다음 대회 접수,daum_web
+korea,event,러닝 대회 참가 신청 모집 2026,ko,KR,high,다음 러닝 이벤트,daum_web
+korea,gear,러닝화 신발 출시 러닝,ko,KR,medium,다음 러닝화,daum_web
+korea,event,마라톤 대회 접수 2026,ko,KR,high,다음 카페 대회 접수,daum_cafe
+korea,event,러닝 대회 모집,ko,KR,high,다음 카페 러닝 이벤트,daum_cafe
+korea,news,러닝 크루 달리기,ko,KR,medium,다음 카페 러닝 커뮤니티,daum_cafe
+korea,event,kormarathon_races,,,high,KorMarathon 국내 대회 sitemap 크롤링,kormarathon
+global,event,marathon 2026 registration open upcoming,en,US,high,글로벌 등록 오픈,google_news
+global,elite,boston marathon 2026 results winner,en,US,high,보스턴마라톤 결과,google_news
+global,elite,marathon world record 2026,en,US,medium,세계기록·엘리트,google_news
+global,gear,running shoe new release 2026,en,US,medium,글로벌 러닝화 출시,google_news
+global,event,hamburg berlin rotterdam prague marathon 2026,en,US,high,유럽 봄 마라톤,google_news
+global,gear,nike adidas asics hoka on running shoe release 2026,en,US,medium,글로벌 브랜드,google_news
+global,elite,https://worldathletics.org/news/rss,en,,high,World Athletics 공식,rss_feed
+global,news,https://www.runnersworld.com/rss/all.xml,en,,medium,Runner's World,rss_feed
+global,gear,https://believeintherun.com/feed/,en,,medium,Believe in the Run 리뷰,rss_feed
