@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 import re
+import ssl
 import sys
 import urllib.parse
 import urllib.request
@@ -19,7 +20,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 QUERIES = ROOT / "data" / "collection_queries.csv"
 NAVER_SEARCH_URL = "https://openapi.naver.com/v1/search/news.json"
+DAUM_SEARCH_URL = "https://dapi.kakao.com/v2/search/news"
 KORMARATHON_RACES_URL = "https://www.kormarathon.com/ko/races"
+MARATHON_PE_KR_URL = "https://marathon.pe.kr/bbs/board.php?bo_table=schedule"
 ARCHIVE = ROOT / "data" / "candidates_archive.csv"
 CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
 ISSUES_DIR = ROOT / "issues"
@@ -208,15 +211,21 @@ def google_news_rss(query, language, country):
     return f"https://news.google.com/rss/search?q={encoded}&hl={language}&gl={country}&ceid={ceid}"
 
 
-def fetch(url, timeout=20):
+_SSL_RELAXED = ssl.create_default_context()
+_SSL_RELAXED.check_hostname = False
+_SSL_RELAXED.verify_mode = ssl.CERT_NONE
+
+
+def fetch(url, timeout=20, relax_ssl=False):
     request = urllib.request.Request(
         url,
         headers={
-            "User-Agent": "runeorrri-newsletter-bot/1.0 (+https://runeorrri.pages.dev)",
-            "Accept": "application/rss+xml, application/xml, text/xml;q=0.9, */*;q=0.8",
+            "User-Agent": "Mozilla/5.0 (compatible; runeorrri-newsletter-bot/1.0; +https://runeorrri.pages.dev)",
+            "Accept": "application/rss+xml, application/xml, text/html, */*;q=0.8",
         },
     )
-    with urllib.request.urlopen(request, timeout=timeout) as response:
+    ctx = _SSL_RELAXED if relax_ssl else None
+    with urllib.request.urlopen(request, timeout=timeout, context=ctx) as response:
         return response.read()
 
 
@@ -305,6 +314,17 @@ def is_relevant(item):
     return any(kw in title for kw in RUNNING_TITLE_KEYWORDS)
 
 
+def overlaps_published(item):
+    """True if the article's significant title words overlap with previously published stories."""
+    if not _published_entities:
+        return False
+    title = item.get("title", "").lower()
+    words = set(re.findall(r"[가-힣a-zA-Z0-9]{2,}", title)) - COMMON_RUNNING_WORDS
+    overlap = words & _published_entities
+    # Hard-exclude if 2+ entity words overlap (same story, different angle)
+    return len(overlap) >= 2
+
+
 def score_item(item):
     title = item["title"].lower()
     source = item["source"].lower()
@@ -323,9 +343,6 @@ def score_item(item):
     score -= sum(2 for term in PAST_EVENT_PENALTY_TERMS if term in title)
     if any(source_name in source for source_name in LOW_VALUE_SOURCES):
         score -= 3
-    if _published_entities:
-        words = set(re.findall(r"[가-힣a-zA-Z0-9]+", title))
-        score -= len(words & _published_entities) * 2
     return score
 
 
@@ -490,12 +507,194 @@ def collect_from_kormarathon(row):
     return items
 
 
+def collect_from_daum(row):
+    """Daum News via Kakao Developer REST API (KAKAO_REST_API_KEY required)."""
+    api_key = os.environ.get("KAKAO_REST_API_KEY", "").strip()
+    if not api_key:
+        print(f"warning: KAKAO_REST_API_KEY not set, skipping daum query: {row.get('query')}", file=sys.stderr)
+        return []
+    params = urllib.parse.urlencode({"query": row["query"], "sort": "recency", "size": 20})
+    request = urllib.request.Request(
+        f"{DAUM_SEARCH_URL}?{params}",
+        headers={
+            "Authorization": f"KakaoAK {api_key}",
+            "User-Agent": "runeorrri-newsletter-bot/1.0 (+https://runeorrri.pages.dev)",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            data = json.loads(response.read().decode("utf-8"))
+    except Exception as exc:
+        print(f"warning: daum news fetch failed for '{row.get('query')}': {exc}", file=sys.stderr)
+        return []
+    items = []
+    for doc in data.get("documents", []):
+        title = clean_title(strip_html_tags(doc.get("title", "")))
+        link = doc.get("url", "")
+        if not title or not link:
+            continue
+        published_at = ""
+        raw_date = doc.get("datetime", "")
+        if raw_date:
+            try:
+                published_at = datetime.fromisoformat(raw_date.replace("Z", "+00:00")).date().isoformat()
+            except ValueError:
+                pass
+        items.append({
+            "region": row.get("region", "korea"),
+            "category": infer_category(title, row.get("category", "news")),
+            "title": title,
+            "description": strip_html_tags(doc.get("contents", "")),
+            "url": link,
+            "source": "Daum News",
+            "published_at": published_at,
+            "query": row.get("query", ""),
+        })
+    return items
+
+
+class MarathonPeKrParser(HTMLParser):
+    """Parse race listings from marathon.pe.kr schedule board."""
+
+    def __init__(self):
+        super().__init__()
+        self.races = []
+        self._in_subject = False
+        self._href = ""
+        self._text_parts = []
+
+    def handle_starttag(self, tag, attrs):
+        attrs_dict = dict(attrs)
+        if tag == "a":
+            href = attrs_dict.get("href", "")
+            cls = attrs_dict.get("class", "")
+            # Subject links on gnuboard boards are typically class="bo_tit" or in td.td_subject
+            if href and ("bo_table=schedule" in href or "wr_id=" in href) and "subject" in cls:
+                self._in_subject = True
+                base = "https://marathon.pe.kr"
+                self._href = href if href.startswith("http") else base + href
+                self._text_parts = []
+
+    def handle_endtag(self, tag):
+        if tag == "a" and self._in_subject:
+            self._in_subject = False
+            text = re.sub(r"\s+", " ", " ".join(self._text_parts)).strip()
+            if text and len(text) >= 4 and self._href:
+                self.races.append({"title": text, "url": self._href})
+
+    def handle_data(self, data):
+        if self._in_subject:
+            text = data.strip()
+            if text:
+                self._text_parts.append(text)
+
+
+def collect_from_marathon_pe_kr(row):
+    try:
+        data = fetch(MARATHON_PE_KR_URL, relax_ssl=True)
+        html = data.decode("utf-8", errors="replace")
+    except Exception as exc:
+        print(f"warning: marathon.pe.kr fetch failed: {exc}", file=sys.stderr)
+        return []
+    parser = MarathonPeKrParser()
+    parser.feed(html)
+    seen_urls = set()
+    items = []
+    for race in parser.races:
+        url = race["url"]
+        if url in seen_urls:
+            continue
+        seen_urls.add(url)
+        title = clean_title(race["title"])
+        if not title or len(title) < 4:
+            continue
+        items.append({
+            "region": "korea",
+            "category": "event",
+            "title": title,
+            "description": "",
+            "url": url,
+            "source": "marathon.pe.kr",
+            "published_at": "",
+            "query": row.get("query", "marathon_pe_kr"),
+        })
+    return items
+
+
+def collect_from_rss_feed(row):
+    """Collect from any RSS/Atom feed URL stored in the query field."""
+    url = row["query"]
+    region = row.get("region", "global")
+    category = row.get("category", "news")
+    try:
+        data = fetch(url)
+        root = ET.fromstring(data)
+    except Exception as exc:
+        print(f"warning: rss_feed fetch failed for {url}: {exc}", file=sys.stderr)
+        return []
+    # Support both RSS <item> and Atom <entry>
+    ns = {"atom": "http://www.w3.org/2005/Atom"}
+    items = []
+    for entry in list(root.findall(".//item")) + list(root.findall(".//atom:entry", ns)):
+        title_el = entry.find("title")
+        if title_el is None:
+            title_el = entry.find("atom:title", ns)
+        raw_title = (title_el.text or "") if title_el is not None else ""
+        title = clean_title(strip_html_tags(raw_title))
+        # link
+        link_el = entry.find("link")
+        if link_el is None:
+            link_el = entry.find("atom:link", ns)
+        if link_el is not None:
+            link = (link_el.get("href") or link_el.text or "").strip()
+        else:
+            link = ""
+        if not title or not link:
+            continue
+        # date
+        raw_date = ""
+        for _tag in ("pubDate", "published", "atom:published", "atom:updated"):
+            _el = entry.find(_tag) if ":" not in _tag else entry.find(_tag, ns)
+            if _el is not None and _el.text:
+                raw_date = _el.text
+                break
+        published_at = parse_date(raw_date) if raw_date else ""
+        # description
+        description = ""
+        for _tag in ("description", "summary", "atom:summary", "atom:content"):
+            _el = entry.find(_tag) if ":" not in _tag else entry.find(_tag, ns)
+            if _el is not None and _el.text:
+                description = clean_html(_el.text)
+                break
+        # source name from feed title
+        channel = root.find("channel")
+        feed_title_el = channel.find("title") if channel is not None else root.find("atom:title", ns)
+        source_name = row.get("notes") or ((feed_title_el.text or "").strip() if feed_title_el is not None else url)
+        items.append({
+            "region": region,
+            "category": infer_category(title, category),
+            "title": title,
+            "description": description,
+            "url": link,
+            "source": source_name,
+            "published_at": published_at,
+            "query": url,
+        })
+    return items
+
+
 def collect_from_query(row):
     source = row.get("source", "google_news").strip()
     if source == "naver_news":
         return collect_from_naver(row)
+    if source == "daum_news":
+        return collect_from_daum(row)
     if source == "kormarathon":
         return collect_from_kormarathon(row)
+    if source == "marathon_pe_kr":
+        return collect_from_marathon_pe_kr(row)
+    if source == "rss_feed":
+        return collect_from_rss_feed(row)
     return collect_from_google_news(row)
 
 
@@ -597,13 +796,15 @@ def main():
             continue
         if is_too_old(item, cutoff_date):
             continue
+        if overlaps_published(item):
+            continue
         key = dedupe_key(item)
         if key in seen:
             continue
-        # title-level near-duplicate check: skip if 60%+ tokens overlap with an already-kept title
+        # title-level near-duplicate check: skip if 40%+ tokens overlap with an already-kept title
         tokens = frozenset(re.findall(r"[가-힣a-zA-Z0-9]{2,}", item.get("title", "").lower()))
         if tokens and any(
-            len(tokens & prev) / max(len(tokens | prev), 1) >= 0.6
+            len(tokens & prev) / max(len(tokens | prev), 1) >= 0.4
             for prev in seen_title_tokens
         ):
             continue
