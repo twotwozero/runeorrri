@@ -39,7 +39,7 @@
 - 구분: 해외 / event
 - 요약: BYD 싱가포르 국제마라톤 2026의 참가 접수가 시작됐습니다. 현지인 기준 풀코스 참가비는 188싱가포르달러(약 18만원), 해외 러너는 208싱가포르달러(약 20만원)입니다.
 - 러너에게 중요한 이유: 서울에서 직항으로 접근하기 좋은 아시아 대형 마라톤 중 하나입니다. 야간 레이스로 진행돼 열기 부담이 덜하고, 아시아권 원정을 계획 중인 러너라면 접수 초기에 확인해두는 게 유리합니다.
-- 원문: [AsiaOne](https://news.google.com/rss/articles/CBMitAFBVV95cUxQR0FBT3EyaGxEQkh5TWVKT1FZZDVJS054Q0hKUkNOZ1FCSExRV1Z2Q1ZoXzB4TE5OWWQtUUZTM3FRa2hFb3RNaFpnY3d1b1NXM19HLXhRR0dnc2I5RkFqLV9lMFFseXRZUUNhUDZIRE9qdzBXRUNFTkNWUEdJRXp5MWl0SVZ6UVloWVphR3hDdXhvNFY1eEVzWl8zOFBKS080aTE4eUU4MU1TbTZzY2dkUzVISno?oc=5)
+- 원문: [AsiaOne](https://www.asiaone.com/singapore/registration-open-byd-singapore-international-marathon-adidas-standard-chartered)
 - 한 줄 관점: 싱가포르마라톤 접수 오픈, 풀코스 $188
 
 ## 5. 아세파, 런던마라톤 여자 세계기록 2:15:41

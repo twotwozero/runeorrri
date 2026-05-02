@@ -1,5 +1,88 @@
 [
   {
+    "date": "2026-04-30",
+    "number": "03",
+    "title": "오늘의 러닝 브리핑 03 - 2026-04-30",
+    "intro": "러너리가 국내 러닝 소식 3개와 해외 소식 2개를 골랐습니다. 바쁜 러너가 빠르게 훑고, 필요한 링크만 바로 열어볼 수 있게 정리했습니다.",
+    "emailIntro": "",
+    "issueFocus": "",
+    "mainEditorial": "",
+    "midRunNote": "",
+    "perspective": "",
+    "stories": [
+      {
+        "index": 1,
+        "title": "2026 푸른하늘런 6/6 상암 개최…접수 5월 28일 마감",
+        "region": "국내",
+        "category": "event",
+        "summary": "6월 6일 현충일 서울 상암 월드컵공원 평화광장에서 '2026 푸른하늘런'이 열립니다. 하프·10km·5km 세 종목으로 운영되며, 접수는 5월 28일까지 진행됩니다. 참가비는 전 종목 5만원입니다.",
+        "why": "현충일에 서울에서 달릴 수 있는 접근성 좋은 대회입니다. 6월 초 대회를 찾는 러너라면 접수 마감 전에 일정과 이동 동선을 확인해두세요.",
+        "source": {
+          "name": "푸른하늘런 공식",
+          "url": "https://blueskyrun.kr/"
+        },
+        "oneLiner": "현충일 상암 달리기, 접수 5/28 마감"
+      },
+      {
+        "index": 2,
+        "title": "송도 이봉주 마라톤 6/28 첫 개최…1만 명 선착순 모집",
+        "region": "국내",
+        "category": "event",
+        "summary": "제1회 송도 이봉주 마라톤이 6월 28일 인천대학교 송도캠퍼스 일원에서 열립니다. 10km와 5km 두 종목으로 운영되며, 참가비는 모두 5만원입니다. 공식 홈페이지 기준 참가 인원은 1만 명 선착순입니다.",
+        "why": "수도권에서 접근 가능한 새 대회이고, 이봉주 선수 이름을 내건 첫 회 행사라 관심이 몰릴 수 있습니다. 6월 말 5km·10km 대회를 찾는 러너에게 좋은 선택지입니다.",
+        "source": {
+          "name": "송도 이봉주 마라톤 공식",
+          "url": "https://runsongdo.co.kr/"
+        },
+        "oneLiner": "송도 이봉주 마라톤, 6/28 첫 개최"
+      },
+      {
+        "index": 3,
+        "title": "지중해마을 라이트런 6/13 아산 야간 개최…5월 1일 접수 오픈",
+        "region": "국내",
+        "category": "event",
+        "summary": "2026 지중해마을 라이트런이 6월 13일 충남 아산시 지중해마을 광장에서 열립니다. 10km·5km·1.2km 종목으로 안내되어 있으며, 접수는 5월 1일 시작해 6월 5일까지 진행됩니다.",
+        "why": "발행 다음 날 접수가 열리는 후보라 바로 알림을 걸어둘 수 있습니다. 야간 러닝과 지역 축제 분위기를 함께 원하는 러너에게 맞는 대회입니다.",
+        "source": {
+          "name": "지중해마을 라이트런 공식",
+          "url": "https://bluecrystalmarathon.imweb.me/"
+        },
+        "oneLiner": "아산 야간 러닝, 5/1 접수 오픈"
+      },
+      {
+        "index": 4,
+        "title": "나이키 페가수스 42 출시…에너지 리턴 15% 향상·4월 9일 발매",
+        "region": "해외",
+        "category": "gear",
+        "summary": "나이키가 페가수스 42를 4월 9일 출시했습니다. 이번 모델은 곡선형 풀렝스 Air Zoom 유닛을 적용해 이전 모델보다 에너지 리턴을 15% 높였고, 일상 훈련부터 커뮤니티 런까지 폭넓게 쓰는 데 초점을 맞췄습니다.",
+        "why": "페가수스는 국내 러너도 많이 신는 대표 데일리 트레이너입니다. 고가 레이스화가 부담스러운 러너라면 일상 훈련화 변화가 실제 구매 판단에 더 직접적으로 연결됩니다.",
+        "source": {
+          "name": "Nike 공식",
+          "url": "https://about.nike.com/en/newsroom/releases/nike-pegasus-42-official-images"
+        },
+        "oneLiner": "페가수스 42, 풀렝스 Air Zoom 적용"
+      },
+      {
+        "index": 5,
+        "title": "Korir 보스턴마라톤 2:01:52 코스 신기록…15년 만의 경신",
+        "region": "해외",
+        "category": "elite",
+        "summary": "4월 20일 열린 2026 보스턴 마라톤에서 케냐의 존 코리르가 2시간 1분 52초로 우승하며 코스 기록을 새로 썼습니다. 2011년 제프리 무타이가 세운 2:03:02를 넘어선 기록이며, 여자부에서는 샤론 로케디가 2:18:51로 2연패했습니다.",
+        "why": "보스턴은 언덕과 포인트투포인트 코스 특성 때문에 기록이 쉽지 않은 대회입니다. 2:01대 코스 기록은 엘리트 레이스 수준과 슈즈·페이스 흐름을 함께 볼 수 있는 신호입니다.",
+        "source": {
+          "name": "World Athletics",
+          "url": "https://worldathletics.org/news/report/korir-lokedi-course-record-boston-marathon"
+        },
+        "oneLiner": "코리르 보스턴 코스 신기록 2:01:52"
+      }
+    ],
+    "assets": {
+      "hero": "/assets/issues/2026-04-30/hero.png",
+      "lineup": "/assets/issues/2026-04-30/lineup.png",
+      "checkpoints": "/assets/issues/2026-04-30/checkpoints.png"
+    }
+  },
+  {
     "date": "2026-04-28",
     "number": "02",
     "title": "오늘의 러닝 브리핑 02 - 2026-04-28",
@@ -58,7 +141,7 @@
         "why": "서울에서 직항으로 접근하기 좋은 아시아 대형 마라톤 중 하나입니다. 야간 레이스로 진행돼 열기 부담이 덜하고, 아시아권 원정을 계획 중인 러너라면 접수 초기에 확인해두는 게 유리합니다.",
         "source": {
           "name": "AsiaOne",
-          "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxQR0FBT3EyaGxEQkh5TWVKT1FZZDVJS054Q0hKUkNOZ1FCSExRV1Z2Q1ZoXzB4TE5OWWQtUUZTM3FRa2hFb3RNaFpnY3d1b1NXM19HLXhRR0dnc2I5RkFqLV9lMFFseXRZUUNhUDZIRE9qdzBXRUNFTkNWUEdJRXp5MWl0SVZ6UVloWVphR3hDdXhvNFY1eEVzWl8zOFBKS080aTE4eUU4MU1TbTZzY2dkUzVISno?oc=5"
+          "url": "https://www.asiaone.com/singapore/registration-open-byd-singapore-international-marathon-adidas-standard-chartered"
         },
         "oneLiner": "싱가포르마라톤 접수 오픈, 풀코스 $188"
       },
