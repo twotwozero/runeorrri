@@ -94,8 +94,10 @@ def line_up(rows):
         f"""
         <tr>
           <td style="padding:0 0 10px 0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;">
-            <div style="font-size:13px;line-height:1.3;font-weight:900;color:#ff6b4a;">{index:02d} · {escape(region_label(row))} / {escape(category_label(row))}</div>
-            <div style="margin-top:3px;font-size:16px;line-height:1.45;font-weight:850;color:#111514;">{escape(row['title'])}</div>
+            <a href="#story-{index}" style="text-decoration:none;">
+              <div style="font-size:13px;line-height:1.3;font-weight:900;color:#ff6b4a;">{index:02d} · {escape(region_label(row))} / {escape(category_label(row))}</div>
+              <div style="margin-top:3px;font-size:16px;line-height:1.45;font-weight:850;color:#111514;">{escape(row['title'])}</div>
+            </a>
           </td>
         </tr>
         """
@@ -107,7 +109,7 @@ def brief_items(rows):
     return "\n".join(
         f"""
         <tr>
-          <td style="padding:20px 0;border-top:1px solid #ded8cf;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;">
+          <td id="story-{index}" style="padding:20px 0;border-top:1px solid #ded8cf;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;">
             <div style="font-size:13px;line-height:1.3;font-weight:900;color:#ff6b4a;">{index:02d} · {escape(region_label(row))} / {escape(category_label(row))}</div>
             <div style="margin-top:7px;font-size:21px;line-height:1.35;font-weight:900;color:#111514;">{escape(row['title'])}</div>
             <div style="margin-top:12px;font-size:15px;line-height:1.75;font-weight:650;color:#323332;">{escape(row['summary'])}</div>
@@ -217,7 +219,7 @@ def html_email(image_cids, issue_url, issue_data=None):
             </td>
           </tr>
           <tr>
-            <td style="padding:0 24px 28px 24px;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;color:#323332;">
+            <td id="story-1" style="padding:0 24px 28px 24px;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;color:#323332;">
               <div style="font-size:13px;line-height:1.3;font-weight:900;color:#ff6b4a;">MAIN STORY</div>
               <div style="margin-top:8px;font-size:28px;line-height:1.25;font-weight:950;color:#111514;">{escape(main.get('title', ''))}</div>
               <div style="margin-top:16px;font-size:16px;line-height:1.8;font-weight:650;color:#323332;">{escape(main.get('summary', ''))}</div>

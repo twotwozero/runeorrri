@@ -203,8 +203,10 @@ function IssuePage({ issue }: { issue: Issue }) {
             <ol className="lineup-list">
               {issue.stories.map((story) => (
                 <li key={story.index} className="lineup-item">
-                  <span className="lineup-meta">{String(story.index).padStart(2, '0')} · {formatCategory(story)}</span>
-                  <span className="lineup-title">{story.title}</span>
+                  <a href={`#story-${story.index}`} className="lineup-link">
+                    <span className="lineup-meta">{String(story.index).padStart(2, '0')} · {formatCategory(story)}</span>
+                    <span className="lineup-title">{story.title}</span>
+                  </a>
                 </li>
               ))}
             </ol>
@@ -212,7 +214,7 @@ function IssuePage({ issue }: { issue: Issue }) {
         </section>
 
         {mainStory ? (
-          <section className="main-story">
+          <section className="main-story" id={`story-${mainStory.index}`}>
             <p className="eyebrow">MAIN STORY</p>
             <h2>{mainStory.title}</h2>
             <p>{mainStory.summary}</p>
@@ -245,7 +247,7 @@ function IssuePage({ issue }: { issue: Issue }) {
             <h2>나머지 소식</h2>
           </div>
           {briefs.map((story) => (
-            <article className="brief-item" key={story.index}>
+            <article className="brief-item" key={story.index} id={`story-${story.index}`}>
               <p className="story-meta">{String(story.index).padStart(2, '0')} · {formatCategory(story)}</p>
               <h3>{story.title}</h3>
               <p>{story.summary}</p>
