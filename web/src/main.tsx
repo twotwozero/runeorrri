@@ -202,7 +202,6 @@ function IssuePage({ issue }: { issue: Issue }) {
             <p className="eyebrow">TODAY'S LINEUP</p>
             <h2>오늘의 라인업</h2>
           </div>
-          <img className="wide-art" src={issue.assets.lineup} alt="오늘의 라인업" />
         </section>
 
         {mainStory ? (

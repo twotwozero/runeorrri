@@ -60,7 +60,6 @@ def issue_number():
 def art_images():
     return {
         "hero": ART_DIR / "hero.png",
-        "lineup": ART_DIR / "lineup.png",
         "checkpoints": ART_DIR / "checkpoints.png",
     }
 
@@ -152,7 +151,6 @@ def html_email(image_cids, issue_url, issue_data=None):
     main = rows[0] if rows else {}
     other_rows = rows[1:]
     hero_img = f'<a href="{escape(issue_url)}" style="text-decoration:none;border:0;display:block;"><img src="cid:{image_cids["hero"]}" width="600" alt="러너리 브리핑" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;border:0;"></a>'
-    lineup_img = f'<img src="cid:{image_cids["lineup"]}" width="600" alt="오늘의 라인업" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;border:0;">'
     checkpoint_img = f'<img src="cid:{image_cids["checkpoints"]}" width="600" alt="러너리 체크포인트" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;border:0;">'
     return f"""<!doctype html>
 <html lang="ko">
@@ -216,11 +214,6 @@ def html_email(image_cids, issue_url, issue_data=None):
                   </td>
                 </tr>
               </table>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:0 15px 28px 15px;text-align:center;font-size:0;">
-              {lineup_img}
             </td>
           </tr>
           <tr>
