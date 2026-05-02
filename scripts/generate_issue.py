@@ -69,27 +69,52 @@ def build_editorial_meta(rows, number, korea_count, global_count):
     global_items = [row for row in rows if row["region"].strip().lower() != "korea"]
     event_titles = "·".join(row["title"].split("…", 1)[0] for row in domestic_events[:3])
     global_title = global_items[0]["title"].split("…", 1)[0] if global_items else rows[-1]["title"].split("…", 1)[0]
+    main_title = main["title"].split("…", 1)[0]
+    main_category = main["category"].strip().lower()
 
     email_intro = (
         f"안녕하세요, 러너리입니다. {number}호는 국내 {korea_count}개, 해외 {global_count}개로 구성했습니다. "
-        f"{main['title'].split('…', 1)[0]}부터 {global_title}까지, 지금 접수·일정표에 올려둘 만한 소식과 "
+        f"{main_title}부터 {global_title}까지, 지금 접수·일정표에 올려둘 만한 소식과 "
         "러닝 판이 어디로 움직이는지 보여주는 변화를 함께 담았습니다."
     )
-    issue_focus = (
-        "이번 호의 중심은 여름과 가을 레이스 캘린더를 미리 채우는 일입니다. "
-        f"{event_titles}처럼 지역·이벤트 성격이 뚜렷한 대회가 이어지고, 해외에서는 마라톤을 독립된 세계선수권으로 키우려는 움직임이 나왔습니다."
-    )
-    main_editorial = (
-        "IRON RUN은 단순한 10km 대회가 아니라 거리 설계부터 다릅니다. 3.8km, 7.87km, 15.38km처럼 낯선 숫자를 앞세워 "
-        "완주 경험 자체를 이벤트화하고, 포항 영일대 해변이라는 장소성을 강하게 씁니다. 7월 초 대회라 기록 욕심보다 더위 적응, "
-        "출발 전 수분 계획, 완주 후 회복 동선을 먼저 잡는 편이 현실적입니다."
-    )
-    mid_run_note = (
-        "5월 초부터 6월 초까지는 접수 마감이 겹칩니다. 관심 있는 대회는 코스보다 먼저 접수 마감일, 환불 가능일, 출발 시간을 캘린더에 넣어두세요."
-    )
+    if domestic_events and global_items:
+        issue_focus = (
+            "이번 호의 중심은 국내 러너가 바로 확인할 수 있는 선택지와 해외 러닝 흐름을 함께 보는 일입니다. "
+            f"{event_titles}처럼 참가 여부를 판단할 수 있는 소식과 {global_title} 같은 흐름형 소식을 함께 묶었습니다."
+        )
+    elif domestic_events:
+        issue_focus = (
+            "이번 호의 중심은 국내 레이스 캘린더를 정리하는 일입니다. "
+            f"{event_titles}처럼 참가 여부를 판단할 수 있는 소식을 우선했습니다."
+        )
+    else:
+        issue_focus = (
+            "이번 호의 중심은 해외 러닝 흐름을 국내 러너의 훈련, 장비, 참가 선택과 연결해 보는 일입니다."
+        )
+    if main_category == "event":
+        main_editorial = (
+            f"{main_title}는 일정 정보만 보고 넘기기보다 대회 성격을 같이 봐야 합니다. "
+            f"{main['summary'].strip()} "
+            f"{main['why_it_matters'].strip()} 참가 여부를 정할 때는 접수 마감, 출발 시간, 이동 동선, 환불 조건을 먼저 확인하세요."
+        )
+        mid_run_note = (
+            "대회 소식은 코스보다 마감일이 먼저입니다. 관심 있는 대회는 접수 마감일, 환불 가능일, 출발 시간을 캘린더에 넣어두세요."
+        )
+    elif main_category == "gear":
+        main_editorial = (
+            f"{main_title}는 새 제품 소식이지만 구매 판단은 광고 문구보다 용도에서 시작해야 합니다. "
+            f"{main['summary'].strip()} {main['why_it_matters'].strip()} 지금 신는 신발의 역할과 겹치는지 먼저 비교하세요."
+        )
+        mid_run_note = "장비 소식은 출시일보다 내 훈련에서 맡길 역할이 더 중요합니다. 레이스용, 조깅용, 회복주용을 구분해서 보세요."
+    else:
+        main_editorial = (
+            f"{main_title}는 러너가 당장 참가하거나 구매하는 정보는 아니어도 흐름을 읽는 데 의미가 있습니다. "
+            f"{main['summary'].strip()} {main['why_it_matters'].strip()}"
+        )
+        mid_run_note = "해외 소식은 기록 자체보다 국내 러너의 훈련, 장비, 참가 선택에 어떤 영향을 주는지까지 같이 보면 더 유용합니다."
     perspective = (
-        "이번 호는 ‘어디를 뛸까’와 ‘러닝 시장이 어디로 가나’를 같이 보면 좋습니다. 국내 소식은 참가자의 실제 선택지를 넓히고, "
-        "월드애슬레틱스 소식은 마라톤이 독립 콘텐츠로 커지는 흐름을 보여줍니다."
+        "이번 호는 ‘지금 내가 무엇을 결정할 수 있나’를 기준으로 읽으면 좋습니다. 참가형 소식은 일정과 조건을 확인하고, "
+        "흐름형 소식은 내 훈련·장비·대회 선택에 어떤 영향을 줄지 보는 식입니다."
     )
     return {
         "email_intro": email_intro,

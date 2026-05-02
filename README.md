@@ -27,28 +27,36 @@
 
 ## 빠른 시작
 
-1. 최근 러닝 소식을 직접 조사해 `data/candidates_archive.csv`에 새 `issue_id`로 이번 회차 후보 소식 5개를 추가합니다.
+1. 최근 러닝 소식을 직접 조사해 `data/candidates_archive.csv`에 새 `issue_id`로 이번 회차 후보 소식 10개를 추가합니다.
    `issue_date`는 실제 발행일, `verification_status`는 검수 완료 후 `reviewed`로 둡니다.
-2. 아래 명령으로 최신 회차를 `data/candidates.csv`로 내보냅니다.
+   이 10개는 기존 발행호와 주제·대회·브랜드·URL이 겹치면 안 됩니다.
+2. 수집 후보 10개를 검증합니다.
+
+```bash
+python3 scripts/validate_candidate_pool.py 2026-05-05-05 --mode collect
+```
+
+3. 사용자가 10개 중 발행할 5개를 고르면 그 5개만 `selected=yes`로 표시하고 나머지는 `selected=no`로 둡니다.
+4. 아래 명령으로 최신 회차를 `data/candidates.csv`로 내보냅니다.
 
 ```bash
 python3 scripts/export_latest_candidates.py
 ```
 
-3. `selected` 값을 `yes`로 표시한 소식 5개를 확인합니다.
-4. 아래 명령으로 초안을 생성합니다.
+5. `selected` 값을 `yes`로 표시한 소식 5개를 확인합니다.
+6. 아래 명령으로 초안을 생성합니다.
 
 ```bash
 python3 scripts/generate_issue.py
 ```
 
-5. 메일/웹용 이미지를 생성합니다. 기본 Python에 Pillow가 없다면 `python3 -m pip install Pillow`를 먼저 실행합니다.
+7. 메일/웹용 이미지를 생성합니다. 기본 Python에 Pillow가 없다면 `python3 -m pip install Pillow`를 먼저 실행합니다.
 
 ```bash
 python3 scripts/generate_newsletter_art.py
 ```
 
-6. 러너리 웹사이트용 데이터를 생성합니다.
+8. 러너리 웹사이트용 데이터를 생성합니다.
 
 ```bash
 python3 scripts/generate_web_data.py
@@ -58,7 +66,7 @@ python3 scripts/generate_web_data.py
 
 - `web/src/data/issues.json`: 웹앱이 읽는 회차 데이터
 
-7. 웹사이트를 로컬에서 확인합니다.
+9. 웹사이트를 로컬에서 확인합니다.
 
 ```bash
 cd web
@@ -73,8 +81,8 @@ cd web
 npm run build
 ```
 
-8. 생성된 `issues/YYYY-MM-DD-running-newsletter.md`, `web/public/assets/issues/YYYY-MM-DD/`, `web/`을 열어 사람이 최종 검수합니다.
-9. SMTP 환경변수와 `RUNEORRRI_SITE_BASE_URL`을 설정했다면 메일을 보냅니다.
+10. 생성된 `issues/YYYY-MM-DD-running-newsletter.md`, `web/public/assets/issues/YYYY-MM-DD/`, `web/`을 열어 사람이 최종 검수합니다.
+11. SMTP 환경변수와 `RUNEORRRI_SITE_BASE_URL`을 설정했다면 메일을 보냅니다.
 
 ```bash
 python3 scripts/send_issue_email.py
@@ -99,6 +107,31 @@ python3 scripts/run_newsletter_pipeline.py --issue-id today --send-email
 ```
 
 `--issue-id today`는 `data/candidates_archive.csv`에서 오늘 날짜(`issue_date`)의 후보를 찾습니다. 오늘 후보가 없거나 선택된 후보가 5개가 아니거나 검수가 끝나지 않았으면 발송하지 않고 실패합니다.
+
+## 자료 수집 요청을 받았을 때
+
+사용자가 "자료수집 해줘"라고 요청하면 바로 발행하지 않고 아래 순서로 진행합니다.
+
+1. `docs/editorial-guidelines.md`를 기준으로 최근 48~72시간 러닝 소식 10개를 찾습니다.
+2. 기존 발행호(`issues/`, `web/src/data/issues.json`, `data/candidates_archive.csv`의 selected rows)를 먼저 대조합니다.
+   같은 대회, 같은 브랜드/제품군, 같은 엘리트 레이스, 같은 기사 URL, 같은 주제 후속 기사처럼 보이면 제외합니다.
+3. 후보 10개를 `data/candidates_archive.csv`에 같은 `issue_id`로 추가합니다.
+   이 단계에서는 기본값을 `selected=no`로 둡니다.
+4. 아래 명령으로 10개 후보 풀을 검증합니다.
+
+```bash
+python3 scripts/validate_candidate_pool.py current --mode collect
+```
+
+5. 사용자에게 후보 10개를 제목, 출처, 왜 중요한지 중심으로 보여주고 5개 선택을 받습니다.
+6. 사용자가 고른 5개만 `selected=yes`로 바꿉니다.
+7. 아래 명령으로 발행 검증과 생성까지 진행합니다.
+
+```bash
+python3 scripts/run_newsletter_pipeline.py --issue-id current --no-email
+```
+
+8. 웹 빌드와 배포를 끝낸 뒤 메일을 발송합니다. 메일 링크가 최신 `/NN` 회차를 가리키는지 확인한 다음 커밋·푸시합니다.
 
 ## 자동 발송 설정
 
