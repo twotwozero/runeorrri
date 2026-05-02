@@ -56,7 +56,7 @@ main {
 
 .topbar-right {
   justify-content: flex-end;
-  gap: 12px;
+  gap: 24px;
 }
 
 .brand {
