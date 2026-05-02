@@ -52,6 +52,7 @@ main {
 
 .topbar-left {
   justify-content: flex-start;
+  gap: 20px;
 }
 
 .topbar-right {
