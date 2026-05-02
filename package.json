@@ -1,0 +1,11 @@
+{
+  "name": "runeorrri",
+  "private": true,
+  "scripts": {
+    "d1:create": "wrangler d1 create runeorrri-subscribers",
+    "d1:migrate": "wrangler d1 execute runeorrri-subscribers --file schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^3"
+  }
+}

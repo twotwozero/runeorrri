@@ -5,4 +5,4 @@ pages_build_output_dir = "web/dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "runeorrri-subscribers"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "202e098f-2e96-4825-8d8b-5ae226be6056"
