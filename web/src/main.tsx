@@ -188,11 +188,14 @@ function IssuePage({ issue }: { issue: Issue }) {
         <header className="issue-header">
           <p className="eyebrow">{issue.date}</p>
           <h1>오늘의 러닝 브리핑 {issue.number}</h1>
-          <p>{issue.intro}</p>
-          {issue.issueFocus ? <p className="issue-focus">{issue.issueFocus}</p> : null}
         </header>
 
         <img className="wide-art" src={issue.assets.hero} alt={`오늘의 러닝 브리핑 ${issue.number}`} />
+
+        <section className="issue-intro">
+          <p>{issue.intro}</p>
+          {issue.issueFocus ? <p className="issue-focus">{issue.issueFocus}</p> : null}
+        </section>
 
         <section className="lineup-section">
           <div className="section-heading">

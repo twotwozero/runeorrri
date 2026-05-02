@@ -247,7 +247,22 @@ main {
 }
 
 .issue-header {
-  padding: 36px 0 22px;
+  padding: 36px 0 16px;
+}
+
+.issue-intro {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.issue-intro p {
+  max-width: 660px;
+  margin: 0 0 0;
+  color: #303432;
+  font-size: 18px;
+  line-height: 1.75;
+  font-weight: 700;
 }
 
 .lineup-section,
