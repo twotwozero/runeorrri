@@ -171,7 +171,7 @@ def html_email(image_cids, issue_url, issue_data=None):
         <table role="presentation" width="630" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:630px;background:#F7F5F1;">
           <tr>
             <td style="padding:12px 20px 8px 20px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;color:#111514;">
-              <div style="font-size:26px;line-height:1.2;font-weight:900;letter-spacing:0;"><a href="{escape(issue_url)}" style="color:#111514;text-decoration:none;">@runeorrri</a></div>
+              <div style="font-size:26px;line-height:1.2;font-weight:900;letter-spacing:0;"><a href="{escape(issue_url)}" style="color:#111514;text-decoration:none;"><span style="display:inline-block;white-space:nowrap;">Running can</span> <span style="display:inline-block;white-space:nowrap;">change the world</span></a></div>
               <div style="margin-top:12px;font-size:14px;line-height:1.5;font-weight:800;color:#ff6b4a;"><a href="{escape(issue_url)}" style="color:#ff6b4a;text-decoration:none;">오늘의 러닝 브리핑 {escape(number)}</a></div>
               <div style="margin-top:4px;font-size:12px;line-height:1.5;font-weight:700;color:#6f7773;">{TODAY}</div>
             </td>

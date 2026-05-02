@@ -65,6 +65,15 @@ function InstagramIcon() {
   );
 }
 
+function YouTubeIcon() {
+  return (
+    <svg className="brand-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M22 12s0-3.3-.4-4.9c-.2-.9-.9-1.6-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4c-.9.2-1.6.9-1.8 1.8C2 8.7 2 12 2 12s0 3.3.4 4.9c.2.9.9 1.6 1.8 1.8 1.6.4 7.8.4 7.8.4s6.2 0 7.8-.4c.9-.2 1.6-.9 1.8-1.8.4-1.6.4-4.9.4-4.9Z" />
+      <path d="m10 15 5-3-5-3v6Z" />
+    </svg>
+  );
+}
+
 function App() {
   const path = window.location.pathname.replace(/\/$/, '') || '/';
   const issueNumberMatch = path.match(/^\/(\d{2})$/);
@@ -93,9 +102,18 @@ function Topbar() {
           target="_blank"
           rel="noreferrer"
           aria-label="Instagram에서 runeorrri 보기"
-          className="nav-instagram"
+          className="nav-social"
         >
           <InstagramIcon />
+        </a>
+        <a
+          href="https://youtube.com/@eorrri"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="YouTube에서 eorrri 보기"
+          className="nav-social"
+        >
+          <YouTubeIcon />
         </a>
       </div>
     </header>
