@@ -198,18 +198,17 @@ function IssuePage({ issue }: { issue: Issue }) {
         </section>
 
         <section className="lineup-section">
-          <div className="section-heading">
-            <p className="eyebrow">TODAY'S LINEUP</p>
-            <h2>오늘의 라인업</h2>
+          <div className="lineup-box">
+            <p className="lineup-box-label">오늘의 라인업</p>
+            <ol className="lineup-list">
+              {issue.stories.map((story) => (
+                <li key={story.index} className="lineup-item">
+                  <span className="lineup-meta">{String(story.index).padStart(2, '0')} · {formatCategory(story)}</span>
+                  <span className="lineup-title">{story.title}</span>
+                </li>
+              ))}
+            </ol>
           </div>
-          <ol className="lineup-list">
-            {issue.stories.map((story) => (
-              <li key={story.index} className="lineup-item">
-                <span className="lineup-meta">{String(story.index).padStart(2, '0')} · {formatCategory(story)}</span>
-                <span className="lineup-title">{story.title}</span>
-              </li>
-            ))}
-          </ol>
         </section>
 
         {mainStory ? (

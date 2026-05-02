@@ -277,17 +277,30 @@ main {
   border-top: 1px solid var(--line);
 }
 
+.lineup-box {
+  background: var(--white);
+  border: 1px solid #e6dfd5;
+}
+
+.lineup-box-label {
+  margin: 0;
+  padding: 20px 20px 10px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.4;
+}
+
 .lineup-list {
   margin: 0;
-  padding: 0;
+  padding: 0 20px 12px;
   list-style: none;
 }
 
 .lineup-item {
   display: flex;
   flex-direction: column;
-  padding: 12px 0;
-  border-top: 1px solid var(--line);
+  padding: 10px 0 0;
 }
 
 .lineup-meta {
@@ -298,7 +311,7 @@ main {
 }
 
 .lineup-title {
-  margin-top: 4px;
+  margin-top: 3px;
   color: var(--ink);
   font-size: 16px;
   font-weight: 850;
