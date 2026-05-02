@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import issuesData from './data/issues.json';
 import './styles.css';
@@ -86,13 +86,84 @@ function App() {
   return <HomePage />;
 }
 
+function SubscribeModal({ onClose }: { onClose: () => void }) {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'duplicate' | 'error'>('idle');
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setStatus('loading');
+    try {
+      const res = await fetch('/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      if (res.ok) {
+        setStatus('success');
+      } else {
+        const data = await res.json() as { error?: string };
+        setStatus(data.error === 'already_subscribed' ? 'duplicate' : 'error');
+      }
+    } catch {
+      setStatus('error');
+    }
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={e => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose} aria-label="닫기">✕</button>
+        {status === 'success' ? (
+          <div className="modal-success">
+            <p className="eyebrow">SUBSCRIBED</p>
+            <h2>구독이 완료됐습니다</h2>
+            <p>매주 화·목·토에 러닝 소식을 전해드릴게요.</p>
+          </div>
+        ) : (
+          <>
+            <p className="eyebrow">RUNEORRRI BRIEFING</p>
+            <h2>무료 구독</h2>
+            <p>매주 화·목·토, 국내외 러닝 소식 5개를 이메일로 보내드립니다.</p>
+            <form onSubmit={handleSubmit} className="subscribe-form">
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="이메일 주소를 입력하세요"
+                required
+                disabled={status === 'loading'}
+                className="subscribe-input"
+              />
+              <button type="submit" disabled={status === 'loading'} className="subscribe-submit">
+                {status === 'loading' ? '처리 중…' : '구독하기'}
+              </button>
+            </form>
+            {status === 'duplicate' && <p className="subscribe-msg subscribe-msg--warn">이미 구독 중인 이메일입니다.</p>}
+            {status === 'error' && <p className="subscribe-msg subscribe-msg--error">오류가 발생했습니다. 잠시 후 다시 시도해주세요.</p>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Topbar() {
   const latest = issues[0];
+  const [showModal, setShowModal] = useState(false);
   return (
-    <header className="topbar">
-      <div className="topbar-side topbar-left">
-        {latest ? <a className="nav-link" href={issuePath(latest)}>최신호</a> : null}
-      </div>
+    <>
+      <header className="topbar">
+        <div className="topbar-side topbar-left">
+          {latest ? <a className="nav-link" href={issuePath(latest)}>최신호</a> : null}
+          <button className="subscribe-btn" onClick={() => setShowModal(true)}>무료 구독</button>
+        </div>
       <a className="brand" href="/" aria-label="runeorrri 홈">
         runeorrri
       </a>
@@ -116,7 +187,9 @@ function Topbar() {
           <YouTubeIcon />
         </a>
       </div>
-    </header>
+      </header>
+      {showModal && <SubscribeModal onClose={() => setShowModal(false)} />}
+    </>
   );
 }
 

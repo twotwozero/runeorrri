@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import csv
+import json
 import os
 import re
 import smtplib
+import urllib.request
 from datetime import date
 from email.message import EmailMessage
 from email.utils import formataddr
@@ -307,6 +309,26 @@ def html_email(image_cids, issue_url, issue_data=None):
 """
 
 
+def get_recipients():
+    account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID")
+    db_id = os.environ.get("CLOUDFLARE_D1_DATABASE_ID")
+    token = os.environ.get("CLOUDFLARE_API_TOKEN")
+
+    if account_id and db_id and token:
+        url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/d1/database/{db_id}/query"
+        payload = json.dumps({"sql": "SELECT email FROM subscribers WHERE status = 'active'"}).encode()
+        req = urllib.request.Request(url, data=payload, headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        })
+        with urllib.request.urlopen(req) as resp:
+            result = json.loads(resp.read())
+            return [row["email"] for row in result["result"][0]["results"]]
+
+    mail_to = os.environ.get("MAIL_TO", "")
+    return [addr.strip() for addr in mail_to.split(",") if addr.strip()]
+
+
 def main():
     load_dotenv()
     site_base_url = os.environ.get("RUNEORRRI_SITE_BASE_URL") or required_env("RUNNERI_SITE_BASE_URL")
@@ -316,45 +338,53 @@ def main():
     smtp_password = required_env("SMTP_PASSWORD")
     mail_from = os.environ.get("MAIL_FROM", smtp_user)
     mail_from_name = os.environ.get("MAIL_FROM_NAME", "runeorrri")
-    mail_to = required_env("MAIL_TO")
 
     if not NEWSLETTER.exists():
         raise SystemExit(f"Newsletter not found: {NEWSLETTER}")
+
+    recipients = get_recipients()
+    if not recipients:
+        raise SystemExit("No recipients found. Set CLOUDFLARE_D1_DATABASE_ID or MAIL_TO.")
 
     issues = build_web_data()
     current_issue_data = next((i for i in issues if i["date"] == TODAY), {})
     issue_url = runeorrri_issue_url(site_base_url)
 
-    msg = EmailMessage()
-    running_emoji = "\U0001f3c3\U0001f3fb"
-    msg["Subject"] = f"[러너리] {running_emoji} 오늘의 러닝 브리핑 {issue_number()} - RUNNING CAN CHANGE THE WORLD"
-    msg["From"] = formataddr((mail_from_name, mail_from))
-    msg["To"] = mail_to
-    msg.set_content(NEWSLETTER.read_text(encoding="utf-8"))
-
     art = art_images()
     missing_art = [path for path in art.values() if not path.exists()]
     if missing_art:
         raise SystemExit(f"Missing newsletter art files: {', '.join(str(path) for path in missing_art)}")
-    image_cids = {key: f"runeorrri-{key}-{TODAY}" for key in art}
-    msg.add_alternative(html_email(image_cids, issue_url, current_issue_data), subtype="html")
-    html_part = msg.get_payload()[-1]
-    for key, png in art.items():
-        html_part.add_related(
-            png.read_bytes(),
-            maintype="image",
-            subtype="png",
-            cid=f"<{image_cids[key]}>",
-            filename=png.name,
-            disposition="inline",
-        )
 
+    image_cids = {key: f"runeorrri-{key}-{TODAY}" for key in art}
+    html_body = html_email(image_cids, issue_url, current_issue_data)
+    text_body = NEWSLETTER.read_text(encoding="utf-8")
+    subject = f"[러너리] \U0001f3c3\U0001f3fb 오늘의 러닝 브리핑 {issue_number()} - RUNNING CAN CHANGE THE WORLD"
+
+    print(f"Sending to {len(recipients)} recipient(s)...")
     with smtplib.SMTP(smtp_host, smtp_port) as smtp:
         smtp.starttls()
         smtp.login(smtp_user, smtp_password)
-        smtp.send_message(msg)
+        for recipient in recipients:
+            msg = EmailMessage()
+            msg["Subject"] = subject
+            msg["From"] = formataddr((mail_from_name, mail_from))
+            msg["To"] = recipient
+            msg.set_content(text_body)
+            msg.add_alternative(html_body, subtype="html")
+            html_part = msg.get_payload()[-1]
+            for key, png in art.items():
+                html_part.add_related(
+                    png.read_bytes(),
+                    maintype="image",
+                    subtype="png",
+                    cid=f"<{image_cids[key]}>",
+                    filename=png.name,
+                    disposition="inline",
+                )
+            smtp.send_message(msg)
+            print(f"  → {recipient}")
 
-    print(f"Sent newsletter to {mail_to}")
+    print(f"Done. Sent to {len(recipients)} recipient(s).")
 
 
 if __name__ == "__main__":

@@ -507,6 +507,146 @@ main {
   font-size: 12px;
 }
 
+.subscribe-btn {
+  border: 2px solid var(--ink);
+  background: var(--accent);
+  color: var(--ink);
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.subscribe-btn:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 21, 21, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+.modal-box {
+  position: relative;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  padding: 40px 36px 36px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.modal-box h2 {
+  margin: 8px 0 12px;
+  font-size: 32px;
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.modal-box > p {
+  margin: 0 0 24px;
+  font-size: 15px;
+  line-height: 1.75;
+  font-weight: 700;
+  color: #303432;
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--muted);
+  font-family: inherit;
+  line-height: 1;
+  padding: 4px;
+}
+
+.modal-close:hover {
+  color: var(--ink);
+}
+
+.subscribe-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.subscribe-input {
+  border: 2px solid var(--ink);
+  background: var(--white);
+  padding: 12px 14px;
+  font-size: 15px;
+  font-family: inherit;
+  font-weight: 700;
+  outline: none;
+  width: 100%;
+}
+
+.subscribe-input:focus {
+  border-color: var(--accent);
+}
+
+.subscribe-submit {
+  border: 2px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  padding: 13px 16px;
+  font-size: 15px;
+  font-weight: 950;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.subscribe-submit:hover:not(:disabled) {
+  background: var(--accent);
+  color: var(--ink);
+  border-color: var(--accent);
+}
+
+.subscribe-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.subscribe-msg {
+  margin: 10px 0 0;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.subscribe-msg--warn {
+  color: #b07800;
+}
+
+.subscribe-msg--error {
+  color: #c0392b;
+}
+
+.modal-success h2 {
+  margin: 8px 0 12px;
+  font-size: 28px;
+  font-weight: 950;
+}
+
+.modal-success p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.75;
+  font-weight: 700;
+  color: #303432;
+}
+
 .not-found {
   padding: 80px 0;
 }
