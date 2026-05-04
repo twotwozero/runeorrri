@@ -292,14 +292,6 @@ def html_email(image_cids, issue_url, issue_data=None):
               </table>
             </td>
           </tr>
-          <tr>
-            <td style="padding:8px 20px 28px 20px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;color:#6f7773;">
-              <div style="font-size:12px;line-height:1.7;">
-                runeorrri · running briefing<br>
-                이 메일은 발행 전 검수용 테스트 메일입니다.
-              </div>
-            </td>
-          </tr>
         </table>
       </td>
     </tr>
