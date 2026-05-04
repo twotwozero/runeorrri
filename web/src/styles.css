@@ -675,7 +675,7 @@ main {
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
-    gap: 6px;
+    gap: 4px;
   }
 
   .topbar-right {
