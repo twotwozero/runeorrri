@@ -657,6 +657,48 @@ main {
     width: calc(100% - 24px);
   }
 
+  .topbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px 12px;
+    padding: 20px 0 14px;
+  }
+
+  .brand {
+    grid-column: 1 / -1;
+    justify-self: center;
+    font-size: 24px;
+  }
+
+  .topbar-left {
+    grid-column: 1;
+    justify-content: flex-start;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .topbar-right {
+    grid-column: 2;
+    justify-content: flex-end;
+    gap: 14px;
+  }
+
+  .nav-link,
+  .subscribe-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 0 10px;
+    font-size: 13px;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .nav-social .brand-icon {
+    width: 23px;
+    height: 23px;
+  }
+
   .section-heading {
     align-items: flex-start;
     flex-direction: column;

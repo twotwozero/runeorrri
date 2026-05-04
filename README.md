@@ -14,6 +14,8 @@
 
 ## 폴더 구조
 
+이 저장소의 Git 루트는 `newsletter/`입니다. Cloudflare Pages나 GitHub Actions의 작업 디렉터리도 이 루트를 기준으로 봅니다.
+
 - `docs/editorial-guidelines.md`: 선별 기준, 톤, 저작권·검수 기준, 1차/2차 검수 체크리스트, 소식 구조
 - `data/candidates.csv`: 최신 회차 생성용 후보 소식 파일
 - `data/candidates_archive.csv`: 모든 회차 후보 소식 누적 기록
@@ -69,15 +71,12 @@ python3 scripts/generate_web_data.py
 9. 웹사이트를 로컬에서 확인합니다.
 
 ```bash
-cd web
-npm install
 npm run dev
 ```
 
-배포용 빌드는 아래 명령을 사용합니다. 빌드 전에 웹사이트 데이터가 자동으로 다시 생성됩니다.
+배포용 빌드는 저장소 루트에서 아래 명령을 사용합니다. 루트 `build` 스크립트가 `web` 의존성을 설치하고, 빌드 전에 웹사이트 데이터를 자동으로 다시 생성합니다.
 
 ```bash
-cd web
 npm run build
 ```
 
@@ -131,11 +130,17 @@ python3 scripts/validate_candidate_pool.py current --mode collect
 python3 scripts/run_newsletter_pipeline.py --issue-id current --no-email
 ```
 
-8. 웹 빌드와 배포를 끝낸 뒤 메일을 발송합니다. 메일 링크가 최신 `/NN` 회차를 가리키는지 확인한 다음 커밋·푸시합니다.
+8. 웹 빌드를 확인하고 배포를 끝낸 뒤, 사용자가 명시적으로 요청했을 때만 메일을 발송합니다. 메일 링크가 최신 `/NN` 회차를 가리키는지 확인한 다음 커밋·푸시합니다.
 
 ## 자동 발송 설정
 
-GitHub Actions 워크플로 `.github/workflows/newsletter.yml`이 화/목/토 오전 8시(KST)에 실행됩니다. 자동 수집과 AI 보강은 실행하지 않고, 미리 준비된 `reviewed` 후보 5개로 원고·이미지·웹 데이터·메일 발송만 진행합니다.
+GitHub Actions 워크플로 `.github/workflows/send-newsletter.yml`이 화/목/토 오전 8시(KST)에 실행됩니다. 자동 수집과 AI 보강은 실행하지 않고, 미리 준비된 현재 회차 원고·이미지·웹 데이터로 메일 발송만 진행합니다.
+
+Cloudflare Pages 배포 설정은 저장소 루트 기준으로 봅니다.
+
+- 빌드 명령: `npm run build`
+- 빌드 출력: `web/dist`
+- Pages Functions 위치: `web/functions`
 
 실제 이메일 발송까지 하려면 `.env.example`을 참고해 `.env` 파일에 SMTP 설정과 수신 주소를 넣습니다.
 
