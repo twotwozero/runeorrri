@@ -658,28 +658,30 @@ main {
   }
 
   .topbar {
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 14px 12px;
-    padding: 20px 0 14px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 18px 0 14px;
   }
 
   .brand {
-    grid-column: 1 / -1;
+    grid-column: 2;
     justify-self: center;
-    font-size: 24px;
+    font-size: 23px;
+    min-width: 0;
   }
 
   .topbar-left {
     grid-column: 1;
+    flex-direction: column;
+    align-items: stretch;
     justify-content: flex-start;
-    gap: 8px;
-    min-width: 0;
+    gap: 6px;
   }
 
   .topbar-right {
-    grid-column: 2;
+    grid-column: 3;
     justify-content: flex-end;
-    gap: 14px;
+    gap: 12px;
   }
 
   .nav-link,
@@ -687,9 +689,10 @@ main {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 38px;
-    padding: 0 10px;
-    font-size: 13px;
+    min-width: 72px;
+    min-height: 31px;
+    padding: 0 8px;
+    font-size: 12px;
     line-height: 1;
     white-space: nowrap;
   }
