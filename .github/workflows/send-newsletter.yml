@@ -25,11 +25,18 @@ jobs:
       - name: Build web
         run: npm run build
 
-      - name: Deploy web to Cloudflare Pages
+      - name: Verify current issue is live
         env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: npx wrangler pages deploy web/dist --project-name runeorrri
+          RUNEORRRI_SITE_BASE_URL: ${{ secrets.RUNEORRRI_SITE_BASE_URL }}
+        run: |
+          ISSUE_NUMBER="$(python - <<'PY'
+          from pathlib import Path
+          issue_id = Path("data/current_issue_id.txt").read_text(encoding="utf-8").strip()
+          suffix = issue_id.rsplit("-", 1)[-1]
+          print(suffix.zfill(2) if suffix.isdigit() else "01")
+          PY
+          )"
+          curl --fail --silent --show-error --head "${RUNEORRRI_SITE_BASE_URL%/}/${ISSUE_NUMBER}"
 
       - name: Send newsletter to all subscribers
         working-directory: scripts
