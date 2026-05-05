@@ -124,13 +124,13 @@ function SubscribeModal({ onClose }: { onClose: () => void }) {
           <div className="modal-success">
             <p className="eyebrow">SUBSCRIBED</p>
             <h2>구독이 완료됐습니다</h2>
-            <p>매주 화·목·토에 러닝 소식을 전해드릴게요.</p>
+            <p>매주 화/목/토에 러닝 소식을 전해드릴게요.</p>
           </div>
         ) : (
           <>
             <p className="eyebrow">RUNEORRRI BRIEFING</p>
             <h2>무료 구독</h2>
-            <p>매주 화·목·토, 국내외 러닝 소식 5개를 이메일로 보내드립니다.</p>
+            <p>매주 화/목/토, 국내외 러닝 소식 5개를 이메일로 보내드립니다.</p>
             <form onSubmit={handleSubmit} className="subscribe-form">
               <input
                 type="email"
