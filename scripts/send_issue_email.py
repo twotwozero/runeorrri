@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
+import argparse
 import csv
 import json
 import os
 import re
 import smtplib
+import urllib.parse
 import urllib.request
 import urllib.error
 from datetime import date
@@ -142,7 +144,12 @@ def source_links(rows):
 
 
 
-def html_email(image_cids, issue_url, issue_data=None):
+def unsubscribe_url(base_url, recipient):
+    query = urllib.parse.urlencode({"email": recipient})
+    return f"{base_url.rstrip('/')}/unsubscribe?{query}"
+
+
+def html_email(image_cids, issue_url, unsubscribe_link, issue_data=None):
     issue_data = issue_data or {}
     email_intro = issue_data.get("emailIntro", "안녕하세요, 러너리입니다.")
     issue_focus = issue_data.get("issueFocus", "")
@@ -293,6 +300,14 @@ def html_email(image_cids, issue_url, issue_data=None):
               </table>
             </td>
           </tr>
+          <tr>
+            <td style="padding:0 24px 28px 24px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;">
+              <div style="font-size:11px;line-height:1.6;color:#8b918d;">
+                러너리 뉴스레터 수신을 원하지 않으시면
+                <a href="{escape(unsubscribe_link)}" style="color:#8b918d;text-decoration:underline;">수신거부</a>를 눌러주세요.
+              </div>
+            </td>
+          </tr>
         </table>
       </td>
     </tr>
@@ -302,11 +317,15 @@ def html_email(image_cids, issue_url, issue_data=None):
 """
 
 
-def get_recipients():
+def get_test_recipients():
     def mail_to_recipients():
         mail_to = os.environ.get("MAIL_TO", "")
         return [addr.strip() for addr in mail_to.split(",") if addr.strip()]
 
+    return mail_to_recipients()
+
+
+def get_subscriber_recipients():
     account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID")
     db_id = os.environ.get("CLOUDFLARE_D1_DATABASE_ID")
     token = os.environ.get("CLOUDFLARE_API_TOKEN")
@@ -344,12 +363,21 @@ def get_recipients():
                         result = json.loads(resp.read())
                         return [row["email"] for row in result["result"][0]["results"]]
                 except urllib.error.HTTPError as error:
-                    print(f"Wrangler OAuth recipient lookup failed ({error.code}); falling back to MAIL_TO.")
+                    raise SystemExit(f"Wrangler OAuth recipient lookup failed ({error.code}).")
 
-    return mail_to_recipients()
+    raise SystemExit("No subscriber recipients found. Check CLOUDFLARE_D1_DATABASE_ID and Cloudflare auth.")
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Send the current runeorrri newsletter.")
+    parser.add_argument(
+        "--recipients",
+        choices=["test", "subscribers"],
+        default="test",
+        help="test sends to MAIL_TO; subscribers sends to active D1 subscribers.",
+    )
+    args = parser.parse_args()
+
     load_dotenv()
     site_base_url = os.environ.get("RUNEORRRI_SITE_BASE_URL") or required_env("RUNNERI_SITE_BASE_URL")
     smtp_host = required_env("SMTP_HOST")
@@ -362,7 +390,7 @@ def main():
     if not NEWSLETTER.exists():
         raise SystemExit(f"Newsletter not found: {NEWSLETTER}")
 
-    recipients = get_recipients()
+    recipients = get_test_recipients() if args.recipients == "test" else get_subscriber_recipients()
     skip_recipients = {
         addr.strip().lower()
         for addr in os.environ.get("RUNEORRRI_SKIP_RECIPIENTS", "").split(",")
@@ -371,7 +399,7 @@ def main():
     if skip_recipients:
         recipients = [addr for addr in recipients if addr.lower() not in skip_recipients]
     if not recipients:
-        raise SystemExit("No recipients found. Set CLOUDFLARE_D1_DATABASE_ID or MAIL_TO.")
+        raise SystemExit("No recipients found.")
 
     issues = build_web_data()
     current_issue_data = next((i for i in issues if i["date"] == TODAY), {})
@@ -383,20 +411,23 @@ def main():
         raise SystemExit(f"Missing newsletter art files: {', '.join(str(path) for path in missing_art)}")
 
     image_cids = {key: f"runeorrri-{key}-{TODAY}" for key in art}
-    html_body = html_email(image_cids, issue_url, current_issue_data)
     text_body = NEWSLETTER.read_text(encoding="utf-8")
     subject = f"[러너리] \U0001f3c3\U0001f3fb 오늘의 러닝 브리핑 {issue_number()} - RUNNING CAN CHANGE THE WORLD"
 
-    print(f"Sending to {len(recipients)} recipient(s)...")
+    print(f"Sending to {len(recipients)} {args.recipients} recipient(s)...")
     with smtplib.SMTP(smtp_host, smtp_port) as smtp:
         smtp.starttls()
         smtp.login(smtp_user, smtp_password)
         for recipient in recipients:
+            unsub_link = unsubscribe_url(site_base_url, recipient)
+            html_body = html_email(image_cids, issue_url, unsub_link, current_issue_data)
             msg = EmailMessage()
             msg["Subject"] = subject
             msg["From"] = formataddr((mail_from_name, mail_from))
             msg["To"] = recipient
-            msg.set_content(text_body)
+            msg.set_content(
+                f"{text_body}\n\n--\n수신거부: {unsub_link}\n"
+            )
             msg.add_alternative(html_body, subtype="html")
             html_part = msg.get_payload()[-1]
             for key, png in art.items():

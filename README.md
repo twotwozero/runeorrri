@@ -83,13 +83,19 @@ npm run build
 ```
 
 11. 생성된 `issues/YYYY-MM-DD-running-newsletter.md`, `web/public/assets/issues/YYYY-MM-DD/`, `web/`을 열어 사람이 최종 검수합니다.
-12. SMTP 환경변수와 `RUNEORRRI_SITE_BASE_URL`을 설정했다면 메일을 보냅니다.
+12. SMTP 환경변수와 `RUNEORRRI_SITE_BASE_URL`을 설정했다면 검수용 메일을 보냅니다.
 
 ```bash
-python3 scripts/send_issue_email.py
+python3 scripts/send_issue_email.py --recipients test
 ```
 
-메일 발송 전 `scripts/send_issue_email.py`는 웹사이트 데이터를 다시 생성하고, 메일 상단 `@runeorrri`, 제목, 히어로 이미지를 `RUNEORRRI_SITE_BASE_URL/NN`(회차 번호)로 연결합니다.
+구독자 전체 발송은 검수 후 아래 명령으로만 진행합니다.
+
+```bash
+python3 scripts/send_issue_email.py --recipients subscribers
+```
+
+메일 발송 전 `scripts/send_issue_email.py`는 웹사이트 데이터를 다시 생성하고, 메일 상단 `@runeorrri`, 제목, 히어로 이미지를 `RUNEORRRI_SITE_BASE_URL/NN`(회차 번호)로 연결합니다. 기본값은 검수용 `MAIL_TO` 발송이며, 구독자 발송은 D1의 `active` 구독자 목록을 사용합니다.
 
 뉴스레터 원고는 이메일 본문 텍스트와 웹사이트 데이터의 원천으로 사용하고, `web/public/assets/issues/YYYY-MM-DD/` 이미지는 메일 인라인 이미지와 웹사이트 대표 이미지로 함께 사용합니다.
 
@@ -101,7 +107,7 @@ python3 scripts/send_issue_email.py
 python3 scripts/run_newsletter_pipeline.py --issue-id today --no-email
 ```
 
-메일까지 보내려면 `.env` 설정 후 아래처럼 실행합니다.
+검수용 메일까지 보내려면 `.env` 설정 후 아래처럼 실행합니다.
 
 ```bash
 python3 scripts/run_newsletter_pipeline.py --issue-id today --send-email
@@ -134,7 +140,9 @@ python3 scripts/validate_candidate_pool.py current --mode collect
 python3 scripts/run_newsletter_pipeline.py --issue-id current --no-email
 ```
 
-8. 웹 빌드를 확인하고 배포를 끝낸 뒤, 사용자가 명시적으로 요청했을 때만 메일을 발송합니다. 메일 링크가 최신 `/NN` 회차를 가리키는지 확인한 다음 커밋·푸시합니다.
+8. 웹 빌드를 확인하고 배포를 끝낸 뒤, 사용자가 "메일발송해줘"라고 하면 검수용 `MAIL_TO`로만 발송합니다.
+   사용자가 "구독자에게 보내줘"라고 명시한 뒤에만 D1의 `active` 구독자 목록으로 발송합니다.
+   메일 링크가 최신 `/NN` 회차를 가리키는지 확인한 다음 커밋·푸시합니다.
 
 ## 자동 발송 설정
 
@@ -146,7 +154,7 @@ Cloudflare Pages 배포 설정은 저장소 루트 기준으로 봅니다.
 - 빌드 출력: `web/dist`
 - Pages Functions 위치: `web/functions`
 
-실제 이메일 발송까지 하려면 `.env.example`을 참고해 `.env` 파일에 SMTP 설정과 수신 주소를 넣습니다.
+검수용 이메일 발송은 `.env.example`을 참고해 `.env` 파일에 SMTP 설정과 `MAIL_TO`를 넣습니다. 구독자 전체 발송은 Cloudflare D1 설정까지 필요합니다.
 
 ## 발행 전 필수 체크
 
@@ -159,4 +167,5 @@ Cloudflare Pages 배포 설정은 저장소 루트 기준으로 봅니다.
 ## 발행 후 확인
 
 - 최신 회차가 `/NN` 경로로 열리는지 확인합니다.
-- 메일을 보냈다면 히어로·라인업·체크포인트 이미지가 모두 표시되고 상단 링크가 해당 회차로 연결되는지 확인합니다.
+- 검수용 메일을 보냈다면 히어로·체크포인트 이미지가 모두 표시되고 상단 링크가 해당 회차로 연결되는지 확인합니다.
+- 구독자 메일 하단에는 작은 수신거부 링크가 있어야 합니다.

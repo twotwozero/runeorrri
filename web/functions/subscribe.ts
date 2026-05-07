@@ -21,11 +21,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     }
 
     const existing = await context.env.DB.prepare(
-      'SELECT id FROM subscribers WHERE email = ?'
+      'SELECT id, status FROM subscribers WHERE email = ?'
     ).bind(email).first();
 
     if (existing) {
-      return new Response(JSON.stringify({ error: 'already_subscribed' }), { status: 409, headers });
+      if (existing.status === 'active') {
+        return new Response(JSON.stringify({ error: 'already_subscribed' }), { status: 409, headers });
+      }
+
+      await context.env.DB.prepare(
+        'UPDATE subscribers SET status = ?, subscribed_at = ? WHERE email = ?'
+      ).bind('active', new Date().toISOString(), email).run();
+
+      return new Response(JSON.stringify({ ok: true, resubscribed: true }), { headers });
     }
 
     await context.env.DB.prepare(

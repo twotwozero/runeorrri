@@ -151,7 +151,7 @@ def main():
     run([sys.executable, "scripts/generate_web_data.py"])
 
     if args.send_email and not args.no_email:
-        run([sys.executable, "scripts/send_issue_email.py"])
+        run([sys.executable, "scripts/send_issue_email.py", "--recipients", "test"])
     else:
         print("Email skipped. Pass --send-email to send via SMTP.")
 
