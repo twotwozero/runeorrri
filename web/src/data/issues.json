@@ -1,5 +1,88 @@
 [
   {
+    "date": "2026-05-07",
+    "number": "06",
+    "title": "오늘의 러닝 브리핑 06 - 2026-05-07",
+    "intro": "안녕하세요, 러너리입니다. 06호는 국내 3개, 해외 2개로 구성했습니다. 참행복 마라톤, 6월 21일 상암서 하프·10K·5K 운영부터 코펜하겐26 세계로드러닝선수권, 참가권 리셀 플랫폼 오픈까지, 지금 접수·일정표에 올려둘 만한 소식과 러닝 판이 어디로 움직이는지 보여주는 변화를 함께 담았습니다.",
+    "emailIntro": "안녕하세요, 러너리입니다. 06호는 국내 3개, 해외 2개로 구성했습니다. 참행복 마라톤, 6월 21일 상암서 하프·10K·5K 운영부터 코펜하겐26 세계로드러닝선수권, 참가권 리셀 플랫폼 오픈까지, 지금 접수·일정표에 올려둘 만한 소식과 러닝 판이 어디로 움직이는지 보여주는 변화를 함께 담았습니다.",
+    "issueFocus": "이번 호의 중심은 국내 러너가 바로 확인할 수 있는 선택지와 해외 러닝 흐름을 함께 보는 일입니다. 참행복 마라톤, 6월 21일 상암서 하프·10K·5K 운영·안양천 장미꽃 축제 마라톤, 5월 14일 접수 마감·KB 마라톤 카드, JTBC 서울마라톤 10K 참가권 200명 추첨처럼 참가 여부를 판단할 수 있는 소식과 코펜하겐26 세계로드러닝선수권, 참가권 리셀 플랫폼 오픈 같은 흐름형 소식을 함께 묶었습니다.",
+    "mainEditorial": "참행복 마라톤, 6월 21일 상암서 하프·10K·5K 운영은 일정 정보만 보고 넘기기보다 대회 성격을 같이 봐야 합니다. KorMarathon 기준 2026 참행복 마라톤은 6월 21일 서울 상암월드컵공원 평화광장에서 열립니다. 하프, 10km, 5km 전 종목 참가비는 5만원으로 안내돼 있고, 접수 마감일은 6월 14일입니다. 서울권에서 하프까지 운영되는 6월 대회를 찾는 러너에게 선택지가 됩니다. 전 종목 기록 측정 안내가 있어 기록 확인 목적의 참가에도 맞습니다. 참가 여부를 정할 때는 접수 마감, 출발 시간, 이동 동선, 환불 조건을 먼저 확인하세요.",
+    "midRunNote": "대회 소식은 코스보다 마감일이 먼저입니다. 관심 있는 대회는 접수 마감일, 환불 가능일, 출발 시간을 캘린더에 넣어두세요.",
+    "perspective": "이번 호는 ‘지금 내가 무엇을 결정할 수 있나’를 기준으로 읽으면 좋습니다. 참가형 소식은 일정과 조건을 확인하고, 흐름형 소식은 내 훈련·장비·대회 선택에 어떤 영향을 줄지 보는 식입니다.",
+    "stories": [
+      {
+        "index": 1,
+        "title": "참행복 마라톤, 6월 21일 상암서 하프·10K·5K 운영",
+        "region": "국내",
+        "category": "event",
+        "summary": "KorMarathon 기준 2026 참행복 마라톤은 6월 21일 서울 상암월드컵공원 평화광장에서 열립니다. 하프, 10km, 5km 전 종목 참가비는 5만원으로 안내돼 있고, 접수 마감일은 6월 14일입니다.",
+        "why": "서울권에서 하프까지 운영되는 6월 대회를 찾는 러너에게 선택지가 됩니다. 전 종목 기록 측정 안내가 있어 기록 확인 목적의 참가에도 맞습니다.",
+        "source": {
+          "name": "KorMarathon",
+          "url": "https://www.kormarathon.com/ko/races/2026-true-happiness-marathon"
+        },
+        "oneLiner": "참행복 마라톤 6/21 상암, 전 종목 5만원."
+      },
+      {
+        "index": 2,
+        "title": "안양천 장미꽃 축제 마라톤, 5월 14일 접수 마감",
+        "region": "국내",
+        "category": "event",
+        "summary": "KorMarathon과 공식 대회 정보 기준 2026 안양천 장미꽃 축제 마라톤은 5월 23일 서울 신정교 하부 영롱이 억새구장에서 열립니다. 5km, 10km, 하프 종목으로 운영되며 접수는 5월 14일까지입니다.",
+        "why": "마감까지 일주일 남은 서울 서남권 하천 코스입니다. 봄꽃 콘셉트와 하프 종목을 함께 찾는 러너라면 일정과 출발 시간을 바로 확인할 만합니다.",
+        "source": {
+          "name": "KorMarathon",
+          "url": "https://www.kormarathon.com/ko/races/2026-anyangcheon-rose-festival-marathon"
+        },
+        "oneLiner": "안양천 장미런 접수 5/14 마감."
+      },
+      {
+        "index": 3,
+        "title": "KB 마라톤 카드, JTBC 서울마라톤 10K 참가권 200명 추첨",
+        "region": "국내",
+        "category": "news",
+        "summary": "러너블 커뮤니티 공지에 따르면 KB 마라톤 카드는 5월 1일부터 31일까지 카드 5만원 이상 이용 후 응모한 사람 중 200명에게 2026 JTBC 서울마라톤 10K 참가권을 추첨 제공합니다. 당첨 안내는 6월 12일 안에 문자로 진행됩니다.",
+        "why": "서울마라톤 10K 참가권은 접수 경쟁이 치열한 편이라, 이미 카드 이용 계획이 있는 러너라면 이벤트 조건과 비용을 따져볼 만합니다.",
+        "source": {
+          "name": "러너블 커뮤니티",
+          "url": "https://runable.me/comm/8153936f-5e9c-48b8-bf8e-f320ceeaf6ff"
+        },
+        "oneLiner": "KB 카드 이용 이벤트, 제마 10K 참가권 200명 추첨."
+      },
+      {
+        "index": 4,
+        "title": "코펜하겐26 세계로드러닝선수권, 참가권 리셀 플랫폼 오픈",
+        "region": "해외",
+        "category": "event",
+        "summary": "World Athletics Road Running Championships Copenhagen 26 조직위는 5월 5일 참가권을 사고팔 수 있는 공식 리셀 플랫폼을 열었다고 안내했습니다. 대기 풀에 등록하면 판매 물량이 나올 때 무작위 추첨 방식으로 구매 기회를 받을 수 있습니다.",
+        "why": "세계선수권 시민 레이스 참가권을 안전하게 양도받을 수 있는 공식 통로입니다. 해외 레이스 참가를 고민하는 러너에게 비공식 양도 리스크를 줄이는 방법을 보여줍니다.",
+        "source": {
+          "name": "World Athletics Copenhagen 26",
+          "url": "https://worldathletics.org/en/competitions/world-athletics-road-running-championships/copenhagen26/news/news/the-resale-platform-is-now-live"
+        },
+        "oneLiner": "코펜하겐26 공식 참가권 리셀 플랫폼 오픈."
+      },
+      {
+        "index": 5,
+        "title": "ASICS Gel-Kayano 33, 6월 1일 글로벌 출시 예정",
+        "region": "해외",
+        "category": "gear",
+        "summary": "T3 보도에 따르면 ASICS Gel-Kayano 33은 6월 1일 글로벌 출시 예정이며, FLUIDSUPPORT라는 새 안정화 시스템을 적용했습니다. 미드솔은 FF BLAST MAX와 FF BLAST PLUS 이중 구조이고, 가격은 200유로로 안내됐습니다.",
+        "why": "안정화 러닝화가 딱딱한 지지 구조보다 부드러운 가이드 방식으로 이동하는 흐름입니다. 과내전 보정화나 장거리 훈련화를 찾는 러너가 비교 기준으로 삼을 만합니다.",
+        "source": {
+          "name": "T3",
+          "url": "https://www.t3.com/active/running/asics-changes-gel-kayano-33-launch-0526"
+        },
+        "oneLiner": "카야노 33, 6/1 출시와 새 FLUIDSUPPORT 적용."
+      }
+    ],
+    "assets": {
+      "hero": "/assets/issues/2026-05-07/hero.png",
+      "lineup": "/assets/issues/2026-05-07/lineup.png",
+      "checkpoints": "/assets/issues/2026-05-07/checkpoints.png"
+    }
+  },
+  {
     "date": "2026-05-05",
     "number": "05",
     "title": "오늘의 러닝 브리핑 05 - 2026-05-05",

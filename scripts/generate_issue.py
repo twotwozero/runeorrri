@@ -43,6 +43,15 @@ def issue_number():
     return suffix.zfill(2) if suffix.isdigit() else "01"
 
 
+def topic_particle(text):
+    for char in reversed(text.strip()):
+        if "가" <= char <= "힣":
+            return "은" if (ord(char) - ord("가")) % 28 else "는"
+        if char.isalnum():
+            return "은"
+    return "는"
+
+
 def format_newsletter_item(index, row):
     title = row["title"].strip()
     summary = row["summary"].strip()
@@ -70,6 +79,7 @@ def build_editorial_meta(rows, number, korea_count, global_count):
     event_titles = "·".join(row["title"].split("…", 1)[0] for row in domestic_events[:3])
     global_title = global_items[0]["title"].split("…", 1)[0] if global_items else rows[-1]["title"].split("…", 1)[0]
     main_title = main["title"].split("…", 1)[0]
+    main_subject = f"{main_title}{topic_particle(main_title)}"
     main_category = main["category"].strip().lower()
 
     email_intro = (
@@ -93,7 +103,7 @@ def build_editorial_meta(rows, number, korea_count, global_count):
         )
     if main_category == "event":
         main_editorial = (
-            f"{main_title}는 일정 정보만 보고 넘기기보다 대회 성격을 같이 봐야 합니다. "
+            f"{main_subject} 일정 정보만 보고 넘기기보다 대회 성격을 같이 봐야 합니다. "
             f"{main['summary'].strip()} "
             f"{main['why_it_matters'].strip()} 참가 여부를 정할 때는 접수 마감, 출발 시간, 이동 동선, 환불 조건을 먼저 확인하세요."
         )
@@ -102,13 +112,13 @@ def build_editorial_meta(rows, number, korea_count, global_count):
         )
     elif main_category == "gear":
         main_editorial = (
-            f"{main_title}는 새 제품 소식이지만 구매 판단은 광고 문구보다 용도에서 시작해야 합니다. "
+            f"{main_subject} 새 제품 소식이지만 구매 판단은 광고 문구보다 용도에서 시작해야 합니다. "
             f"{main['summary'].strip()} {main['why_it_matters'].strip()} 지금 신는 신발의 역할과 겹치는지 먼저 비교하세요."
         )
         mid_run_note = "장비 소식은 출시일보다 내 훈련에서 맡길 역할이 더 중요합니다. 레이스용, 조깅용, 회복주용을 구분해서 보세요."
     else:
         main_editorial = (
-            f"{main_title}는 러너가 당장 참가하거나 구매하는 정보는 아니어도 흐름을 읽는 데 의미가 있습니다. "
+            f"{main_subject} 러너가 당장 참가하거나 구매하는 정보는 아니어도 흐름을 읽는 데 의미가 있습니다. "
             f"{main['summary'].strip()} {main['why_it_matters'].strip()}"
         )
         mid_run_note = "해외 소식은 기록 자체보다 국내 러너의 훈련, 장비, 참가 선택에 어떤 영향을 주는지까지 같이 보면 더 유용합니다."
