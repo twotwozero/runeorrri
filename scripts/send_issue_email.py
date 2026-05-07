@@ -5,6 +5,7 @@ import os
 import re
 import smtplib
 import urllib.request
+import urllib.error
 from datetime import date
 from email.message import EmailMessage
 from email.utils import formataddr
@@ -302,6 +303,10 @@ def html_email(image_cids, issue_url, issue_data=None):
 
 
 def get_recipients():
+    def mail_to_recipients():
+        mail_to = os.environ.get("MAIL_TO", "")
+        return [addr.strip() for addr in mail_to.split(",") if addr.strip()]
+
     account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID")
     db_id = os.environ.get("CLOUDFLARE_D1_DATABASE_ID")
     token = os.environ.get("CLOUDFLARE_API_TOKEN")
@@ -313,12 +318,35 @@ def get_recipients():
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
         })
-        with urllib.request.urlopen(req) as resp:
-            result = json.loads(resp.read())
-            return [row["email"] for row in result["result"][0]["results"]]
+        try:
+            with urllib.request.urlopen(req) as resp:
+                result = json.loads(resp.read())
+                return [row["email"] for row in result["result"][0]["results"]]
+        except urllib.error.HTTPError as error:
+            print(f"Cloudflare API recipient lookup failed ({error.code}); trying Wrangler OAuth token.")
 
-    mail_to = os.environ.get("MAIL_TO", "")
-    return [addr.strip() for addr in mail_to.split(",") if addr.strip()]
+    if db_id:
+        wrangler_config = Path.home() / "Library/Preferences/.wrangler/config/default.toml"
+        if wrangler_config.exists():
+            match = re.search(r'oauth_token\s*=\s*"([^"]+)"', wrangler_config.read_text(encoding="utf-8"))
+            if match:
+                account = account_id or "079d5d6e99333e9cb2d6f9f6a12de55e"
+                url = f"https://api.cloudflare.com/client/v4/accounts/{account}/d1/database/{db_id}/query"
+                payload = json.dumps({
+                    "sql": "SELECT email FROM subscribers WHERE status = 'active' ORDER BY subscribed_at ASC"
+                }).encode()
+                req = urllib.request.Request(url, data=payload, headers={
+                    "Authorization": f"Bearer {match.group(1)}",
+                    "Content-Type": "application/json",
+                })
+                try:
+                    with urllib.request.urlopen(req) as resp:
+                        result = json.loads(resp.read())
+                        return [row["email"] for row in result["result"][0]["results"]]
+                except urllib.error.HTTPError as error:
+                    print(f"Wrangler OAuth recipient lookup failed ({error.code}); falling back to MAIL_TO.")
+
+    return mail_to_recipients()
 
 
 def main():
@@ -335,6 +363,13 @@ def main():
         raise SystemExit(f"Newsletter not found: {NEWSLETTER}")
 
     recipients = get_recipients()
+    skip_recipients = {
+        addr.strip().lower()
+        for addr in os.environ.get("RUNEORRRI_SKIP_RECIPIENTS", "").split(",")
+        if addr.strip()
+    }
+    if skip_recipients:
+        recipients = [addr for addr in recipients if addr.lower() not in skip_recipients]
     if not recipients:
         raise SystemExit("No recipients found. Set CLOUDFLARE_D1_DATABASE_ID or MAIL_TO.")
 
