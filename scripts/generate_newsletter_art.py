@@ -140,22 +140,6 @@ def hero(rows):
     save(img, "hero.png")
 
 
-def lineup(rows):
-    img = Image.new("RGB", (1200, 760), "#111514")
-    draw = ImageDraw.Draw(img)
-    draw.rectangle((0, 0, 1200, 120), fill="#103c3f")
-    draw.text((70, 52), "TODAY'S LINEUP", font=font(34), fill="#49dcb1")
-    y = 165
-    colors = ["#ff6b4a", "#49dcb1", "#ffbe3d", "#d7fff1", "#ffd2bf"]
-    for idx, row in enumerate(rows, start=1):
-        color = colors[(idx - 1) % len(colors)]
-        draw.rounded_rectangle((70, y, 1130, y + 90), radius=0, outline="#38413d", width=2)
-        draw.text((95, y + 24), f"{idx:02d}", font=font(34), fill=color)
-        draw_text(draw, (170, y + 20), row["title"], font(30, 6), "#f7f4ec", 850, 38, 2)
-        y += 108
-    save(img, "lineup.png")
-
-
 def action(rows):
     img = Image.new("RGB", (1200, 620), "#fff7ec")
     draw = ImageDraw.Draw(img)
@@ -210,7 +194,6 @@ def action(rows):
 def main():
     rows = selected_rows()
     hero(rows)
-    lineup(rows)
     action(rows)
 
 

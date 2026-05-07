@@ -78,7 +78,6 @@
     ],
     "assets": {
       "hero": "/assets/issues/2026-05-07/hero.png",
-      "lineup": "/assets/issues/2026-05-07/lineup.png",
       "checkpoints": "/assets/issues/2026-05-07/checkpoints.png"
     }
   },
@@ -161,7 +160,6 @@
     ],
     "assets": {
       "hero": "/assets/issues/2026-05-05/hero.png",
-      "lineup": "/assets/issues/2026-05-05/lineup.png",
       "checkpoints": "/assets/issues/2026-05-05/checkpoints.png"
     }
   },
@@ -244,7 +242,6 @@
     ],
     "assets": {
       "hero": "/assets/issues/2026-05-02/hero.png",
-      "lineup": "/assets/issues/2026-05-02/lineup.png",
       "checkpoints": "/assets/issues/2026-05-02/checkpoints.png"
     }
   },
@@ -327,7 +324,6 @@
     ],
     "assets": {
       "hero": "/assets/issues/2026-04-30/hero.png",
-      "lineup": "/assets/issues/2026-04-30/lineup.png",
       "checkpoints": "/assets/issues/2026-04-30/checkpoints.png"
     }
   },
@@ -410,7 +406,6 @@
     ],
     "assets": {
       "hero": "/assets/issues/2026-04-28/hero.png",
-      "lineup": "/assets/issues/2026-04-28/lineup.png",
       "checkpoints": "/assets/issues/2026-04-28/checkpoints.png"
     }
   },
@@ -493,7 +488,6 @@
     ],
     "assets": {
       "hero": "/assets/issues/2026-04-25/hero.png",
-      "lineup": "/assets/issues/2026-04-25/lineup.png",
       "checkpoints": "/assets/issues/2026-04-25/checkpoints.png"
     }
   }

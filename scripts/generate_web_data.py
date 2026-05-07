@@ -106,7 +106,6 @@ def issue_assets(issue_date):
 
     return {
         "hero": get_path("hero.png"),
-        "lineup": get_path("lineup.png"),
         "checkpoints": get_path("checkpoints.png"),
     }
 

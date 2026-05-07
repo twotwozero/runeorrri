@@ -30,7 +30,6 @@ type Issue = {
   stories: Story[];
   assets: {
     hero: string;
-    lineup: string;
     checkpoints: string;
   };
 };
