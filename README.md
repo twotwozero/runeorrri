@@ -82,6 +82,12 @@ npm run dev
 npm run build
 ```
 
+Cloudflare Pages 배포는 Functions(`web/functions`)까지 포함되도록 아래 명령을 사용합니다.
+
+```bash
+npm run deploy
+```
+
 11. 생성된 `issues/YYYY-MM-DD-running-newsletter.md`, `web/public/assets/issues/YYYY-MM-DD/`, `web/`을 열어 사람이 최종 검수합니다.
 12. SMTP 환경변수와 `RUNEORRRI_SITE_BASE_URL`을 설정했다면 검수용 메일을 보냅니다.
 

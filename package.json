@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "build": "npm --prefix web ci && npm --prefix web run build",
+    "deploy": "npm run build && npm --prefix web exec wrangler pages deploy dist --project-name=runeorrri --branch=main",
     "dev": "npm --prefix web run dev",
     "preview": "npm --prefix web run preview",
     "d1:create": "wrangler d1 create runeorrri-subscribers",
