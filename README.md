@@ -82,7 +82,7 @@ npm run dev
 npm run build
 ```
 
-Cloudflare Pages 배포는 Functions(`web/functions`)까지 포함되도록 아래 명령을 사용합니다.
+Cloudflare Pages 배포는 Functions(`functions/`)까지 포함되도록 아래 명령을 사용합니다.
 
 ```bash
 npm run deploy
@@ -158,7 +158,7 @@ Cloudflare Pages 배포 설정은 저장소 루트 기준으로 봅니다.
 
 - 빌드 명령: `npm run build`
 - 빌드 출력: `web/dist`
-- Pages Functions 위치: `web/functions`
+- Pages Functions 위치: `functions/`
 
 검수용 이메일 발송은 `.env.example`을 참고해 `.env` 파일에 SMTP 설정과 `MAIL_TO`를 넣습니다. 구독자 전체 발송은 Cloudflare D1 설정까지 필요합니다.
 
