@@ -38,27 +38,29 @@
 python3 scripts/validate_candidate_pool.py 2026-05-05-05 --mode collect
 ```
 
-3. 사용자가 10개 중 발행할 5개를 고르면 그 5개만 `selected=yes`로 표시하고 나머지는 `selected=no`로 둡니다.
-4. 아래 명령으로 최신 회차를 `data/candidates.csv`로 내보냅니다.
+3. 후보 10개를 보여줄 때 에디터 추천 5개도 함께 제안합니다.
+   추천은 아직 승인으로 보지 않으며, 이 단계에서는 `selected=no`를 유지합니다.
+4. 사용자가 추천안 그대로 진행하거나 10개 중 발행할 5개를 고르면 그 5개만 `selected=yes`로 표시하고 나머지는 `selected=no`로 둡니다.
+5. 아래 명령으로 최신 회차를 `data/candidates.csv`로 내보냅니다.
 
 ```bash
 python3 scripts/export_latest_candidates.py
 ```
 
-5. `selected` 값을 `yes`로 표시한 소식 5개를 확인합니다.
-6. 아래 명령으로 초안을 생성합니다.
+6. `selected` 값을 `yes`로 표시한 소식 5개를 확인합니다.
+7. 아래 명령으로 초안을 생성합니다.
 
 ```bash
 python3 scripts/generate_issue.py
 ```
 
-7. 메일/웹용 이미지를 생성합니다. 기본 Python에 Pillow가 없다면 `python3 -m pip install Pillow`를 먼저 실행합니다.
+8. 메일/웹용 이미지를 생성합니다. 기본 Python에 Pillow가 없다면 `python3 -m pip install Pillow`를 먼저 실행합니다.
 
 ```bash
 python3 scripts/generate_newsletter_art.py
 ```
 
-8. 러너리 웹사이트용 데이터를 생성합니다.
+9. 러너리 웹사이트용 데이터를 생성합니다.
 
 ```bash
 python3 scripts/generate_web_data.py
@@ -68,7 +70,7 @@ python3 scripts/generate_web_data.py
 
 - `web/src/data/issues.json`: 웹앱이 읽는 회차 데이터
 
-9. 웹사이트를 로컬에서 확인합니다.
+10. 웹사이트를 로컬에서 확인합니다.
 
 ```bash
 npm run dev
@@ -80,8 +82,8 @@ npm run dev
 npm run build
 ```
 
-10. 생성된 `issues/YYYY-MM-DD-running-newsletter.md`, `web/public/assets/issues/YYYY-MM-DD/`, `web/`을 열어 사람이 최종 검수합니다.
-11. SMTP 환경변수와 `RUNEORRRI_SITE_BASE_URL`을 설정했다면 메일을 보냅니다.
+11. 생성된 `issues/YYYY-MM-DD-running-newsletter.md`, `web/public/assets/issues/YYYY-MM-DD/`, `web/`을 열어 사람이 최종 검수합니다.
+12. SMTP 환경변수와 `RUNEORRRI_SITE_BASE_URL`을 설정했다면 메일을 보냅니다.
 
 ```bash
 python3 scripts/send_issue_email.py
@@ -122,8 +124,10 @@ python3 scripts/run_newsletter_pipeline.py --issue-id today --send-email
 python3 scripts/validate_candidate_pool.py current --mode collect
 ```
 
-5. 사용자에게 후보 10개를 제목, 출처, 왜 중요한지 중심으로 보여주고 5개 선택을 받습니다.
-6. 사용자가 고른 5개만 `selected=yes`로 바꿉니다.
+5. 사용자에게 후보 10개를 제목, 출처, 왜 중요한지 중심으로 보여주고, 그중 에디터 추천 5개를 함께 표시합니다.
+   추천 5개는 국내 일반 러너에게 바로 쓸모 있는 순서, 마감 임박성, 카테고리 균형, 기존 발행호와의 차별성을 기준으로 고릅니다.
+   추천은 아직 승인으로 보지 않으며, 사용자가 "추천대로"라고 하거나 다른 5개를 지정하기 전까지는 `selected=no`를 유지합니다.
+6. 사용자가 승인한 5개만 `selected=yes`로 바꿉니다.
 7. 아래 명령으로 발행 검증과 생성까지 진행합니다.
 
 ```bash
