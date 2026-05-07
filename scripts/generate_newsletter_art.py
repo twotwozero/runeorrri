@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import csv
 import os
 import re
@@ -10,6 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 CANDIDATES = ROOT / "data" / "candidates.csv"
+ARCHIVE = ROOT / "data" / "candidates_archive.csv"
 CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
 
 
@@ -22,8 +24,6 @@ def issue_date():
     return date.today().isoformat()
 
 
-ISSUE_DATE = issue_date()
-OUT_DIR = ROOT / "web" / "public" / "assets" / "issues" / ISSUE_DATE
 OVERWRITE_ART = os.environ.get("RUNEORRRI_OVERWRITE_ART") == "1"
 FONT_CANDIDATES = [
     "/System/Library/Fonts/AppleSDGothicNeo.ttc",
@@ -49,6 +49,34 @@ def font(size, index=16):
 def selected_rows():
     with CANDIDATES.open(newline="", encoding="utf-8") as f:
         return [row for row in csv.DictReader(f) if row.get("selected", "").strip().lower() == "yes"]
+
+
+def selected_archive_rows(issue_id):
+    with ARCHIVE.open(newline="", encoding="utf-8") as f:
+        rows = [
+            row
+            for row in csv.DictReader(f)
+            if row.get("issue_id") == issue_id and row.get("selected", "").strip().lower() == "yes"
+        ]
+    if len(rows) != 5:
+        raise SystemExit(f"Expected exactly 5 selected rows for {issue_id}, found {len(rows)}.")
+    return sorted(rows, key=story_sort_key)
+
+
+def issue_id_date(issue_id):
+    match = re.match(r"(\d{4}-\d{2}-\d{2})-", issue_id)
+    if not match:
+        raise SystemExit(f"Invalid issue_id: {issue_id}")
+    return match.group(1)
+
+
+def story_sort_key(row):
+    region_order = {"korea": 0, "global": 1}
+    category_order = {"event": 0, "gear": 1, "elite": 2, "news": 3}
+    return (
+        region_order.get(row.get("region", "").strip().lower(), 9),
+        category_order.get(row.get("category", "").strip().lower(), 9),
+    )
 
 
 def wrap(draw, text, font_obj, max_width):
@@ -79,9 +107,9 @@ def draw_text(draw, xy, text, font_obj, fill, max_width, line_height=None, max_l
     return y
 
 
-def save(img, name):
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    path = OUT_DIR / name
+def save(img, name, out_dir):
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / name
     if path.exists() and not OVERWRITE_ART:
         print(f"{path} exists; keeping existing image")
         return
@@ -114,7 +142,7 @@ def duck_cell(col, row, width, inset=0):
     )
 
 
-def hero(rows):
+def hero(rows, current_issue_date, out_dir):
     img = Image.new("RGB", (1200, 720), "#fff7ec")
     draw = ImageDraw.Draw(img)
     draw.rectangle((18, 18, 1182, 702), outline="#111514", width=3)
@@ -136,11 +164,45 @@ def hero(rows):
         48,
         3,
     )
-    draw.text((72, 630), f"{ISSUE_DATE} · {len(rows)} stories", font=font(28), fill="#111514")
-    save(img, "hero.png")
+    draw.text((72, 630), f"{current_issue_date} · {len(rows)} stories", font=font(28), fill="#111514")
+    save(img, "hero.png", out_dir)
 
 
-def action(rows):
+def category_label(row):
+    labels = {
+        "event": "일정 체크",
+        "gear": "장비 판단",
+        "news": "조건 확인",
+        "elite": "기록 맥락",
+    }
+    return labels.get(row.get("category", "").strip().lower(), "오늘 할 일")
+
+
+def checkpoint_items(rows):
+    picked = []
+    used_categories = set()
+    for row in rows:
+        category = row.get("category", "").strip().lower()
+        if category in used_categories and len(picked) < 2:
+            continue
+        picked.append(row)
+        used_categories.add(category)
+        if len(picked) == 3:
+            break
+    for row in rows:
+        if len(picked) == 3:
+            break
+        if row not in picked:
+            picked.append(row)
+
+    items = []
+    for row in picked:
+        body = row.get("one_liner", "").strip().rstrip(".") or row.get("title", "").strip()
+        items.append((category_label(row), body))
+    return items
+
+
+def action(rows, out_dir):
     img = Image.new("RGB", (1200, 620), "#fff7ec")
     draw = ImageDraw.Draw(img)
     draw.rectangle((18, 18, 1182, 602), outline="#111514", width=3)
@@ -155,11 +217,7 @@ def action(rows):
     draw.polygon(tape, fill="#49dcb1", outline="#111514")
     draw.text((758, 63), "memo", font=font(20), fill="#111514")
 
-    bullets = [
-        ("접수형", "마감일과 장소를 먼저 확인하세요."),
-        ("참여형", "기록보다 운영 방식과 안전 동선을 봅니다."),
-        ("해외 소식", "당장 참가보다 시장의 방향을 읽는 힌트로 봅니다."),
-    ]
+    bullets = checkpoint_items(rows)
     y = 184
     for idx, (label, body) in enumerate(bullets, start=1):
         row_height = 108 if idx == 3 else 92
@@ -188,13 +246,27 @@ def action(rows):
     if DUCK_ASSET.exists():
         duck = duck_cell(2, 1, 250, inset=26)
         img.paste(duck, (890, 165), duck)
-    save(img, "checkpoints.png")
+    save(img, "checkpoints.png", out_dir)
 
 
 def main():
-    rows = selected_rows()
-    hero(rows)
-    action(rows)
+    parser = argparse.ArgumentParser(description="Generate newsletter artwork for an issue.")
+    parser.add_argument("--issue-id", help="Generate from selected rows in candidates_archive.csv.")
+    parser.add_argument("--only", choices=["all", "hero", "checkpoints"], default="all")
+    args = parser.parse_args()
+
+    if args.issue_id:
+        current_issue_date = issue_id_date(args.issue_id)
+        rows = selected_archive_rows(args.issue_id)
+    else:
+        current_issue_date = issue_date()
+        rows = selected_rows()
+
+    out_dir = ROOT / "web" / "public" / "assets" / "issues" / current_issue_date
+    if args.only in {"all", "hero"}:
+        hero(rows, current_issue_date, out_dir)
+    if args.only in {"all", "checkpoints"}:
+        action(rows, out_dir)
 
 
 if __name__ == "__main__":
