@@ -52,6 +52,19 @@ def topic_particle(text):
     return "는"
 
 
+def category_label(value):
+    labels = {
+        "event": "이벤트",
+        "race": "레이스",
+        "news": "뉴스",
+        "gear": "장비",
+        "elite": "엘리트",
+        "training": "훈련",
+    }
+    category = value.strip().lower()
+    return labels.get(category, value.strip())
+
+
 def format_newsletter_item(index, row):
     title = row["title"].strip()
     summary = row["summary"].strip()
@@ -59,7 +72,7 @@ def format_newsletter_item(index, row):
     url = row["url"].strip()
     source = row["source"].strip()
     region = "국내" if row["region"].strip().lower() == "korea" else "해외"
-    category = row["category"].strip()
+    category = category_label(row["category"])
     one_liner = row["one_liner"].strip()
 
     return (
@@ -81,6 +94,8 @@ def build_editorial_meta(rows, number, korea_count, global_count):
     main_title = main["title"].split("…", 1)[0]
     main_subject = f"{main_title}{topic_particle(main_title)}"
     main_category = main["category"].strip().lower()
+    titles = " ".join(row["title"] for row in rows)
+    categories = {row["category"].strip().lower() for row in rows}
 
     email_intro = (
         f"안녕하세요, 러너리입니다. {number}호는 국내 {korea_count}개, 해외 {global_count}개로 구성했습니다. "
@@ -122,10 +137,37 @@ def build_editorial_meta(rows, number, korea_count, global_count):
             f"{main['summary'].strip()} {main['why_it_matters'].strip()}"
         )
         mid_run_note = "해외 소식은 기록 자체보다 국내 러너의 훈련, 장비, 참가 선택에 어떤 영향을 주는지까지 같이 보면 더 유용합니다."
-    perspective = (
-        "이번 호는 ‘지금 내가 무엇을 결정할 수 있나’를 기준으로 읽으면 좋습니다. 참가형 소식은 일정과 조건을 확인하고, "
-        "흐름형 소식은 내 훈련·장비·대회 선택에 어떤 영향을 줄지 보는 식입니다."
-    )
+    if "63RUN" in titles or "월드런" in titles:
+        mid_run_note = (
+            "계단 오르기, 캐처카 방식, 여행형 레이스처럼 운영 방식이 제각각입니다. 거리보다 출발 방식과 현장 동선을 먼저 확인하세요."
+        )
+        perspective = (
+            "이번 호는 러닝 이벤트가 얼마나 다양한 형태로 넓어지는지를 보여줍니다. 기록형 로드 레이스만 보지 말고, "
+            "내가 원하는 자극이 체험, 기부, 여행, 기록 중 어디에 가까운지 기준을 세워보세요."
+        )
+    elif "KB 마라톤 카드" in titles or "Gel-Kayano" in titles:
+        mid_run_note = (
+            "참가권 이벤트와 장비 소식은 조건을 잘게 읽어야 합니다. 응모 조건, 당첨 안내일, 출시일, 가격처럼 "
+            "실제로 행동을 바꾸는 숫자만 따로 적어두세요."
+        )
+        perspective = (
+            "이번 호는 달릴 대회를 고르는 문제와 러닝 주변의 선택지를 함께 다룹니다. 접수권을 얻는 방법, 공식 양도 채널, "
+            "안정화 러닝화 흐름처럼 레이스 밖의 결정도 러너의 시즌 계획에 영향을 줍니다."
+        )
+    elif "training" in categories:
+        mid_run_note = (
+            "접수 일정과 몸 관리가 같이 걸려 있습니다. 대회 캘린더를 채울 때 장거리주, 회복식, "
+            "컨디션 저하 신호를 같은 주간 계획 안에 넣어두세요."
+        )
+        perspective = (
+            "이번 호는 ‘어디에 신청할까’에서 한 걸음 더 나아가 ‘무사히 준비할 수 있을까’를 같이 묻습니다. "
+            "국내 대회 후보는 일정표에 올리고, 해외 소식은 안전한 양도와 충분한 에너지 섭취라는 운영 원칙으로 읽으면 좋습니다."
+        )
+    else:
+        perspective = (
+            "이번 호는 ‘지금 내가 무엇을 결정할 수 있나’를 기준으로 읽으면 좋습니다. 참가형 소식은 일정과 조건을 확인하고, "
+            "흐름형 소식은 내 훈련·장비·대회 선택에 어떤 영향을 줄지 보는 식입니다."
+        )
     return {
         "email_intro": email_intro,
         "issue_focus": issue_focus,

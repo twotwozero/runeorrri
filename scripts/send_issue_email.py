@@ -90,6 +90,7 @@ def category_label(row):
         "news": "뉴스",
         "gear": "장비",
         "elite": "엘리트",
+        "training": "훈련",
     }
     return labels.get(row.get("category", "").strip().lower(), row.get("category", "소식"))
 
@@ -332,7 +333,9 @@ def get_subscriber_recipients():
 
     if account_id and db_id and token:
         url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/d1/database/{db_id}/query"
-        payload = json.dumps({"sql": "SELECT email FROM subscribers WHERE status = 'active'"}).encode()
+        payload = json.dumps({
+            "sql": "SELECT email FROM subscribers WHERE status = 'active' ORDER BY subscribed_at ASC"
+        }).encode()
         req = urllib.request.Request(url, data=payload, headers={
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
@@ -365,7 +368,7 @@ def get_subscriber_recipients():
                 except urllib.error.HTTPError as error:
                     raise SystemExit(f"Wrangler OAuth recipient lookup failed ({error.code}).")
 
-    raise SystemExit("No subscriber recipients found. Check CLOUDFLARE_D1_DATABASE_ID and Cloudflare auth.")
+    raise SystemExit("No subscriber recipients found. Check Cloudflare D1 settings and auth.")
 
 
 def main():
@@ -401,7 +404,7 @@ def main():
     if not recipients:
         raise SystemExit("No recipients found.")
 
-    issues = build_web_data()
+    issues = build_web_data(include_future=True)
     current_issue_data = next((i for i in issues if i["date"] == TODAY), {})
     issue_url = runeorrri_issue_url(site_base_url)
 

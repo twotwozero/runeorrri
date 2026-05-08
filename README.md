@@ -152,7 +152,9 @@ python3 scripts/run_newsletter_pipeline.py --issue-id current --no-email
 
 ## 자동 발송 설정
 
-GitHub Actions 워크플로 `.github/workflows/send-newsletter.yml`이 화/목/토 오전 8시(KST)에 실행됩니다. 자동 수집과 AI 보강은 실행하지 않고, 미리 준비된 현재 회차 원고·이미지·웹 데이터로 메일 발송만 진행합니다.
+GitHub Actions 워크플로 `.github/workflows/send-newsletter.yml`이 화/목/토 오전 8시(KST)에 실행됩니다. 자동 수집과 AI 보강은 실행하지 않고, 미리 준비된 현재 회차 원고·이미지·웹 데이터를 빌드·배포한 뒤 최신 회차 URL을 검증하고 구독자에게 메일을 발송합니다.
+
+검수용 메일은 수동으로 `--recipients test`를 사용합니다. 구독자 전체 발송은 워크플로 또는 수동 `--recipients subscribers`로만 진행합니다.
 
 Cloudflare Pages 배포 설정은 저장소 루트 기준으로 봅니다.
 
@@ -160,7 +162,7 @@ Cloudflare Pages 배포 설정은 저장소 루트 기준으로 봅니다.
 - 빌드 출력: `web/dist`
 - Pages Functions 위치: `functions/`
 
-검수용 이메일 발송은 `.env.example`을 참고해 `.env` 파일에 SMTP 설정과 `MAIL_TO`를 넣습니다. 구독자 전체 발송은 Cloudflare D1 설정까지 필요합니다.
+검수용 이메일 발송은 `.env.example`을 참고해 `.env` 파일에 SMTP 설정과 `MAIL_TO`를 넣습니다. 구독자 전체 발송은 Cloudflare D1 설정과 `CLOUDFLARE_API_TOKEN` 또는 로컬 Wrangler 로그인이 필요합니다.
 
 ## 발행 전 필수 체크
 

@@ -49,6 +49,7 @@ function formatCategory(story: Story) {
     news: '뉴스',
     gear: '장비',
     elite: '엘리트',
+    training: '훈련',
   };
   const categoryLabel = categoryLabels[story.category] || story.category;
   return `${regionLabel} / ${categoryLabel}`;

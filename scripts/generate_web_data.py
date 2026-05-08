@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 import json
+import os
 import re
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -9,6 +12,7 @@ ISSUES_DIR = ROOT / "issues"
 WEB_DIR = ROOT / "web"
 WEB_DATA = WEB_DIR / "src" / "data" / "issues.json"
 WEB_ASSETS = WEB_DIR / "public" / "assets" / "issues"
+KST = ZoneInfo("Asia/Seoul")
 
 
 def issue_number_from_title(title):
@@ -110,9 +114,16 @@ def issue_assets(issue_date):
     }
 
 
-def build_web_data():
+def build_web_data(include_future=None):
     issue_files = sorted(ISSUES_DIR.glob("*-running-newsletter.md"), reverse=True)
-    issues = [parse_newsletter(path) for path in issue_files]
+    if include_future is None:
+        include_future = os.environ.get("RUNEORRRI_INCLUDE_FUTURE_ISSUES") == "1"
+    today = datetime.now(KST).date().isoformat()
+    issues = [
+        parse_newsletter(path)
+        for path in issue_files
+        if include_future or path.name.split("-running-newsletter.md", 1)[0] <= today
+    ]
     WEB_DATA.parent.mkdir(parents=True, exist_ok=True)
     WEB_DATA.write_text(
         json.dumps(issues, ensure_ascii=False, indent=2) + "\n",

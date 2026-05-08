@@ -72,7 +72,7 @@ def issue_id_date(issue_id):
 
 def story_sort_key(row):
     region_order = {"korea": 0, "global": 1}
-    category_order = {"event": 0, "gear": 1, "elite": 2, "news": 3}
+    category_order = {"event": 0, "gear": 1, "elite": 2, "news": 3, "training": 4}
     return (
         region_order.get(row.get("region", "").strip().lower(), 9),
         category_order.get(row.get("category", "").strip().lower(), 9),
@@ -174,6 +174,7 @@ def category_label(row):
         "gear": "장비 판단",
         "news": "조건 확인",
         "elite": "기록 맥락",
+        "training": "훈련 체크",
     }
     return labels.get(row.get("category", "").strip().lower(), "오늘 할 일")
 
@@ -218,10 +219,11 @@ def action(rows, out_dir):
     draw.text((758, 63), "memo", font=font(20), fill="#111514")
 
     bullets = checkpoint_items(rows)
-    y = 184
+    row_height = 96
+    gap = 24
+    start_y = 184
     for idx, (label, body) in enumerate(bullets, start=1):
-        row_height = 108 if idx == 3 else 92
-        top = y + sum(108 if i == 3 else 92 for i in range(1, idx)) + (idx - 1) * 24
+        top = start_y + (idx - 1) * (row_height + gap)
         bottom = top + row_height
         draw.rounded_rectangle((70, top, 782, bottom), radius=8, fill="#fffffb", outline="#111514", width=2)
         draw.rectangle((70, top, 123, bottom), fill="#111514")
