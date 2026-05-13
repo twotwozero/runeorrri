@@ -82,7 +82,7 @@ npm run dev
 npm run build
 ```
 
-Cloudflare Pages 배포는 Functions(`functions/`)까지 포함되도록 아래 명령을 사용합니다.
+Cloudflare Pages 배포는 Functions(`functions/`)까지 포함되도록 아래 명령을 사용합니다. 배포 명령은 이미 생성된 `web/dist`를 올리므로, 먼저 `npm run build`를 실행합니다.
 
 ```bash
 npm run deploy
@@ -95,10 +95,14 @@ npm run deploy
 python3 scripts/send_issue_email.py --recipients test
 ```
 
-구독자 전체 발송은 검수 후 아래 명령으로만 진행합니다.
+구독자 전체 발송은 검수 후 아래 명령으로만 진행합니다. 정식 발행 자동화는 구독자 메일 발송, 웹 빌드, Cloudflare Pages 배포, 라이브 확인 순서로 실행합니다.
 
 ```bash
 python3 scripts/send_issue_email.py --recipients subscribers
+```
+
+```bash
+npm run publish
 ```
 
 메일 발송 전 `scripts/send_issue_email.py`는 웹사이트 데이터를 다시 생성하고, 메일 상단 `@runeorrri`, 제목, 히어로 이미지를 `RUNEORRRI_SITE_BASE_URL/NN`(회차 번호)로 연결합니다. 기본값은 검수용 `MAIL_TO` 발송이며, 구독자 발송은 D1의 `active` 구독자 목록을 사용합니다.
@@ -146,13 +150,13 @@ python3 scripts/validate_candidate_pool.py current --mode collect
 python3 scripts/run_newsletter_pipeline.py --issue-id current --no-email
 ```
 
-8. 웹 빌드를 확인하고 배포를 끝낸 뒤, 사용자가 "메일발송해줘"라고 하면 검수용 `MAIL_TO`로만 발송합니다.
+8. 사용자가 "메일발송해줘"라고 하면 검수용 `MAIL_TO`로만 발송합니다.
    사용자가 "구독자에게 보내줘"라고 명시한 뒤에만 D1의 `active` 구독자 목록으로 발송합니다.
-   메일 링크가 최신 `/NN` 회차를 가리키는지 확인한 다음 커밋·푸시합니다.
+   구독자 발송 뒤에는 웹 빌드, Cloudflare Pages 배포, 라이브 확인 순서로 진행합니다.
 
 ## 자동 발송 설정
 
-GitHub Actions 워크플로 `.github/workflows/send-newsletter.yml`이 화/목/토 오전 8시(KST)에 실행됩니다. 자동 수집과 AI 보강은 실행하지 않고, 미리 준비된 현재 회차 원고·이미지·웹 데이터를 빌드·배포한 뒤 최신 회차 URL을 검증하고 구독자에게 메일을 발송합니다.
+GitHub Actions 워크플로 `.github/workflows/send-newsletter.yml`이 화/목/토 오전 8시(KST)에 실행됩니다. 자동 수집과 AI 보강은 실행하지 않고, 미리 준비된 현재 회차 원고·이미지를 기준으로 구독자에게 메일을 발송한 뒤 웹을 빌드하고 Cloudflare Pages에 배포한 다음 최신 회차 URL을 검증합니다.
 
 검수용 메일은 수동으로 `--recipients test`를 사용합니다. 구독자 전체 발송은 워크플로 또는 수동 `--recipients subscribers`로만 진행합니다.
 

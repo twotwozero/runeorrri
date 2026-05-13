@@ -3,7 +3,11 @@
   "private": true,
   "scripts": {
     "build": "npm --prefix web ci && npm --prefix web run build",
-    "deploy": "npm run build && npx wrangler pages deploy web/dist --project-name=runeorrri --branch=main",
+    "deploy": "npx wrangler pages deploy web/dist --project-name=runeorrri --branch=main",
+    "send:test": "python3 scripts/send_issue_email.py --recipients test",
+    "send:subscribers": "python3 scripts/send_issue_email.py --recipients subscribers",
+    "verify:live": "python3 scripts/verify_live_issue.py",
+    "publish": "npm run send:subscribers && npm run build && npm run deploy && npm run verify:live",
     "dev": "npm --prefix web run dev",
     "preview": "npm --prefix web run preview",
     "d1:create": "wrangler d1 create runeorrri-subscribers",
