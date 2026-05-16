@@ -3,10 +3,11 @@ import argparse
 import csv
 import os
 import re
-from datetime import date
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
+
+from utils import is_selected, issue_date_from_id, korean_today, read_current_issue_id, story_sort_key
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,12 +17,8 @@ CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
 
 
 def issue_date():
-    if CURRENT_ISSUE.exists():
-        issue_id = CURRENT_ISSUE.read_text(encoding="utf-8").strip()
-        match = re.match(r"(\d{4}-\d{2}-\d{2})-", issue_id)
-        if match:
-            return match.group(1)
-    return date.today().isoformat()
+    current_date = issue_date_from_id(read_current_issue_id(CURRENT_ISSUE))
+    return current_date or korean_today()
 
 
 OVERWRITE_ART = os.environ.get("RUNEORRRI_OVERWRITE_ART") == "1"
@@ -48,7 +45,7 @@ def font(size, index=16):
 
 def selected_rows():
     with CANDIDATES.open(newline="", encoding="utf-8") as f:
-        return [row for row in csv.DictReader(f) if row.get("selected", "").strip().lower() == "yes"]
+        return [row for row in csv.DictReader(f) if is_selected(row.get("selected", ""))]
 
 
 def selected_archive_rows(issue_id):
@@ -56,7 +53,7 @@ def selected_archive_rows(issue_id):
         rows = [
             row
             for row in csv.DictReader(f)
-            if row.get("issue_id") == issue_id and row.get("selected", "").strip().lower() == "yes"
+            if row.get("issue_id") == issue_id and is_selected(row.get("selected", ""))
         ]
     if len(rows) != 5:
         raise SystemExit(f"Expected exactly 5 selected rows for {issue_id}, found {len(rows)}.")
@@ -68,15 +65,6 @@ def issue_id_date(issue_id):
     if not match:
         raise SystemExit(f"Invalid issue_id: {issue_id}")
     return match.group(1)
-
-
-def story_sort_key(row):
-    region_order = {"korea": 0, "global": 1}
-    category_order = {"event": 0, "gear": 1, "elite": 2, "news": 3, "training": 4}
-    return (
-        region_order.get(row.get("region", "").strip().lower(), 9),
-        category_order.get(row.get("category", "").strip().lower(), 9),
-    )
 
 
 def wrap(draw, text, font_obj, max_width):

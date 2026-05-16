@@ -4,6 +4,8 @@ import csv
 import re
 from pathlib import Path
 
+from utils import is_selected as is_selected_value
+
 
 ROOT = Path(__file__).resolve().parents[1]
 ARCHIVE = ROOT / "data" / "candidates_archive.csv"
@@ -57,7 +59,7 @@ def resolve_issue_id(value, rows):
 
 
 def is_selected(row):
-    return row.get("selected", "").strip().lower() in {"yes", "y", "true", "1", "selected"}
+    return is_selected_value(row.get("selected", ""))
 
 
 def normalize(text):

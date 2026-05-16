@@ -10,21 +10,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ARCHIVE = ROOT / "data" / "candidates_archive.csv"
-CANDIDATES = ROOT / "data" / "candidates.csv"
 CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
 TODAY = date.today().isoformat()
-
-REQUIRED_FIELDS = [
-    "selected",
-    "region",
-    "category",
-    "title",
-    "summary",
-    "why_it_matters",
-    "url",
-    "source",
-    "one_liner",
-]
 
 
 def run(command):
@@ -61,14 +48,6 @@ def python_with_pillow():
     return str(python_bin)
 
 
-def ensure_current_python_has_pillow():
-    try:
-        import PIL  # noqa: F401
-        return
-    except ImportError:
-        raise SystemExit("Pillow is not available in this Python runtime.")
-
-
 def archive_rows():
     if not ARCHIVE.exists():
         raise SystemExit(f"Missing candidate archive: {ARCHIVE}")
@@ -98,34 +77,6 @@ def resolve_issue_id(value):
     return value
 
 
-def selected_rows():
-    if not CANDIDATES.exists():
-        raise SystemExit(f"Missing candidates file: {CANDIDATES}")
-    with CANDIDATES.open(newline="", encoding="utf-8") as f:
-        rows = list(csv.DictReader(f))
-    return [row for row in rows if row.get("selected", "").strip().lower() == "yes"]
-
-
-def validate_candidates(issue_id):
-    rows = selected_rows()
-    errors = []
-    if len(rows) != 5:
-        errors.append(f"expected exactly 5 selected rows, found {len(rows)}")
-    for index, row in enumerate(rows, start=1):
-        for field in REQUIRED_FIELDS:
-            if not row.get(field, "").strip():
-                errors.append(f"row {index}: missing {field}")
-        status = row.get("verification_status", "").strip().lower()
-        allowed_statuses = {"reviewed"}
-        if status and status not in allowed_statuses:
-            errors.append(
-                f"row {index}: verification_status must be one of {sorted(allowed_statuses)}, got {status}"
-            )
-    if errors:
-        detail = "\n".join(f"- {error}" for error in errors)
-        raise SystemExit(f"Candidate validation failed for {issue_id}:\n{detail}")
-
-
 def main():
     parser = argparse.ArgumentParser(description="Build and optionally send one runeorrri newsletter issue.")
     parser.add_argument(
@@ -144,7 +95,6 @@ def main():
     run([sys.executable, "scripts/validate_candidate_pool.py", issue_id, "--mode", "publish"])
     run([sys.executable, "scripts/export_latest_candidates.py", issue_id])
 
-    validate_candidates(issue_id)
     run([sys.executable, "scripts/generate_issue.py"])
     art_python = python_with_pillow()
     run([art_python, "scripts/generate_newsletter_art.py"])

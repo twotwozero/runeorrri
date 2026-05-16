@@ -1,46 +1,27 @@
 #!/usr/bin/env python3
-import os
-import re
 import urllib.error
 import urllib.request
 from pathlib import Path
+
+from utils import issue_number_from_id, load_dotenv, read_current_issue_id, required_env
 
 
 ROOT = Path(__file__).resolve().parents[1]
 CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
 
 
-def load_dotenv():
-    env_file = ROOT / ".env"
-    if not env_file.exists():
-        return
-    for line in env_file.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
-
-
-def required_env(name):
-    value = os.environ.get(name)
-    if not value:
-        raise SystemExit(f"Missing required environment variable: {name}")
-    return value
-
-
 def issue_number():
-    if not CURRENT_ISSUE.exists():
+    issue_id = read_current_issue_id(CURRENT_ISSUE)
+    if not issue_id:
         raise SystemExit(f"Missing current issue file: {CURRENT_ISSUE}")
-    issue_id = CURRENT_ISSUE.read_text(encoding="utf-8").strip()
-    suffix = issue_id.rsplit("-", 1)[-1]
-    if not re.fullmatch(r"\d+", suffix):
+    number = issue_number_from_id(issue_id, default="")
+    if not number:
         raise SystemExit(f"Cannot resolve issue number from current issue id: {issue_id}")
-    return suffix.zfill(2)
+    return number
 
 
 def main():
-    load_dotenv()
+    load_dotenv(ROOT)
     base_url = required_env("RUNEORRRI_SITE_BASE_URL").rstrip("/")
     url = f"{base_url}/{issue_number()}"
     request = urllib.request.Request(

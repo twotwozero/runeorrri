@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import csv
-import re
-from datetime import date
 from pathlib import Path
+
+from utils import category_label, clean_text, is_selected, issue_date_from_id
+from utils import issue_number_from_id, korean_today, read_current_issue_id
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -11,21 +12,9 @@ CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
 ISSUES_DIR = ROOT / "issues"
 
 
-def clean_text(value):
-    return str(value).replace("\u00b7", ", ")
-
-
 def issue_date():
-    if CURRENT_ISSUE.exists():
-        issue_id = CURRENT_ISSUE.read_text(encoding="utf-8").strip()
-        match = re.match(r"(\d{4}-\d{2}-\d{2})-", issue_id)
-        if match:
-            return match.group(1)
-    return date.today().isoformat()
-
-
-def is_selected(value: str) -> bool:
-    return value.strip().lower() in {"yes", "y", "true", "1", "selected"}
+    current_date = issue_date_from_id(read_current_issue_id(CURRENT_ISSUE))
+    return current_date or korean_today()
 
 
 def read_selected_candidates():
@@ -40,11 +29,7 @@ def read_selected_candidates():
 
 
 def issue_number():
-    if not CURRENT_ISSUE.exists():
-        return "01"
-    issue_id = CURRENT_ISSUE.read_text(encoding="utf-8").strip()
-    suffix = issue_id.rsplit("-", 1)[-1]
-    return suffix.zfill(2) if suffix.isdigit() else "01"
+    return issue_number_from_id(read_current_issue_id(CURRENT_ISSUE))
 
 
 def topic_particle(text):
@@ -54,19 +39,6 @@ def topic_particle(text):
         if char.isalnum():
             return "은"
     return "는"
-
-
-def category_label(value):
-    labels = {
-        "event": "이벤트",
-        "race": "레이스",
-        "news": "뉴스",
-        "gear": "장비",
-        "elite": "엘리트",
-        "training": "훈련",
-    }
-    category = value.strip().lower()
-    return labels.get(category, value.strip())
 
 
 def format_newsletter_item(index, row):

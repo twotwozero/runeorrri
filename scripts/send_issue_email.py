@@ -8,39 +8,21 @@ import smtplib
 import urllib.parse
 import urllib.request
 import urllib.error
-from datetime import datetime
 from email.message import EmailMessage
 from email.utils import formataddr
 from html import escape
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 from generate_web_data import build_web_data
+from utils import category_label as category_label_value
+from utils import clean_text, is_selected, issue_date_from_id, issue_number_from_id, korean_today
+from utils import load_dotenv, read_current_issue_id, required_env
 
 
 ROOT = Path(__file__).resolve().parents[1]
 CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
 ARCHIVE = ROOT / "data" / "candidates_archive.csv"
 ACTIVE_ISSUE_ID = ""
-
-
-def clean_text(value):
-    return str(value).replace("\u00b7", ", ")
-
-
-def read_current_issue_id():
-    if CURRENT_ISSUE.exists():
-        return CURRENT_ISSUE.read_text(encoding="utf-8").strip()
-    return ""
-
-
-def issue_date_from_id(issue_id):
-    match = re.match(r"(\d{4}-\d{2}-\d{2})-", issue_id)
-    return match.group(1) if match else ""
-
-
-def korean_today():
-    return datetime.now(ZoneInfo("Asia/Seoul")).date().isoformat()
 
 
 def archived_issue_ids():
@@ -52,7 +34,7 @@ def archived_issue_ids():
 
 def resolve_issue_id(value):
     if value == "current":
-        issue_id = read_current_issue_id()
+        issue_id = read_current_issue_id(CURRENT_ISSUE)
         if not issue_id:
             raise SystemExit(f"Missing current issue file: {CURRENT_ISSUE}")
         return issue_id
@@ -75,10 +57,9 @@ def issue_date():
         current_date = issue_date_from_id(ACTIVE_ISSUE_ID)
         if current_date:
             return current_date
-    if CURRENT_ISSUE.exists():
-        current_date = issue_date_from_id(read_current_issue_id())
-        if current_date:
-            return current_date
+    current_date = issue_date_from_id(read_current_issue_id(CURRENT_ISSUE))
+    if current_date:
+        return current_date
     return korean_today()
 
 
@@ -87,31 +68,8 @@ NEWSLETTER = ROOT / "issues" / f"{TODAY}-running-newsletter.md"
 ART_DIR = ROOT / "web" / "public" / "assets" / "issues" / TODAY
 
 
-def load_dotenv():
-    env_file = ROOT / ".env"
-    if not env_file.exists():
-        return
-    for line in env_file.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
-
-
-def required_env(name):
-    value = os.environ.get(name)
-    if not value:
-        raise SystemExit(f"Missing required environment variable: {name}")
-    return value
-
-
 def issue_number():
-    issue_id = ACTIVE_ISSUE_ID or read_current_issue_id()
-    if not issue_id:
-        return "01"
-    suffix = issue_id.rsplit("-", 1)[-1]
-    return suffix.zfill(2) if suffix.isdigit() else "01"
+    return issue_number_from_id(ACTIVE_ISSUE_ID or read_current_issue_id(CURRENT_ISSUE))
 
 
 def art_images():
@@ -136,7 +94,7 @@ def runeorrri_issue_url(base_url):
 def selected_rows():
     candidates = ROOT / "data" / "candidates.csv"
     with candidates.open(newline="", encoding="utf-8") as f:
-        return [row for row in csv.DictReader(f) if row.get("selected", "").strip().lower() == "yes"]
+        return [row for row in csv.DictReader(f) if is_selected(row.get("selected", ""))]
 
 
 def region_label(row):
@@ -144,15 +102,7 @@ def region_label(row):
 
 
 def category_label(row):
-    labels = {
-        "event": "이벤트",
-        "race": "레이스",
-        "news": "뉴스",
-        "gear": "장비",
-        "elite": "엘리트",
-        "training": "훈련",
-    }
-    return labels.get(row.get("category", "").strip().lower(), row.get("category", "소식"))
+    return category_label_value(row.get("category", "소식"))
 
 
 def line_up(rows):
@@ -398,11 +348,8 @@ def html_email(images, issue_url, unsubscribe_link, issue_data=None):
 
 
 def get_test_recipients():
-    def mail_to_recipients():
-        mail_to = os.environ.get("MAIL_TO", "")
-        return [addr.strip() for addr in mail_to.split(",") if addr.strip()]
-
-    return mail_to_recipients()
+    mail_to = os.environ.get("MAIL_TO", "")
+    return [addr.strip() for addr in mail_to.split(",") if addr.strip()]
 
 
 def get_subscriber_recipients():
@@ -481,7 +428,7 @@ def main():
     NEWSLETTER = ROOT / "issues" / f"{TODAY}-running-newsletter.md"
     ART_DIR = ROOT / "web" / "public" / "assets" / "issues" / TODAY
 
-    current_issue_id = read_current_issue_id()
+    current_issue_id = read_current_issue_id(CURRENT_ISSUE)
     if current_issue_id != ACTIVE_ISSUE_ID:
         raise SystemExit(
             f"Refusing to send {ACTIVE_ISSUE_ID}: data/current_issue_id.txt is {current_issue_id or 'missing'}. "
@@ -497,8 +444,10 @@ def main():
                 f"today in KST is {today_kst}. Pass --allow-non-today only for an intentional resend."
             )
 
-    load_dotenv()
-    site_base_url = os.environ.get("RUNEORRRI_SITE_BASE_URL") or required_env("RUNNERI_SITE_BASE_URL")
+    load_dotenv(ROOT)
+    site_base_url = os.environ.get("RUNEORRRI_SITE_BASE_URL") or os.environ.get("RUNNERI_SITE_BASE_URL")
+    if not site_base_url:
+        raise SystemExit("Missing required environment variable: RUNEORRRI_SITE_BASE_URL")
     smtp_host = required_env("SMTP_HOST")
     smtp_port = int(os.environ.get("SMTP_PORT", "587"))
     smtp_user = required_env("SMTP_USER")

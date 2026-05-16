@@ -3,6 +3,8 @@ import csv
 import sys
 from pathlib import Path
 
+from utils import story_sort_key
+
 
 ROOT = Path(__file__).resolve().parents[1]
 ARCHIVE = ROOT / "data" / "candidates_archive.csv"
@@ -39,20 +41,19 @@ def latest_issue_id(rows):
     return sorted({row["issue_id"] for row in rows})[-1]
 
 
-REGION_ORDER = {"korea": 0, "global": 1}
-CATEGORY_ORDER = {"event": 0, "gear": 1, "elite": 2, "news": 3}
-
-
-def story_sort_key(row):
-    return (
-        REGION_ORDER.get(row.get("region", ""), 9),
-        CATEGORY_ORDER.get(row.get("category", ""), 9),
-    )
+def resolve_issue_id(value, rows):
+    if value == "current":
+        if not CURRENT_ISSUE.exists():
+            raise SystemExit(f"Missing current issue file: {CURRENT_ISSUE}")
+        return CURRENT_ISSUE.read_text(encoding="utf-8").strip()
+    if value == "latest":
+        return latest_issue_id(rows)
+    return value
 
 
 def main():
     rows = read_archive()
-    issue_id = sys.argv[1] if len(sys.argv) > 1 else latest_issue_id(rows)
+    issue_id = resolve_issue_id(sys.argv[1], rows) if len(sys.argv) > 1 else latest_issue_id(rows)
     latest = [row for row in rows if row["issue_id"] == issue_id]
     if not latest:
         raise SystemExit(f"No candidates found for issue_id: {issue_id}")

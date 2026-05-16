@@ -6,6 +6,8 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from utils import clean_text
+
 
 ROOT = Path(__file__).resolve().parents[1]
 ISSUES_DIR = ROOT / "issues"
@@ -13,10 +15,6 @@ WEB_DIR = ROOT / "web"
 WEB_DATA = WEB_DIR / "src" / "data" / "issues.json"
 WEB_ASSETS = WEB_DIR / "public" / "assets" / "issues"
 KST = ZoneInfo("Asia/Seoul")
-
-
-def clean_text(value):
-    return str(value).replace("\u00b7", ", ")
 
 
 def issue_number_from_title(title):
