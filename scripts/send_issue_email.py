@@ -121,6 +121,14 @@ def art_images():
     }
 
 
+def image_urls(base_url):
+    assets_url = f"{base_url.rstrip('/')}/assets/issues/{TODAY}"
+    return {
+        "hero": f"{assets_url}/hero.png",
+        "checkpoints": f"{assets_url}/checkpoints.png",
+    }
+
+
 def runeorrri_issue_url(base_url):
     return f"{base_url.rstrip('/')}/{issue_number()}"
 
@@ -187,8 +195,11 @@ def source_links(rows):
         f"""
         <tr>
           <td style="padding:8px 0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;font-size:13px;line-height:1.5;">
-            <a href="{escape(row['url'])}" style="color:#f7f4ec;text-decoration:none;font-weight:800;">{escape(clean_text(row['title']))}</a>
-            <div style="color:#aab4af;margin-top:2px;">{escape(clean_text(row['source']))}, {escape(row.get('published_at', ''))}</div>
+            <div style="color:#f7f4ec;font-weight:800;">{escape(clean_text(row['source']))}</div>
+            <div style="color:#aab4af;margin-top:2px;">{escape(clean_text(row.get('published_at', '')))}</div>
+            <div style="margin-top:3px;">
+              <a href="{escape(row['url'])}" style="color:#49dcb1;text-decoration:none;font-weight:800;">원문 보기</a>
+            </div>
           </td>
         </tr>
         """
@@ -202,7 +213,26 @@ def unsubscribe_url(base_url, recipient):
     return f"{base_url.rstrip('/')}/unsubscribe?{query}"
 
 
-def html_email(image_cids, issue_url, unsubscribe_link, issue_data=None):
+def text_email(issue_url, unsubscribe_link, issue_data=None):
+    issue_data = issue_data or {}
+    rows = selected_rows()
+    lines = [
+        f"[러너리] 오늘의 러닝 브리핑 {issue_number()} - {TODAY}",
+        "",
+        clean_text(issue_data.get("emailIntro", "안녕하세요, 러너리입니다.")),
+        "",
+        f"웹에서 보기: {issue_url}",
+        "",
+        "오늘의 라인업",
+    ]
+    for index, row in enumerate(rows, start=1):
+        lines.append(f"{index:02d}. {clean_text(row['title'])}")
+        lines.append(f"출처: {clean_text(row['source'])}")
+    lines.extend(["", f"수신거부: {unsubscribe_link}"])
+    return "\n".join(lines)
+
+
+def html_email(images, issue_url, unsubscribe_link, issue_data=None):
     issue_data = issue_data or {}
     email_intro = clean_text(issue_data.get("emailIntro", "안녕하세요, 러너리입니다."))
     issue_focus = clean_text(issue_data.get("issueFocus", ""))
@@ -213,8 +243,8 @@ def html_email(image_cids, issue_url, unsubscribe_link, issue_data=None):
     rows = selected_rows()
     main = rows[0] if rows else {}
     other_rows = rows[1:]
-    hero_img = f'<a href="{escape(issue_url)}" style="text-decoration:none;border:0;display:block;"><img src="cid:{image_cids["hero"]}" width="600" alt="러너리 브리핑" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;border:0;"></a>'
-    checkpoint_img = f'<img src="cid:{image_cids["checkpoints"]}" width="600" alt="러너리 체크포인트" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;border:0;">'
+    hero_img = f'<a href="{escape(issue_url)}" style="text-decoration:none;border:0;display:block;"><img src="{escape(images["hero"])}" width="600" alt="러너리 브리핑" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;border:0;"></a>'
+    checkpoint_img = f'<img src="{escape(images["checkpoints"])}" width="600" alt="러너리 체크포인트" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;border:0;">'
     return f"""<!doctype html>
 <html lang="ko">
 <head>
@@ -502,8 +532,7 @@ def main():
     if missing_art:
         raise SystemExit(f"Missing newsletter art files: {', '.join(str(path) for path in missing_art)}")
 
-    image_cids = {key: f"runeorrri-{key}-{TODAY}" for key in art}
-    text_body = NEWSLETTER.read_text(encoding="utf-8")
+    images = image_urls(site_base_url)
     subject = f"[러너리] \U0001f3c3\U0001f3fb 오늘의 러닝 브리핑 {issue_number()} - RUNNING CAN CHANGE THE WORLD"
 
     print(f"Sending to {len(recipients)} {args.recipients} recipient(s)...")
@@ -512,23 +541,13 @@ def main():
         smtp.login(smtp_user, smtp_password)
         for recipient in recipients:
             unsub_link = unsubscribe_url(site_base_url, recipient)
-            html_body = html_email(image_cids, issue_url, unsub_link, current_issue_data)
+            html_body = html_email(images, issue_url, unsub_link, current_issue_data)
             msg = EmailMessage()
             msg["Subject"] = subject
             msg["From"] = formataddr((mail_from_name, mail_from))
             msg["To"] = recipient
-            msg.set_content(
-                f"{text_body}\n\n--\n수신거부: {unsub_link}\n"
-            )
+            msg.set_content(text_email(issue_url, unsub_link, current_issue_data))
             msg.add_alternative(html_body, subtype="html")
-            html_part = msg.get_payload()[-1]
-            for key, png in art.items():
-                html_part.add_related(
-                    png.read_bytes(),
-                    maintype="image",
-                    subtype="png",
-                    cid=f"<{image_cids[key]}>",
-                )
             smtp.send_message(msg)
             print(f"  → {recipient}")
 
