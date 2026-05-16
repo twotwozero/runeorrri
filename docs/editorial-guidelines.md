@@ -68,8 +68,8 @@
 - 발행 단계에서는 사용자가 추천안을 승인하거나 직접 고른 5개만 `selected=yes`로 둡니다.
 - 기존 발행호와 겹치는 소재는 제외합니다. 같은 대회, 같은 접수 페이지, 같은 브랜드/제품군, 같은 엘리트 레이스, 같은 기록 후속 기사, 같은 원문 URL은 중복으로 봅니다.
 - 후보 10개는 서로도 겹치지 않아야 합니다. 같은 지역 대회가 여러 개라도 대회 성격, 날짜, 독자 효용이 분명히 달라야 합니다.
-- 후보를 추가한 뒤 `scripts/validate_candidate_pool.py current --mode collect`로 10개 후보 풀을 검증합니다.
-- 사용자가 5개를 고른 뒤 `scripts/run_newsletter_pipeline.py --issue-id current --no-email`로 발행 전 검증을 다시 통과해야 합니다.
+- 후보를 추가한 뒤 `scripts/validate_candidate_pool.py <issue-id> --mode collect`로 10개 후보 풀을 검증합니다.
+- 사용자가 5개를 고른 뒤 `scripts/run_newsletter_pipeline.py --issue-id <issue-id> --no-email`로 발행 전 검증을 다시 통과해야 합니다.
 
 ## 추천 5개 기준
 

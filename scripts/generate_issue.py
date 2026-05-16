@@ -1,35 +1,48 @@
 #!/usr/bin/env python3
+import argparse
 import csv
 from pathlib import Path
 
 from utils import category_label, clean_text, is_selected, issue_date_from_id
-from utils import issue_number_from_id, korean_today, read_current_issue_id
+from utils import issue_number_from_id, korean_today, story_sort_key
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CANDIDATES = ROOT / "data" / "candidates.csv"
-CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
+ARCHIVE = ROOT / "data" / "candidates_archive.csv"
 ISSUES_DIR = ROOT / "issues"
 
 
-def issue_date():
-    current_date = issue_date_from_id(read_current_issue_id(CURRENT_ISSUE))
-    return current_date or korean_today()
+def resolve_issue_id(value):
+    with ARCHIVE.open(newline="", encoding="utf-8") as f:
+        ids = sorted({row["issue_id"] for row in csv.DictReader(f) if row.get("issue_id")})
+    if not ids:
+        raise SystemExit("No issue_id values found in candidates_archive.csv")
+    if value == "latest":
+        return ids[-1]
+    return value
 
 
-def read_selected_candidates():
-    with CANDIDATES.open(newline="", encoding="utf-8") as f:
+def read_selected_candidates(issue_id):
+    with ARCHIVE.open(newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f))
-    selected = [row for row in rows if is_selected(row.get("selected", ""))]
+    issue_rows = [row for row in rows if row.get("issue_id") == issue_id]
+    if not issue_rows:
+        raise SystemExit(f"No candidates found for issue_id: {issue_id}")
+    selected = sorted(
+        [row for row in issue_rows if is_selected(row.get("selected", ""))],
+        key=story_sort_key,
+    )
     if len(selected) != 5:
-        raise SystemExit(
-            f"Expected exactly 5 selected candidates in {CANDIDATES}, found {len(selected)}."
-        )
+        raise SystemExit(f"Expected exactly 5 selected candidates for {issue_id}, found {len(selected)}.")
     return selected
 
 
-def issue_number():
-    return issue_number_from_id(read_current_issue_id(CURRENT_ISSUE))
+def issue_date(issue_id):
+    return issue_date_from_id(issue_id) or korean_today()
+
+
+def issue_number(issue_id):
+    return issue_number_from_id(issue_id)
 
 
 def topic_particle(text):
@@ -186,9 +199,9 @@ def build_editorial_meta(rows, number, korea_count, global_count):
     }
 
 
-def build_issue(rows):
-    today = issue_date()
-    number = issue_number()
+def build_issue(rows, issue_id):
+    today = issue_date(issue_id)
+    number = issue_number(issue_id)
     newsletter_items = "\n".join(
         format_newsletter_item(index, row) for index, row in enumerate(rows, start=1)
     )
@@ -213,10 +226,14 @@ def build_issue(rows):
 
 
 def main():
-    rows = read_selected_candidates()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--issue-id", default="latest")
+    args = parser.parse_args()
+    issue_id = resolve_issue_id(args.issue_id)
+    rows = read_selected_candidates(issue_id)
     ISSUES_DIR.mkdir(exist_ok=True)
-    output = ISSUES_DIR / f"{issue_date()}-running-newsletter.md"
-    output.write_text(build_issue(rows), encoding="utf-8")
+    output = ISSUES_DIR / f"{issue_date(issue_id)}-running-newsletter.md"
+    output.write_text(build_issue(rows, issue_id), encoding="utf-8")
     print(output)
 
 

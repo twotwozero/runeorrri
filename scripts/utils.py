@@ -33,13 +33,6 @@ def korean_today():
     return datetime.now(KST).date().isoformat()
 
 
-def read_current_issue_id(current_issue_path):
-    path = Path(current_issue_path)
-    if path.exists():
-        return path.read_text(encoding="utf-8").strip()
-    return ""
-
-
 def category_label(value):
     labels = {
         "event": "이벤트",

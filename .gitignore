@@ -14,3 +14,5 @@ web/*.tsbuildinfo
 web/vite.config.d.ts
 web/vite.config.js
 node_modules/
+data/candidates.csv
+data/current_issue_id.txt

@@ -17,12 +17,11 @@
 이 저장소의 Git 루트는 `newsletter/`입니다. Cloudflare Pages나 GitHub Actions의 작업 디렉터리도 이 루트를 기준으로 봅니다.
 
 - `docs/editorial-guidelines.md`: 선별 기준, 톤, 저작권·검수 기준, 1차/2차 검수 체크리스트, 소식 구조
-- `data/candidates.csv`: 최신 회차 생성용 후보 소식 파일
-- `data/candidates_archive.csv`: 모든 회차 후보 소식 누적 기록
+- `data/candidates_archive.csv`: 모든 회차 후보 소식 누적 기록이자 생성 스크립트의 원본
 - `issues/`: 회차별 뉴스레터 원고(md) 저장 위치
 - `web/public/assets/issues/YYYY-MM-DD/`: 회차별 메일/웹 공용 이미지 저장 위치 (단일 출처)
 - `scripts/run_newsletter_pipeline.py`: 후보 검증부터 원고·이미지·웹 데이터 생성과 선택적 메일 발송까지 실행하는 표준 파이프라인
-- `scripts/generate_issue.py`: 후보 CSV에서 뉴스레터 초안을 생성하는 스크립트
+- `scripts/generate_issue.py`: `issue_id` 기준으로 archive에서 뉴스레터 초안을 생성하는 스크립트
 - `scripts/generate_newsletter_art.py`: 회차별 메일/웹용 이미지를 생성하는 스크립트
 - `scripts/generate_web_data.py`: 뉴스레터 원고를 웹사이트 데이터(JSON)로 변환하는 스크립트
 - `web/`: 러너리 뉴스레터 웹사이트
@@ -41,26 +40,20 @@ python3 scripts/validate_candidate_pool.py 2026-05-05-05 --mode collect
 3. 후보 10개를 보여줄 때 에디터 추천 5개도 함께 제안합니다.
    추천은 아직 승인으로 보지 않으며, 이 단계에서는 `selected=no`를 유지합니다.
 4. 사용자가 추천안 그대로 진행하거나 10개 중 발행할 5개를 고르면 그 5개만 `selected=yes`로 표시하고 나머지는 `selected=no`로 둡니다.
-5. 아래 명령으로 최신 회차를 `data/candidates.csv`로 내보냅니다.
+5. `selected` 값을 `yes`로 표시한 소식 5개를 확인합니다.
+6. 아래 명령으로 초안을 생성합니다.
 
 ```bash
-python3 scripts/export_latest_candidates.py
+python3 scripts/generate_issue.py --issue-id 2026-05-05-05
 ```
 
-6. `selected` 값을 `yes`로 표시한 소식 5개를 확인합니다.
-7. 아래 명령으로 초안을 생성합니다.
+7. 메일/웹용 이미지를 생성합니다. 기본 Python에 Pillow가 없다면 `python3 -m pip install Pillow`를 먼저 실행합니다.
 
 ```bash
-python3 scripts/generate_issue.py
+python3 scripts/generate_newsletter_art.py --issue-id 2026-05-05-05
 ```
 
-8. 메일/웹용 이미지를 생성합니다. 기본 Python에 Pillow가 없다면 `python3 -m pip install Pillow`를 먼저 실행합니다.
-
-```bash
-python3 scripts/generate_newsletter_art.py
-```
-
-9. 러너리 웹사이트용 데이터를 생성합니다.
+8. 러너리 웹사이트용 데이터를 생성합니다.
 
 ```bash
 python3 scripts/generate_web_data.py
@@ -70,7 +63,7 @@ python3 scripts/generate_web_data.py
 
 - `web/src/data/issues.json`: 웹앱이 읽는 회차 데이터
 
-10. 웹사이트를 로컬에서 확인합니다.
+9. 웹사이트를 로컬에서 확인합니다.
 
 ```bash
 npm run dev
@@ -88,17 +81,17 @@ Cloudflare Pages 배포는 Functions(`functions/`)까지 포함되도록 아래 
 npm run deploy
 ```
 
-11. 생성된 `issues/YYYY-MM-DD-running-newsletter.md`, `web/public/assets/issues/YYYY-MM-DD/`, `web/`을 열어 사람이 최종 검수합니다.
-12. SMTP 환경변수와 `RUNEORRRI_SITE_BASE_URL`을 설정했다면 검수용 메일을 보냅니다.
+10. 생성된 `issues/YYYY-MM-DD-running-newsletter.md`, `web/public/assets/issues/YYYY-MM-DD/`, `web/`을 열어 사람이 최종 검수합니다.
+11. SMTP 환경변수와 `RUNEORRRI_SITE_BASE_URL`을 설정했다면 검수용 메일을 보냅니다.
 
 ```bash
-python3 scripts/send_issue_email.py --recipients test
+python3 scripts/send_issue_email.py --recipients test --issue-id 2026-05-05-05
 ```
 
 구독자 전체 발송은 사용자가 명시적으로 승인한 뒤 아래 명령으로만 진행합니다. 스크립트는 `--confirm-subscriber-send`가 없으면 구독자 발송을 거부하고, 기본적으로 한국 기준 오늘 날짜의 회차가 아니면 발송하지 않습니다.
 
 ```bash
-python3 scripts/send_issue_email.py --recipients subscribers --confirm-subscriber-send
+python3 scripts/send_issue_email.py --recipients subscribers --confirm-subscriber-send --issue-id 2026-05-05-05
 ```
 
 ```bash
@@ -137,7 +130,7 @@ python3 scripts/run_newsletter_pipeline.py --issue-id today --send-email
 4. 아래 명령으로 10개 후보 풀을 검증합니다.
 
 ```bash
-python3 scripts/validate_candidate_pool.py current --mode collect
+python3 scripts/validate_candidate_pool.py 2026-05-05-05 --mode collect
 ```
 
 5. 사용자에게 후보 10개를 제목, 출처, 왜 중요한지 중심으로 보여주고, 그중 에디터 추천 5개를 함께 표시합니다.
@@ -147,7 +140,7 @@ python3 scripts/validate_candidate_pool.py current --mode collect
 7. 아래 명령으로 발행 검증과 생성까지 진행합니다.
 
 ```bash
-python3 scripts/run_newsletter_pipeline.py --issue-id current --no-email
+python3 scripts/run_newsletter_pipeline.py --issue-id 2026-05-05-05 --no-email
 ```
 
 8. 사용자가 "메일발송해줘"라고 하면 검수용 `MAIL_TO`로만 발송합니다.

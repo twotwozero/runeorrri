@@ -1,29 +1,38 @@
 #!/usr/bin/env python3
+import argparse
+import csv
 import urllib.error
 import urllib.request
 from pathlib import Path
 
-from utils import issue_number_from_id, load_dotenv, read_current_issue_id, required_env
+from utils import issue_number_from_id, load_dotenv, required_env
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
+ARCHIVE = ROOT / "data" / "candidates_archive.csv"
 
 
-def issue_number():
-    issue_id = read_current_issue_id(CURRENT_ISSUE)
-    if not issue_id:
-        raise SystemExit(f"Missing current issue file: {CURRENT_ISSUE}")
-    number = issue_number_from_id(issue_id, default="")
-    if not number:
-        raise SystemExit(f"Cannot resolve issue number from current issue id: {issue_id}")
-    return number
+def resolve_issue_id(value):
+    with ARCHIVE.open(newline="", encoding="utf-8") as f:
+        ids = sorted({row["issue_id"] for row in csv.DictReader(f) if row.get("issue_id")})
+    if not ids:
+        raise SystemExit("No issue_id values found in candidates_archive.csv")
+    if value == "latest":
+        return ids[-1]
+    return value
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--issue-id", default="latest")
+    args = parser.parse_args()
+    issue_id = resolve_issue_id(args.issue_id)
+    number = issue_number_from_id(issue_id, default="")
+    if not number:
+        raise SystemExit(f"Cannot resolve issue number from issue id: {issue_id}")
     load_dotenv(ROOT)
     base_url = required_env("RUNEORRRI_SITE_BASE_URL").rstrip("/")
-    url = f"{base_url}/{issue_number()}"
+    url = f"{base_url}/{number}"
     request = urllib.request.Request(
         url,
         headers={"User-Agent": "runeorrri-live-check/1.0"},

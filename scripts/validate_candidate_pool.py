@@ -9,7 +9,6 @@ from utils import is_selected as is_selected_value
 
 ROOT = Path(__file__).resolve().parents[1]
 ARCHIVE = ROOT / "data" / "candidates_archive.csv"
-CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
 
 REQUIRED_FIELDS = [
     "issue_id",
@@ -51,8 +50,6 @@ def read_archive():
 
 
 def resolve_issue_id(value, rows):
-    if value == "current":
-        return CURRENT_ISSUE.read_text(encoding="utf-8").strip()
     if value == "latest":
         return sorted({row["issue_id"] for row in rows if row.get("issue_id")})[-1]
     return value
@@ -144,7 +141,7 @@ def validate_archive_overlap(issue_id, current_rows, archive_rows, errors):
 
 def main():
     parser = argparse.ArgumentParser(description="Validate newsletter candidate pool and overlap rules.")
-    parser.add_argument("issue_id", nargs="?", default="current")
+    parser.add_argument("issue_id", nargs="?", default="latest")
     parser.add_argument(
         "--mode",
         choices=["collect", "publish"],

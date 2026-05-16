@@ -16,11 +16,10 @@ from pathlib import Path
 from generate_web_data import build_web_data
 from utils import category_label as category_label_value
 from utils import clean_text, is_selected, issue_date_from_id, issue_number_from_id, korean_today
-from utils import load_dotenv, read_current_issue_id, required_env
+from utils import load_dotenv, required_env, story_sort_key
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
 ARCHIVE = ROOT / "data" / "candidates_archive.csv"
 ACTIVE_ISSUE_ID = ""
 
@@ -33,11 +32,6 @@ def archived_issue_ids():
 
 
 def resolve_issue_id(value):
-    if value == "current":
-        issue_id = read_current_issue_id(CURRENT_ISSUE)
-        if not issue_id:
-            raise SystemExit(f"Missing current issue file: {CURRENT_ISSUE}")
-        return issue_id
     if value == "latest":
         issue_ids = archived_issue_ids()
         if not issue_ids:
@@ -53,23 +47,16 @@ def resolve_issue_id(value):
 
 
 def issue_date():
-    if ACTIVE_ISSUE_ID:
-        current_date = issue_date_from_id(ACTIVE_ISSUE_ID)
-        if current_date:
-            return current_date
-    current_date = issue_date_from_id(read_current_issue_id(CURRENT_ISSUE))
-    if current_date:
-        return current_date
-    return korean_today()
+    return issue_date_from_id(ACTIVE_ISSUE_ID) or korean_today()
 
 
-TODAY = issue_date()
-NEWSLETTER = ROOT / "issues" / f"{TODAY}-running-newsletter.md"
-ART_DIR = ROOT / "web" / "public" / "assets" / "issues" / TODAY
+TODAY = None
+NEWSLETTER = None
+ART_DIR = None
 
 
 def issue_number():
-    return issue_number_from_id(ACTIVE_ISSUE_ID or read_current_issue_id(CURRENT_ISSUE))
+    return issue_number_from_id(ACTIVE_ISSUE_ID)
 
 
 def art_images():
@@ -92,9 +79,14 @@ def runeorrri_issue_url(base_url):
 
 
 def selected_rows():
-    candidates = ROOT / "data" / "candidates.csv"
-    with candidates.open(newline="", encoding="utf-8") as f:
-        return [row for row in csv.DictReader(f) if is_selected(row.get("selected", ""))]
+    with ARCHIVE.open(newline="", encoding="utf-8") as f:
+        rows = [
+            row for row in csv.DictReader(f)
+            if row.get("issue_id") == ACTIVE_ISSUE_ID and is_selected(row.get("selected", ""))
+        ]
+    if len(rows) != 5:
+        raise SystemExit(f"Expected exactly 5 selected candidates for {ACTIVE_ISSUE_ID}, found {len(rows)}.")
+    return sorted(rows, key=story_sort_key)
 
 
 def region_label(row):
@@ -160,9 +152,8 @@ def unsubscribe_url(base_url, recipient):
     return f"{base_url.rstrip('/')}/unsubscribe?{query}"
 
 
-def text_email(issue_url, unsubscribe_link, issue_data=None):
+def text_email(issue_url, unsubscribe_link, rows, issue_data=None):
     issue_data = issue_data or {}
-    rows = selected_rows()
     lines = [
         f"[러너리] 오늘의 러닝 브리핑 {issue_number()} - {TODAY}",
         "",
@@ -179,7 +170,7 @@ def text_email(issue_url, unsubscribe_link, issue_data=None):
     return "\n".join(lines)
 
 
-def html_email(images, issue_url, unsubscribe_link, issue_data=None):
+def html_email(images, issue_url, unsubscribe_link, rows, issue_data=None):
     issue_data = issue_data or {}
     email_intro = clean_text(issue_data.get("emailIntro", "안녕하세요, 러너리입니다."))
     issue_focus = clean_text(issue_data.get("issueFocus", ""))
@@ -187,7 +178,6 @@ def html_email(images, issue_url, unsubscribe_link, issue_data=None):
     mid_run_note = clean_text(issue_data.get("midRunNote", ""))
     perspective = clean_text(issue_data.get("perspective", ""))
     number = issue_number()
-    rows = selected_rows()
     main = rows[0] if rows else {}
     other_rows = rows[1:]
     hero_img = f'<a href="{escape(issue_url)}" style="text-decoration:none;border:0;display:block;"><img src="{escape(images["hero"])}" width="600" alt="러너리 브리핑" style="width:100%;max-width:600px;height:auto;display:block;margin:0 auto;border:0;"></a>'
@@ -407,8 +397,8 @@ def main():
     )
     parser.add_argument(
         "--issue-id",
-        default="current",
-        help="Issue id to send, or one of: current, today, latest. The current issue must match data/candidates.csv.",
+        default="latest",
+        help="Issue id to send, or one of: today, latest.",
     )
     parser.add_argument(
         "--confirm-subscriber-send",
@@ -428,12 +418,6 @@ def main():
     NEWSLETTER = ROOT / "issues" / f"{TODAY}-running-newsletter.md"
     ART_DIR = ROOT / "web" / "public" / "assets" / "issues" / TODAY
 
-    current_issue_id = read_current_issue_id(CURRENT_ISSUE)
-    if current_issue_id != ACTIVE_ISSUE_ID:
-        raise SystemExit(
-            f"Refusing to send {ACTIVE_ISSUE_ID}: data/current_issue_id.txt is {current_issue_id or 'missing'}. "
-            "Run the generation pipeline for the intended issue first."
-        )
     if args.recipients == "subscribers":
         if not args.confirm_subscriber_send:
             raise SystemExit("Refusing subscriber send without --confirm-subscriber-send.")
@@ -471,7 +455,13 @@ def main():
 
     issues = build_web_data(include_future=True)
     current_issue_data = next((i for i in issues if i["date"] == TODAY), {})
+    if current_issue_data.get("number") != issue_number():
+        raise SystemExit(
+            f"Newsletter issue mismatch for {ACTIVE_ISSUE_ID}: "
+            f"{NEWSLETTER} is issue {current_issue_data.get('number') or 'unknown'}."
+        )
     issue_url = runeorrri_issue_url(site_base_url)
+    rows = selected_rows()
 
     art = art_images()
     missing_art = [path for path in art.values() if not path.exists()]
@@ -487,12 +477,12 @@ def main():
         smtp.login(smtp_user, smtp_password)
         for recipient in recipients:
             unsub_link = unsubscribe_url(site_base_url, recipient)
-            html_body = html_email(images, issue_url, unsub_link, current_issue_data)
+            html_body = html_email(images, issue_url, unsub_link, rows, current_issue_data)
             msg = EmailMessage()
             msg["Subject"] = subject
             msg["From"] = formataddr((mail_from_name, mail_from))
             msg["To"] = recipient
-            msg.set_content(text_email(issue_url, unsub_link, current_issue_data))
+            msg.set_content(text_email(issue_url, unsub_link, rows, current_issue_data))
             msg.add_alternative(html_body, subtype="html")
             smtp.send_message(msg)
             print(f"  → {recipient}")

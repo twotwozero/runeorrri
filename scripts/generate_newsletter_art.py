@@ -7,18 +7,11 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-from utils import is_selected, issue_date_from_id, korean_today, read_current_issue_id, story_sort_key
+from utils import is_selected, story_sort_key
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CANDIDATES = ROOT / "data" / "candidates.csv"
 ARCHIVE = ROOT / "data" / "candidates_archive.csv"
-CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
-
-
-def issue_date():
-    current_date = issue_date_from_id(read_current_issue_id(CURRENT_ISSUE))
-    return current_date or korean_today()
 
 
 OVERWRITE_ART = os.environ.get("RUNEORRRI_OVERWRITE_ART") == "1"
@@ -43,9 +36,12 @@ def font(size, index=16):
     return ImageFont.load_default(size=size)
 
 
-def selected_rows():
-    with CANDIDATES.open(newline="", encoding="utf-8") as f:
-        return [row for row in csv.DictReader(f) if is_selected(row.get("selected", ""))]
+def latest_issue_id():
+    with ARCHIVE.open(newline="", encoding="utf-8") as f:
+        ids = sorted({row["issue_id"] for row in csv.DictReader(f) if row.get("issue_id")})
+    if not ids:
+        raise SystemExit("No issue_id values found in candidates_archive.csv")
+    return ids[-1]
 
 
 def selected_archive_rows(issue_id):
@@ -241,16 +237,13 @@ def action(rows, out_dir):
 
 def main():
     parser = argparse.ArgumentParser(description="Generate newsletter artwork for an issue.")
-    parser.add_argument("--issue-id", help="Generate from selected rows in candidates_archive.csv.")
+    parser.add_argument("--issue-id", default="latest")
     parser.add_argument("--only", choices=["all", "hero", "checkpoints"], default="all")
     args = parser.parse_args()
 
-    if args.issue_id:
-        current_issue_date = issue_id_date(args.issue_id)
-        rows = selected_archive_rows(args.issue_id)
-    else:
-        current_issue_date = issue_date()
-        rows = selected_rows()
+    issue_id = latest_issue_id() if args.issue_id == "latest" else args.issue_id
+    current_issue_date = issue_id_date(issue_id)
+    rows = selected_archive_rows(issue_id)
 
     out_dir = ROOT / "web" / "public" / "assets" / "issues" / current_issue_date
     if args.only in {"all", "hero"}:
