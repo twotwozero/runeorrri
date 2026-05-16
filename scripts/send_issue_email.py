@@ -195,7 +195,7 @@ def source_links(rows):
         f"""
         <tr>
           <td style="padding:8px 0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;font-size:13px;line-height:1.5;">
-            <div style="color:#f7f4ec;font-weight:800;">{escape(clean_text(row['title']))}</div>
+            <a href="{escape(row['url'])}" style="color:#f7f4ec;text-decoration:none;font-weight:800;">{escape(clean_text(row['title']))}</a>
             <div style="color:#aab4af;margin-top:2px;">{escape(clean_text(row['source']))}, {escape(clean_text(row.get('published_at', '')))}</div>
           </td>
         </tr>
