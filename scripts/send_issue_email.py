@@ -195,11 +195,8 @@ def source_links(rows):
         f"""
         <tr>
           <td style="padding:8px 0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;font-size:13px;line-height:1.5;">
-            <div style="color:#f7f4ec;font-weight:800;">{escape(clean_text(row['source']))}</div>
-            <div style="color:#aab4af;margin-top:2px;">{escape(clean_text(row.get('published_at', '')))}</div>
-            <div style="margin-top:3px;">
-              <a href="{escape(row['url'])}" style="color:#49dcb1;text-decoration:none;font-weight:800;">원문 보기</a>
-            </div>
+            <div style="color:#f7f4ec;font-weight:800;">{escape(clean_text(row['title']))}</div>
+            <div style="color:#aab4af;margin-top:2px;">{escape(clean_text(row['source']))}, {escape(clean_text(row.get('published_at', '')))}</div>
           </td>
         </tr>
         """
