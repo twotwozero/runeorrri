@@ -8,26 +8,74 @@ import smtplib
 import urllib.parse
 import urllib.request
 import urllib.error
-from datetime import date
+from datetime import datetime
 from email.message import EmailMessage
 from email.utils import formataddr
 from html import escape
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from generate_web_data import build_web_data
 
 
 ROOT = Path(__file__).resolve().parents[1]
 CURRENT_ISSUE = ROOT / "data" / "current_issue_id.txt"
+ARCHIVE = ROOT / "data" / "candidates_archive.csv"
+ACTIVE_ISSUE_ID = ""
+
+
+def read_current_issue_id():
+    if CURRENT_ISSUE.exists():
+        return CURRENT_ISSUE.read_text(encoding="utf-8").strip()
+    return ""
+
+
+def issue_date_from_id(issue_id):
+    match = re.match(r"(\d{4}-\d{2}-\d{2})-", issue_id)
+    return match.group(1) if match else ""
+
+
+def korean_today():
+    return datetime.now(ZoneInfo("Asia/Seoul")).date().isoformat()
+
+
+def archived_issue_ids():
+    if not ARCHIVE.exists():
+        return []
+    with ARCHIVE.open(newline="", encoding="utf-8") as f:
+        return sorted({row["issue_id"] for row in csv.DictReader(f) if row.get("issue_id")})
+
+
+def resolve_issue_id(value):
+    if value == "current":
+        issue_id = read_current_issue_id()
+        if not issue_id:
+            raise SystemExit(f"Missing current issue file: {CURRENT_ISSUE}")
+        return issue_id
+    if value == "latest":
+        issue_ids = archived_issue_ids()
+        if not issue_ids:
+            raise SystemExit(f"No issue_id values found in {ARCHIVE}")
+        return issue_ids[-1]
+    if value == "today":
+        today = korean_today()
+        issue_ids = [issue_id for issue_id in archived_issue_ids() if issue_date_from_id(issue_id) == today]
+        if not issue_ids:
+            raise SystemExit(f"No issue_id values found for today's KST date ({today}).")
+        return issue_ids[-1]
+    return value
 
 
 def issue_date():
+    if ACTIVE_ISSUE_ID:
+        current_date = issue_date_from_id(ACTIVE_ISSUE_ID)
+        if current_date:
+            return current_date
     if CURRENT_ISSUE.exists():
-        issue_id = CURRENT_ISSUE.read_text(encoding="utf-8").strip()
-        match = re.match(r"(\d{4}-\d{2}-\d{2})-", issue_id)
-        if match:
-            return match.group(1)
-    return date.today().isoformat()
+        current_date = issue_date_from_id(read_current_issue_id())
+        if current_date:
+            return current_date
+    return korean_today()
 
 
 TODAY = issue_date()
@@ -55,9 +103,9 @@ def required_env(name):
 
 
 def issue_number():
-    if not CURRENT_ISSUE.exists():
+    issue_id = ACTIVE_ISSUE_ID or read_current_issue_id()
+    if not issue_id:
         return "01"
-    issue_id = CURRENT_ISSUE.read_text(encoding="utf-8").strip()
     suffix = issue_id.rsplit("-", 1)[-1]
     return suffix.zfill(2) if suffix.isdigit() else "01"
 
@@ -379,7 +427,44 @@ def main():
         default="test",
         help="test sends to MAIL_TO; subscribers sends to active D1 subscribers.",
     )
+    parser.add_argument(
+        "--issue-id",
+        default="current",
+        help="Issue id to send, or one of: current, today, latest. The current issue must match data/candidates.csv.",
+    )
+    parser.add_argument(
+        "--confirm-subscriber-send",
+        action="store_true",
+        help="Required for --recipients subscribers.",
+    )
+    parser.add_argument(
+        "--allow-non-today",
+        action="store_true",
+        help="Allow subscriber sends when the issue date is not today's KST date.",
+    )
     args = parser.parse_args()
+
+    global ACTIVE_ISSUE_ID, TODAY, NEWSLETTER, ART_DIR
+    ACTIVE_ISSUE_ID = resolve_issue_id(args.issue_id)
+    TODAY = issue_date()
+    NEWSLETTER = ROOT / "issues" / f"{TODAY}-running-newsletter.md"
+    ART_DIR = ROOT / "web" / "public" / "assets" / "issues" / TODAY
+
+    current_issue_id = read_current_issue_id()
+    if current_issue_id != ACTIVE_ISSUE_ID:
+        raise SystemExit(
+            f"Refusing to send {ACTIVE_ISSUE_ID}: data/current_issue_id.txt is {current_issue_id or 'missing'}. "
+            "Run the generation pipeline for the intended issue first."
+        )
+    if args.recipients == "subscribers":
+        if not args.confirm_subscriber_send:
+            raise SystemExit("Refusing subscriber send without --confirm-subscriber-send.")
+        today_kst = korean_today()
+        if TODAY != today_kst and not args.allow_non_today:
+            raise SystemExit(
+                f"Refusing subscriber send for non-today issue {ACTIVE_ISSUE_ID} ({TODAY}); "
+                f"today in KST is {today_kst}. Pass --allow-non-today only for an intentional resend."
+            )
 
     load_dotenv()
     site_base_url = os.environ.get("RUNEORRRI_SITE_BASE_URL") or required_env("RUNNERI_SITE_BASE_URL")
@@ -439,8 +524,6 @@ def main():
                     maintype="image",
                     subtype="png",
                     cid=f"<{image_cids[key]}>",
-                    filename=png.name,
-                    disposition="inline",
                 )
             smtp.send_message(msg)
             print(f"  → {recipient}")
