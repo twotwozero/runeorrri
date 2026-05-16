@@ -164,7 +164,7 @@ def hero(rows, current_issue_date, out_dir):
         48,
         3,
     )
-    draw.text((72, 630), f"{current_issue_date} · {len(rows)} stories", font=font(28), fill="#111514")
+    draw.text((72, 630), f"{current_issue_date}, {len(rows)} stories", font=font(28), fill="#111514")
     save(img, "hero.png", out_dir)
 
 

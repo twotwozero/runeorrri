@@ -15,12 +15,17 @@ WEB_ASSETS = WEB_DIR / "public" / "assets" / "issues"
 KST = ZoneInfo("Asia/Seoul")
 
 
+def clean_text(value):
+    return str(value).replace("\u00b7", ", ")
+
+
 def issue_number_from_title(title):
     match = re.search(r"브리핑\s+(\d+)", title)
     return match.group(1).zfill(2) if match else "01"
 
 
 def parse_source(value):
+    value = clean_text(value)
     match = re.search(r"\[([^\]]+)\]\(([^)]+)\)", value)
     if not match:
         return {"name": value.strip(), "url": ""}
@@ -37,19 +42,19 @@ def clean_intro(text, first_story_start):
     intro = re.sub(r"^이메일 인트로:.*$", "", intro, flags=re.MULTILINE)
     intro = re.sub(r"^이번 호 중심:.*$", "", intro, flags=re.MULTILINE)
     intro = re.sub(r"^메인 에디토리얼:.*$", "", intro, flags=re.MULTILINE)
-    return intro.strip()
+    return clean_text(intro.strip())
 
 
 def parse_meta_field(text, field_name):
     match = re.search(rf"^{field_name}:\s*(.+)$", text, re.MULTILINE)
-    return match.group(1).strip() if match else ""
+    return clean_text(match.group(1).strip()) if match else ""
 
 
 def parse_newsletter(path):
-    text = path.read_text(encoding="utf-8")
+    text = clean_text(path.read_text(encoding="utf-8"))
     issue_date = path.name.split("-running-newsletter.md", 1)[0]
     title_match = re.search(r"^#\s+(.+)$", text, re.MULTILINE)
-    title = title_match.group(1).strip() if title_match else f"오늘의 러닝 브리핑 - {issue_date}"
+    title = clean_text(title_match.group(1).strip() if title_match else f"오늘의 러닝 브리핑 - {issue_date}")
     story_matches = list(re.finditer(r"^##\s+(\d+)\.\s+(.+)$", text, re.MULTILINE))
     intro = clean_intro(text, story_matches[0].start()) if story_matches else ""
 
@@ -60,7 +65,7 @@ def parse_newsletter(path):
         block = text[start:end]
         story = {
             "index": int(match.group(1)),
-            "title": match.group(2).strip(),
+            "title": clean_text(match.group(2).strip()),
             "region": "",
             "category": "",
             "summary": "",
@@ -73,17 +78,17 @@ def parse_newsletter(path):
             if line.startswith("- 구분:"):
                 value = line.split(":", 1)[1].strip()
                 if "/" in value:
-                    story["region"], story["category"] = [part.strip() for part in value.split("/", 1)]
+                    story["region"], story["category"] = [clean_text(part.strip()) for part in value.split("/", 1)]
                 else:
-                    story["region"] = value
+                    story["region"] = clean_text(value)
             elif line.startswith("- 요약:"):
-                story["summary"] = line.split(":", 1)[1].strip()
+                story["summary"] = clean_text(line.split(":", 1)[1].strip())
             elif line.startswith("- 러너에게 중요한 이유:"):
-                story["why"] = line.split(":", 1)[1].strip()
+                story["why"] = clean_text(line.split(":", 1)[1].strip())
             elif line.startswith("- 원문:"):
                 story["source"] = parse_source(line.split(":", 1)[1].strip())
             elif line.startswith("- 한 줄 관점:"):
-                story["oneLiner"] = line.split(":", 1)[1].strip()
+                story["oneLiner"] = clean_text(line.split(":", 1)[1].strip())
         stories.append(story)
 
     email_intro = parse_meta_field(text, "이메일 인트로")

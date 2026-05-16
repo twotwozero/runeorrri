@@ -24,6 +24,10 @@ ARCHIVE = ROOT / "data" / "candidates_archive.csv"
 ACTIVE_ISSUE_ID = ""
 
 
+def clean_text(value):
+    return str(value).replace("\u00b7", ", ")
+
+
 def read_current_issue_id():
     if CURRENT_ISSUE.exists():
         return CURRENT_ISSUE.read_text(encoding="utf-8").strip()
@@ -148,8 +152,8 @@ def line_up(rows):
         f"""
         <tr>
           <td style="padding:0 0 10px 0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;">
-            <div style="font-size:13px;line-height:1.3;font-weight:900;color:#ff6b4a;">{index:02d} · {escape(region_label(row))} / {escape(category_label(row))}</div>
-            <div style="margin-top:3px;font-size:16px;line-height:1.45;font-weight:850;color:#111514;">{escape(row['title'])}</div>
+            <div style="font-size:13px;line-height:1.3;font-weight:900;color:#ff6b4a;">{index:02d}, {escape(region_label(row))} / {escape(category_label(row))}</div>
+            <div style="margin-top:3px;font-size:16px;line-height:1.45;font-weight:850;color:#111514;">{escape(clean_text(row['title']))}</div>
           </td>
         </tr>
         """
@@ -162,14 +166,14 @@ def brief_items(rows):
         f"""
         <tr>
           <td id="story-{index}" style="padding:20px 0;border-top:1px solid #ded8cf;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;">
-            <div style="font-size:13px;line-height:1.3;font-weight:900;color:#ff6b4a;">{index:02d} · {escape(region_label(row))} / {escape(category_label(row))}</div>
-            <div style="margin-top:7px;font-size:21px;line-height:1.35;font-weight:900;color:#111514;">{escape(row['title'])}</div>
-            <div style="margin-top:12px;font-size:15px;line-height:1.75;font-weight:650;color:#323332;">{escape(row['summary'])}</div>
+            <div style="font-size:13px;line-height:1.3;font-weight:900;color:#ff6b4a;">{index:02d}, {escape(region_label(row))} / {escape(category_label(row))}</div>
+            <div style="margin-top:7px;font-size:21px;line-height:1.35;font-weight:900;color:#111514;">{escape(clean_text(row['title']))}</div>
+            <div style="margin-top:12px;font-size:15px;line-height:1.75;font-weight:650;color:#323332;">{escape(clean_text(row['summary']))}</div>
             <div style="margin-top:12px;padding:13px 15px;background:#fff7ec;border-left:4px solid #ff6b4a;font-size:14px;line-height:1.65;font-weight:750;color:#323332;">
-              <span style="color:#ff6b4a;font-weight:900;">러너리 코멘트</span><br>{escape(row['why_it_matters'])}
+              <span style="color:#ff6b4a;font-weight:900;">러너리 코멘트</span><br>{escape(clean_text(row['why_it_matters']))}
             </div>
             <div style="margin-top:10px;font-size:13px;line-height:1.5;color:#7b817d;">
-              원문: <a href="{escape(row['url'])}" style="color:#ff6b4a;text-decoration:none;font-weight:800;">{escape(row['source'])}</a>
+              원문: <a href="{escape(row['url'])}" style="color:#ff6b4a;text-decoration:none;font-weight:800;">{escape(clean_text(row['source']))}</a>
             </div>
           </td>
         </tr>
@@ -183,8 +187,8 @@ def source_links(rows):
         f"""
         <tr>
           <td style="padding:8px 0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;font-size:13px;line-height:1.5;">
-            <a href="{escape(row['url'])}" style="color:#f7f4ec;text-decoration:none;font-weight:800;">{escape(row['title'])}</a>
-            <div style="color:#aab4af;margin-top:2px;">{escape(row['source'])} · {escape(row.get('published_at', ''))}</div>
+            <a href="{escape(row['url'])}" style="color:#f7f4ec;text-decoration:none;font-weight:800;">{escape(clean_text(row['title']))}</a>
+            <div style="color:#aab4af;margin-top:2px;">{escape(clean_text(row['source']))}, {escape(row.get('published_at', ''))}</div>
           </td>
         </tr>
         """
@@ -200,11 +204,11 @@ def unsubscribe_url(base_url, recipient):
 
 def html_email(image_cids, issue_url, unsubscribe_link, issue_data=None):
     issue_data = issue_data or {}
-    email_intro = issue_data.get("emailIntro", "안녕하세요, 러너리입니다.")
-    issue_focus = issue_data.get("issueFocus", "")
-    main_editorial = issue_data.get("mainEditorial", "")
-    mid_run_note = issue_data.get("midRunNote", "")
-    perspective = issue_data.get("perspective", "")
+    email_intro = clean_text(issue_data.get("emailIntro", "안녕하세요, 러너리입니다."))
+    issue_focus = clean_text(issue_data.get("issueFocus", ""))
+    main_editorial = clean_text(issue_data.get("mainEditorial", ""))
+    mid_run_note = clean_text(issue_data.get("midRunNote", ""))
+    perspective = clean_text(issue_data.get("perspective", ""))
     number = issue_number()
     rows = selected_rows()
     main = rows[0] if rows else {}
@@ -278,15 +282,15 @@ def html_email(image_cids, issue_url, unsubscribe_link, issue_data=None):
           <tr>
             <td id="story-1" style="padding:0 24px 28px 24px;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',Arial,sans-serif;color:#323332;">
               <div style="font-size:13px;line-height:1.3;font-weight:900;color:#ff6b4a;">MAIN STORY</div>
-              <div style="margin-top:8px;font-size:28px;line-height:1.25;font-weight:950;color:#111514;">{escape(main.get('title', ''))}</div>
-              <div style="margin-top:16px;font-size:16px;line-height:1.8;font-weight:650;color:#323332;">{escape(main.get('summary', ''))}</div>
+              <div style="margin-top:8px;font-size:28px;line-height:1.25;font-weight:950;color:#111514;">{escape(clean_text(main.get('title', '')))}</div>
+              <div style="margin-top:16px;font-size:16px;line-height:1.8;font-weight:650;color:#323332;">{escape(clean_text(main.get('summary', '')))}</div>
               {f'<div style="margin-top:14px;font-size:16px;line-height:1.8;font-weight:650;color:#323332;">{escape(main_editorial)}</div>' if main_editorial else ''}
               <div style="margin-top:16px;padding:16px 18px;background:#111514;color:#f7f4ec;font-size:15px;line-height:1.75;font-weight:750;">
                 <span style="display:block;color:#49dcb1;font-size:13px;font-weight:900;margin-bottom:6px;">러너리 코멘트</span>
-                {escape(main.get('why_it_matters', ''))}
+                {escape(clean_text(main.get('why_it_matters', '')))}
               </div>
               <div style="margin-top:12px;font-size:13px;line-height:1.5;color:#7b817d;">
-                원문: <a href="{escape(main.get('url', ''))}" style="color:#ff6b4a;text-decoration:none;font-weight:800;">{escape(main.get('source', ''))}</a>
+                원문: <a href="{escape(main.get('url', ''))}" style="color:#ff6b4a;text-decoration:none;font-weight:800;">{escape(clean_text(main.get('source', '')))}</a>
               </div>
             </td>
           </tr>

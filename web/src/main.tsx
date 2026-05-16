@@ -232,7 +232,7 @@ function HomePage() {
           {issues.map((issue) => (
             <a className="issue-card" href={issuePath(issue)} key={issue.date}>
               <div className="issue-card-copy">
-                <p className="card-meta">{issue.date} · {issue.stories.length} stories</p>
+                <p className="card-meta">{issue.date}, {issue.stories.length} stories</p>
                 <h3>오늘의 러닝 브리핑 {issue.number}</h3>
                 <ol>
                   {issue.stories.slice(0, 3).map((story) => (
@@ -277,7 +277,7 @@ function IssuePage({ issue }: { issue: Issue }) {
               {issue.stories.map((story) => (
                 <li key={story.index} className="lineup-item">
                   <a href={`#story-${story.index}`} className="lineup-link">
-                    <span className="lineup-meta">{String(story.index).padStart(2, '0')} · {formatCategory(story)}</span>
+                    <span className="lineup-meta">{String(story.index).padStart(2, '0')}, {formatCategory(story)}</span>
                     <span className="lineup-title">{story.title}</span>
                   </a>
                 </li>
@@ -321,7 +321,7 @@ function IssuePage({ issue }: { issue: Issue }) {
           </div>
           {briefs.map((story) => (
             <article className="brief-item" key={story.index} id={`story-${story.index}`}>
-              <p className="story-meta">{String(story.index).padStart(2, '0')} · {formatCategory(story)}</p>
+              <p className="story-meta">{String(story.index).padStart(2, '0')}, {formatCategory(story)}</p>
               <h3>{story.title}</h3>
               <p>{story.summary}</p>
               <div className="soft-comment">
