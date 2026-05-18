@@ -1,6 +1,9 @@
 name: Send Newsletter
 
 on:
+  schedule:
+    # 2026-05-19 08:00 KST. GitHub cron uses UTC.
+    - cron: '0 23 18 5 *'
   workflow_dispatch:
     inputs:
       confirm_subscriber_send:
@@ -8,11 +11,18 @@ on:
         required: true
         type: boolean
         default: false
+      issue_id:
+        description: 'Issue id to send.'
+        required: true
+        type: string
+        default: latest
 
 jobs:
   send:
-    if: ${{ inputs.confirm_subscriber_send == true }}
+    if: ${{ github.event_name == 'schedule' || inputs.confirm_subscriber_send == true }}
     runs-on: ubuntu-latest
+    env:
+      ISSUE_ID: ${{ github.event_name == 'schedule' && '2026-05-19-11' || inputs.issue_id }}
     steps:
       - uses: actions/checkout@v4
 
@@ -24,6 +34,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      - name: Guard one-time scheduled send
+        if: ${{ github.event_name == 'schedule' }}
+        run: |
+          if [ "$(date -u +%F)" != "2026-05-18" ]; then
+            echo "Skipping stale one-time schedule."
+            exit 1
+          fi
 
       - name: Send newsletter to all subscribers
         env:
@@ -37,7 +55,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: python scripts/send_issue_email.py --recipients subscribers --confirm-subscriber-send
+        run: python scripts/send_issue_email.py --recipients subscribers --confirm-subscriber-send --issue-id "$ISSUE_ID"
 
       - name: Build web
         run: npm run build

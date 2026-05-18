@@ -86,7 +86,7 @@ def build_editorial_meta(rows, number, korea_count, global_count):
     titles = clean_text(" ".join(row["title"] for row in rows))
     categories = {row["category"].strip().lower() for row in rows}
     has_trail = any(
-        keyword in titles for keyword in ["50K", "트레일", "산", "Skyrace", "TNF"]
+        keyword in titles for keyword in ["50K", "트레일", "Skyrace", "TNF"]
     )
     has_gear = "gear" in categories
     has_training = "training" in categories
@@ -124,8 +124,8 @@ def build_editorial_meta(rows, number, korea_count, global_count):
         main_editorial = (
             f"{main_title} 소식을 이번 호의 첫머리에 둔 이유는 마감이 가깝고 실제 참가 결정에 필요한 변수가 한 번에 걸려 있기 때문입니다. "
             "날짜와 모집 정보는 본문 요약에서 확인하고, 여기서는 선택 기준만 잡겠습니다. "
-            "현충일 오전 이동, 선착순 규모, 비대면 병행 운영을 한 표에 놓고 보면 핵심은 '갈 수 있나'보다 '마감 전에 확정할 수 있나'입니다. "
-            "접수 전에는 교통편, 동반자 일정, 환불 불가 시점을 먼저 고정하세요."
+            "접수 시작 시간, 마감일, 선착순 여부를 한 표에 놓고 보면 핵심은 '갈 수 있나'보다 '마감 전에 확정할 수 있나'입니다. "
+            "접수 전에는 계정 로그인, 결제수단, 교통편, 동반자 일정을 먼저 고정하세요."
         )
         if has_trail:
             mid_run_note = (

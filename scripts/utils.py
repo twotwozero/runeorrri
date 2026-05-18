@@ -41,6 +41,7 @@ def category_label(value):
         "gear": "장비",
         "elite": "엘리트",
         "training": "훈련",
+        "safety": "안전",
     }
     category = str(value).strip().lower()
     return labels.get(category, str(value).strip())
@@ -48,7 +49,7 @@ def category_label(value):
 
 def story_sort_key(row):
     region_order = {"korea": 0, "global": 1}
-    category_order = {"event": 0, "gear": 1, "elite": 2, "news": 3, "training": 4}
+    category_order = {"event": 0, "gear": 1, "elite": 2, "news": 3, "training": 4, "safety": 5}
     return (
         region_order.get(row.get("region", "").strip().lower(), 9),
         category_order.get(row.get("category", "").strip().lower(), 9),
