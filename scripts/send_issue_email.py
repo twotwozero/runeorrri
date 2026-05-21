@@ -70,6 +70,10 @@ def runeorrri_issue_url(base_url):
     return f"{base_url.rstrip('/')}/{issue_number()}"
 
 
+def runeorrri_asset_url(base_url, image_name):
+    return f"{base_url.rstrip('/')}/assets/issues/{TODAY}/{image_name}"
+
+
 def selected_rows():
     with ARCHIVE.open(newline="", encoding="utf-8") as f:
         rows = [
@@ -460,8 +464,7 @@ def main():
     if missing_art:
         raise SystemExit(f"Missing newsletter art files: {', '.join(str(path) for path in missing_art)}")
 
-    image_cids = {key: f"runeorrri-{key}-{TODAY}" for key in art}
-    images = {key: f"cid:{cid}" for key, cid in image_cids.items()}
+    images = {key: runeorrri_asset_url(site_base_url, f"{key}.png") for key in art}
     subject = f"[러너리] \U0001f3c3\U0001f3fb 오늘의 러닝 브리핑 {issue_number()} - RUNNING CAN CHANGE THE WORLD"
 
     print(f"Sending to {len(recipients)} {args.recipients} recipient(s)...")
@@ -477,14 +480,6 @@ def main():
             msg["To"] = recipient
             msg.set_content(text_email(issue_url, unsub_link, rows, current_issue_data))
             msg.add_alternative(html_body, subtype="html")
-            html_part = msg.get_payload()[-1]
-            for key, png in art.items():
-                html_part.add_related(
-                    png.read_bytes(),
-                    maintype="image",
-                    subtype="png",
-                    cid=f"<{image_cids[key]}>",
-                )
             smtp.send_message(msg)
             print(f"  → {recipient}")
 
