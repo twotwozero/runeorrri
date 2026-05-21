@@ -16,6 +16,16 @@ on:
         required: true
         type: string
         default: latest
+      only_recipient_domain:
+        description: 'Optional: send only to active subscribers on this email domain, e.g. gmail.com.'
+        required: false
+        type: string
+        default: ''
+      expect_recipient_count:
+        description: 'Optional: fail unless the final recipient count matches this number.'
+        required: false
+        type: string
+        default: ''
 
 jobs:
   send:
@@ -61,4 +71,14 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: python scripts/send_issue_email.py --recipients subscribers --confirm-subscriber-send --issue-id "$ISSUE_ID"
+          ONLY_RECIPIENT_DOMAIN: ${{ inputs.only_recipient_domain }}
+          EXPECT_RECIPIENT_COUNT: ${{ inputs.expect_recipient_count }}
+        run: |
+          args=(python scripts/send_issue_email.py --recipients subscribers --confirm-subscriber-send --issue-id "$ISSUE_ID")
+          if [ -n "$ONLY_RECIPIENT_DOMAIN" ]; then
+            args+=(--only-recipient-domain "$ONLY_RECIPIENT_DOMAIN")
+          fi
+          if [ -n "$EXPECT_RECIPIENT_COUNT" ]; then
+            args+=(--expect-recipient-count "$EXPECT_RECIPIENT_COUNT")
+          fi
+          "${args[@]}"

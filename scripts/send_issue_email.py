@@ -383,6 +383,14 @@ def get_subscriber_recipients():
     raise SystemExit("No subscriber recipients found. Check Cloudflare D1 settings and auth.")
 
 
+def domain_filtered_recipients(recipients, domain):
+    domain = domain.strip().lower().lstrip("@")
+    if not domain:
+        return recipients
+    suffix = f"@{domain}"
+    return [addr for addr in recipients if addr.lower().endswith(suffix)]
+
+
 def main():
     parser = argparse.ArgumentParser(description="Send the current runeorrri newsletter.")
     parser.add_argument(
@@ -400,6 +408,17 @@ def main():
         "--confirm-subscriber-send",
         action="store_true",
         help="Required for --recipients subscribers.",
+    )
+    parser.add_argument(
+        "--only-recipient-domain",
+        default="",
+        help="Limit a subscriber send to active recipients with this email domain, for targeted delivery checks.",
+    )
+    parser.add_argument(
+        "--expect-recipient-count",
+        type=int,
+        default=None,
+        help="Abort unless the final recipient list has exactly this many recipients.",
     )
     parser.add_argument(
         "--allow-non-today",
@@ -439,6 +458,8 @@ def main():
         raise SystemExit(f"Newsletter not found: {NEWSLETTER}")
 
     recipients = get_test_recipients() if args.recipients == "test" else get_subscriber_recipients()
+    if args.recipients == "subscribers" and args.only_recipient_domain:
+        recipients = domain_filtered_recipients(recipients, args.only_recipient_domain)
     skip_recipients = {
         addr.strip().lower()
         for addr in os.environ.get("RUNEORRRI_SKIP_RECIPIENTS", "").split(",")
@@ -448,6 +469,10 @@ def main():
         recipients = [addr for addr in recipients if addr.lower() not in skip_recipients]
     if not recipients:
         raise SystemExit("No recipients found.")
+    if args.expect_recipient_count is not None and len(recipients) != args.expect_recipient_count:
+        raise SystemExit(
+            f"Expected {args.expect_recipient_count} recipient(s), found {len(recipients)}."
+        )
 
     issues = build_web_data(include_future=True)
     current_issue_data = next((i for i in issues if i["date"] == TODAY), {})
