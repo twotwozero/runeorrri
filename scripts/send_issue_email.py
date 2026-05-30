@@ -380,7 +380,10 @@ def get_subscriber_recipients():
                 except urllib.error.HTTPError as error:
                     raise SystemExit(f"Wrangler OAuth recipient lookup failed ({error.code}).")
 
-    raise SystemExit("No subscriber recipients found. Check Cloudflare D1 settings and auth.")
+    raise SystemExit(
+        "No subscriber recipients found. Check Cloudflare D1 settings and auth. "
+        "For normal publishing, use `npm run publish` so subscriber lookup runs in GitHub Actions with repository secrets."
+    )
 
 
 def main():

@@ -88,15 +88,13 @@ npm run deploy
 python3 scripts/send_issue_email.py --recipients test --issue-id 2026-05-05-05
 ```
 
-구독자 전체 발송은 사용자가 명시적으로 승인한 뒤 아래 명령으로만 진행합니다. 스크립트는 `--confirm-subscriber-send`가 없으면 구독자 발송을 거부하고, 기본적으로 한국 기준 오늘 날짜의 회차가 아니면 발송하지 않습니다.
-
-```bash
-python3 scripts/send_issue_email.py --recipients subscribers --confirm-subscriber-send --issue-id 2026-05-05-05
-```
+구독자 전체 발송은 사용자가 명시적으로 승인한 뒤 아래 명령으로만 진행합니다. 기본 운영 경로는 GitHub Actions 수동 워크플로이며, D1 구독자 조회와 SMTP 발송은 저장소 시크릿으로 실행됩니다. 로컬 Wrangler OAuth나 로컬 Cloudflare 토큰 만료에 의존하지 않습니다.
 
 ```bash
 npm run publish
 ```
+
+위 명령은 작업 트리가 깨끗하고 현재 브랜치가 원격에 푸시된 상태일 때만 `send-newsletter.yml` 워크플로를 실행합니다. 로컬에서 직접 D1을 조회해 발송해야 하는 예외 상황에만 `npm run send:subscribers:local`을 사용합니다. 직접 발송 스크립트는 `--confirm-subscriber-send`가 없으면 구독자 발송을 거부하고, 기본적으로 한국 기준 오늘 날짜의 회차가 아니면 발송하지 않습니다.
 
 메일 발송 전 `scripts/send_issue_email.py`는 웹사이트 데이터를 다시 생성하고, 메일 상단 `@runeorrri`, 제목, 히어로 이미지를 `RUNEORRRI_SITE_BASE_URL/NN`(회차 번호)로 연결합니다. 기본값은 검수용 `MAIL_TO` 발송이며, 구독자 발송은 D1의 `active` 구독자 목록을 사용합니다.
 
@@ -144,14 +142,14 @@ python3 scripts/run_newsletter_pipeline.py --issue-id 2026-05-05-05 --no-email
 ```
 
 8. 사용자가 "메일발송해줘"라고 하면 검수용 `MAIL_TO`로만 발송합니다.
-   사용자가 "구독자에게 보내줘"라고 명시한 뒤에만 D1의 `active` 구독자 목록으로 발송합니다.
-   구독자 발송 뒤에는 웹 빌드, Cloudflare Pages 배포, 라이브 확인 순서로 진행합니다.
+   사용자가 "구독자에게 보내줘"라고 명시한 뒤에만 `npm run publish`로 GitHub Actions 워크플로를 실행합니다.
+   워크플로는 웹 빌드, Cloudflare Pages 배포, 라이브 확인, D1의 `active` 구독자 발송을 한 번에 처리합니다.
 
 ## 발송 설정
 
 GitHub Actions 워크플로 `.github/workflows/send-newsletter.yml`은 예약 실행하지 않습니다. 수동 실행(`workflow_dispatch`)에서 `confirm_subscriber_send`를 `true`로 지정한 경우에만 구독자에게 메일을 발송한 뒤 웹을 빌드하고 Cloudflare Pages에 배포한 다음 최신 회차 URL을 검증합니다.
 
-검수용 메일은 수동으로 `--recipients test`를 사용합니다. 구독자 전체 발송은 워크플로 수동 실행 또는 수동 `--recipients subscribers --confirm-subscriber-send`로만 진행합니다.
+검수용 메일은 수동으로 `--recipients test`를 사용합니다. 구독자 전체 발송은 기본적으로 `npm run publish` 또는 워크플로 수동 실행으로만 진행합니다. 로컬 직접 발송은 인증 점검용 예외 경로인 `npm run send:subscribers:local`을 사용합니다.
 
 Cloudflare Pages 배포 설정은 저장소 루트 기준으로 봅니다.
 
@@ -159,7 +157,7 @@ Cloudflare Pages 배포 설정은 저장소 루트 기준으로 봅니다.
 - 빌드 출력: `web/dist`
 - Pages Functions 위치: `functions/`
 
-검수용 이메일 발송은 `.env.example`을 참고해 `.env` 파일에 SMTP 설정과 `MAIL_TO`를 넣습니다. 구독자 전체 발송은 Cloudflare D1 설정과 `CLOUDFLARE_API_TOKEN` 또는 로컬 Wrangler 로그인이 필요합니다.
+검수용 이메일 발송은 `.env.example`을 참고해 `.env` 파일에 SMTP 설정과 `MAIL_TO`를 넣습니다. 구독자 전체 발송은 GitHub Actions 저장소 시크릿의 Cloudflare D1 설정과 SMTP 설정을 사용합니다. 로컬에서 직접 `send:subscribers:local`을 실행하는 경우에만 로컬 `CLOUDFLARE_API_TOKEN` 또는 Wrangler 로그인이 필요합니다.
 
 ## 발행 전 필수 체크
 
