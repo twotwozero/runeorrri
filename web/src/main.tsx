@@ -36,6 +36,7 @@ type Issue = {
 
 const issues = issuesData as Issue[];
 const archiveDuckImage = '/assets/ducks/runeorrri-duck-03.svg';
+const archivePageSize = 5;
 
 function issuePath(issue: Issue) {
   return `/${issue.number}`;
@@ -195,6 +196,11 @@ function Topbar() {
 
 function HomePage() {
   const [latest, ...previous] = issues;
+  const [archivePage, setArchivePage] = useState(1);
+  const totalArchivePages = Math.ceil(previous.length / archivePageSize);
+  const currentArchivePage = Math.min(archivePage, Math.max(totalArchivePages, 1));
+  const archiveStart = (currentArchivePage - 1) * archivePageSize;
+  const visiblePrevious = previous.slice(archiveStart, archiveStart + archivePageSize);
 
   return (
     <main>
@@ -229,7 +235,7 @@ function HomePage() {
           <h2>지난 브리핑</h2>
         </div>
         <div className="issue-grid">
-          {issues.map((issue) => (
+          {visiblePrevious.map((issue) => (
             <a className="issue-card" href={issuePath(issue)} key={issue.date}>
               <div className="issue-card-copy">
                 <p className="card-meta">{issue.date}, {issue.stories.length} stories</p>
@@ -244,6 +250,24 @@ function HomePage() {
             </a>
           ))}
         </div>
+        {totalArchivePages > 1 ? (
+          <nav className="archive-pagination" aria-label="지난 브리핑 페이지">
+            {Array.from({ length: totalArchivePages }, (_, index) => {
+              const page = index + 1;
+              return (
+                <button
+                  className={`archive-page-btn${page === currentArchivePage ? ' archive-page-btn--active' : ''}`}
+                  type="button"
+                  key={page}
+                  onClick={() => setArchivePage(page)}
+                  aria-current={page === currentArchivePage ? 'page' : undefined}
+                >
+                  {page}
+                </button>
+              );
+            })}
+          </nav>
+        ) : null}
         {previous.length === 0 ? <p className="quiet-note">다음 브리핑이 발행되면 여기에 차곡차곡 쌓입니다.</p> : null}
       </section>
     </main>

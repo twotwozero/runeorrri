@@ -247,6 +247,31 @@ main {
   font-weight: 800;
 }
 
+.archive-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.archive-page-btn {
+  min-width: 38px;
+  height: 38px;
+  border: 2px solid var(--ink);
+  background: var(--white);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.archive-page-btn:hover,
+.archive-page-btn--active {
+  background: var(--accent);
+}
+
 .issue-header {
   padding: 36px 0 16px;
 }
