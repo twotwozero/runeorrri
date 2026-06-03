@@ -74,11 +74,69 @@ def format_newsletter_item(index, row):
     )
 
 
-def build_editorial_meta(rows, number, korea_count, global_count):
-    main = rows[0]
+def build_issue_focus(rows, has_trail, has_gear, has_training):
     domestic_events = [row for row in rows if row["region"].strip().lower() == "korea"]
     global_items = [row for row in rows if row["region"].strip().lower() != "korea"]
-    event_titles = ", ".join(clean_text(row["title"].split("…", 1)[0]) for row in domestic_events[:3])
+    text = " ".join(
+        " ".join(
+            [
+                row.get("title", ""),
+                row.get("summary", ""),
+                row.get("why_it_matters", ""),
+                row.get("one_liner", ""),
+            ]
+        )
+        for row in rows
+    )
+    has_deadline = "마감" in text or "접수" in text
+    has_cancellation = "취소" in text or "환불" in text
+
+    if domestic_events and global_items and has_cancellation:
+        return (
+            "이번 호는 '어디에 신청할까'보다 '무엇을 먼저 확인할까'에 가깝습니다. "
+            "마감이 가까운 대회는 일정과 이동 동선을 바로 정해야 하고, 취소 표기가 엇갈리는 이벤트는 공식 공지와 환불 안내를 먼저 확인해야 합니다. "
+            "해외 소식은 신발과 훈련 빈도를 내 시즌 계획에 맞춰 다시 나누는 참고 자료로 읽으면 좋습니다."
+        )
+    if has_trail and has_gear:
+        return (
+            "이번 호는 6월 레이스를 한 줄 캘린더로 보지 않고 준비 방식별로 나눠 보는 호입니다. "
+            "도로 대회는 접수 마감과 이동 동선이 먼저이고, 트레일 일정은 노면과 전날 준비 시간이 핵심입니다. "
+            "장비 소식은 새 제품 이름보다 내 훈련화가 맡을 역할을 정하는 데 쓰면 좋습니다."
+        )
+    if has_training and domestic_events:
+        return (
+            "이번 호는 대회 캘린더와 훈련 계획을 따로 보지 않는 데 초점을 맞췄습니다. "
+            "참가 후보를 고를 때는 마감일과 출발 시간만 볼 게 아니라, 그 일정을 무리 없이 준비할 수 있는 주간 훈련 구조까지 같이 봐야 합니다."
+        )
+    if domestic_events and global_items and has_deadline:
+        return (
+            "이번 호는 이번 주 안에 결정해야 할 국내 일정과 해외 러닝 흐름을 함께 묶었습니다. "
+            "국내 소식은 접수 마감, 출발 시간, 현장 동선을 확인하는 데 쓰고, 해외 소식은 훈련과 장비 선택의 기준을 점검하는 데 쓰면 좋습니다."
+        )
+    if domestic_events and global_items:
+        return (
+            "이번 호는 국내 참가형 소식과 해외 흐름형 소식을 나눠 읽으면 좋습니다. "
+            "하나는 일정표와 현장 준비에 바로 반영할 정보이고, 다른 하나는 다음 훈련과 장비 선택에 참고할 배경입니다."
+        )
+    if domestic_events:
+        return (
+            "이번 호의 중심은 국내 레이스 캘린더를 실제 참가 기준으로 정리하는 일입니다. "
+            "날짜만 보지 말고 접수 상태, 이동 동선, 출발 시간, 더위 대비까지 같이 확인하세요."
+        )
+    if "gear" in {row["category"].strip().lower() for row in rows}:
+        return (
+            "이번 호는 해외 장비 흐름을 국내 러너의 구매 판단으로 번역해 보는 호입니다. "
+            "새 제품 이름보다 내 훈련에서 필요한 역할, 내구성, 가격 대비 활용 빈도를 먼저 보세요."
+        )
+    return (
+        "이번 호는 해외 러닝 흐름을 국내 러너의 훈련, 장비, 참가 선택과 연결해 보는 일에 초점을 맞췄습니다. "
+        "기록이나 제품명 자체보다 내 다음 선택에 어떤 영향을 줄지 기준을 세워 읽으면 좋습니다."
+    )
+
+
+def build_editorial_meta(rows, number, korea_count, global_count):
+    main = rows[0]
+    global_items = [row for row in rows if row["region"].strip().lower() != "korea"]
     global_title = clean_text(global_items[0]["title"].split("…", 1)[0] if global_items else rows[-1]["title"].split("…", 1)[0])
     main_title = clean_text(main["title"].split("…", 1)[0])
     main_subject = f"{main_title}{topic_particle(main_title)}"
@@ -96,30 +154,7 @@ def build_editorial_meta(rows, number, korea_count, global_count):
         f"{main_title}부터 {global_title}까지, 지금 접수, 일정표에 올려둘 만한 소식과 "
         "러닝 판이 어디로 움직이는지 보여주는 변화를 함께 담았습니다."
     )
-    if has_trail and has_gear:
-        issue_focus = (
-            "이번 호의 중심은 6월 레이스 선택을 도로, 트레일, 장비 관점으로 나눠 보는 일입니다. "
-            f"{event_titles}는 같은 6월 일정이어도 준비 방식이 다르고, {global_title}는 훈련화 선택 기준을 다시 보게 합니다."
-        )
-    elif has_training:
-        issue_focus = (
-            "이번 호의 중심은 대회 캘린더와 훈련 계획을 따로 보지 않는 일입니다. "
-            f"{event_titles}는 신청할 후보이고, {global_title}는 그 일정을 무리 없이 준비하기 위한 기준으로 읽을 수 있습니다."
-        )
-    elif domestic_events and global_items:
-        issue_focus = (
-            "이번 호의 중심은 이번 주 안에 결정할 국내 일정과 해외 러닝 흐름을 함께 보는 일입니다. "
-            f"{event_titles}처럼 참가 여부를 판단할 수 있는 소식과 {global_title} 같은 흐름형 소식을 함께 묶었습니다."
-        )
-    elif domestic_events:
-        issue_focus = (
-            "이번 호의 중심은 국내 레이스 캘린더를 정리하는 일입니다. "
-            f"{event_titles}처럼 참가 여부를 판단할 수 있는 소식을 우선했습니다."
-        )
-    else:
-        issue_focus = (
-            "이번 호의 중심은 해외 러닝 흐름을 국내 러너의 훈련, 장비, 참가 선택과 연결해 보는 일입니다."
-        )
+    issue_focus = build_issue_focus(rows, has_trail, has_gear, has_training)
     if main_category == "event":
         main_editorial = (
             f"{main_title} 소식을 이번 호의 첫머리에 둔 이유는 마감이 가깝고 실제 참가 결정에 필요한 변수가 한 번에 걸려 있기 때문입니다. "
