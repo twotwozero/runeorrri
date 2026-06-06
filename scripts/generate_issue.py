@@ -89,7 +89,7 @@ def build_issue_focus(rows, has_trail, has_gear, has_training):
         for row in rows
     )
     has_deadline = "마감" in text or "접수" in text
-    has_cancellation = "취소" in text or "환불" in text
+    has_cancellation = "취소" in text
 
     if domestic_events and global_items and has_cancellation:
         return (
@@ -151,8 +151,8 @@ def build_editorial_meta(rows, number, korea_count, global_count):
 
     email_intro = (
         f"안녕하세요, 러너리입니다. {number}호는 국내 {korea_count}개, 해외 {global_count}개로 구성했습니다. "
-        f"{main_title}부터 {global_title}까지, 지금 접수, 일정표에 올려둘 만한 소식과 "
-        "러닝 판이 어디로 움직이는지 보여주는 변화를 함께 담았습니다."
+        f"이번 호에서는 {main_title} 같은 접수 소식과 {global_title} 같은 해외 흐름을 함께 봅니다. "
+        "바로 일정표에 올릴 정보와 다음 훈련, 장비 선택에 참고할 기준을 나눠 담았습니다."
     )
     issue_focus = build_issue_focus(rows, has_trail, has_gear, has_training)
     if main_category == "event":
@@ -218,7 +218,7 @@ def build_editorial_meta(rows, number, korea_count, global_count):
         )
         perspective = (
             "이번 호는 ‘어디에 신청할까’에서 한 걸음 더 나아가 ‘무사히 준비할 수 있을까’를 같이 묻습니다. "
-            "국내 대회 후보는 일정표에 올리고, 해외 소식은 안전한 양도와 충분한 에너지 섭취라는 운영 원칙으로 읽으면 좋습니다."
+            "국내 대회 후보는 접수창과 이동 동선으로 나누고, 해외 소식은 장비 역할과 피로 관리 기준으로 읽으면 좋습니다."
         )
     else:
         perspective = (
