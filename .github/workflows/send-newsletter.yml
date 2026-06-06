@@ -16,6 +16,11 @@ on:
         required: true
         type: string
         default: latest
+      allow_non_today:
+        description: 'Allow sending an approved issue whose issue_date is not today in KST.'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   send:
@@ -23,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ISSUE_ID: ${{ github.event_name == 'schedule' && 'latest' || inputs.issue_id }}
+      ALLOW_NON_TODAY: ${{ github.event_name == 'schedule' && 'false' || inputs.allow_non_today }}
     steps:
       - uses: actions/checkout@v4
 
@@ -47,7 +53,12 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: python scripts/send_issue_email.py --recipients subscribers --confirm-subscriber-send --issue-id "$ISSUE_ID"
+        run: |
+          args=(python scripts/send_issue_email.py --recipients subscribers --confirm-subscriber-send --issue-id "$ISSUE_ID")
+          if [ "$ALLOW_NON_TODAY" = "true" ]; then
+            args+=(--allow-non-today)
+          fi
+          "${args[@]}"
 
       - name: Build web
         run: npm run build
