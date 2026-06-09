@@ -355,7 +355,7 @@ def get_subscriber_recipients():
         raise SystemExit(
             "Missing subscriber lookup environment variable(s): "
             + ", ".join(missing)
-            + ". Use `npm run publish` so GitHub Actions supplies repository secrets."
+            + ". Use `npm run send:subscribers` so GitHub Actions supplies repository secrets."
         )
 
     url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/d1/database/{db_id}/query"

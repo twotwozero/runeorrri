@@ -25,8 +25,7 @@ REQUIRED_FIELDS = [
     "verification_status",
 ]
 
-# Issue 20 was already sent before this source-diversity rule existed.
-SOURCE_DIVERSITY_START_ISSUE_ID = "2026-06-11-21"
+SOURCE_DIVERSITY_START_ISSUE_ID = "2026-06-09-20"
 
 AGGREGATOR_SOURCES = {
     "고러닝",

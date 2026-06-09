@@ -157,7 +157,7 @@ def build_editorial_meta(rows, number, korea_count, global_count):
     issue_focus = build_issue_focus(rows, has_trail, has_gear, has_training)
     if main_category == "event":
         main_editorial = (
-            f"{main_title} 소식을 이번 호의 첫머리에 둔 이유는 마감이 가깝고 실제 참가 결정에 필요한 변수가 한 번에 걸려 있기 때문입니다. "
+            f"{main_title} 소식을 이번 호의 첫머리에 둔 이유는 실제 참가 결정에 필요한 변수가 한 번에 걸려 있기 때문입니다. "
             "날짜와 모집 정보는 본문 요약에서 확인하고, 여기서는 선택 기준만 잡겠습니다. "
             "접수 시작 시간, 마감일, 선착순 여부를 한 표에 놓고 보면 핵심은 '갈 수 있나'보다 '마감 전에 확정할 수 있나'입니다. "
             "접수 전에는 계정 로그인, 결제수단, 교통편, 동반자 일정을 먼저 고정하세요."

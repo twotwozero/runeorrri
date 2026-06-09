@@ -81,13 +81,17 @@ npm run deploy
 python3 scripts/send_issue_email.py --recipients test --issue-id 2026-05-05-05
 ```
 
-구독자 전체 발송은 사용자가 명시적으로 승인한 뒤 아래 명령으로만 진행합니다. 기본 운영 경로는 GitHub Actions 수동 워크플로이며, D1 구독자 조회와 SMTP 발송은 저장소 시크릿으로 실행됩니다.
+`npm run publish`는 발행 검증, 원고/이미지/웹 데이터 생성, 웹 빌드까지만 수행합니다. 구독자에게 메일을 보내지 않습니다.
 
 ```bash
 npm run publish
 ```
 
-위 명령은 작업 트리가 깨끗하고 현재 브랜치가 원격에 푸시된 상태일 때만 `send-newsletter.yml` 워크플로를 실행합니다. 워크플로는 검증과 생성, 웹 빌드, Cloudflare Pages 배포, 라이브 확인을 끝낸 뒤 D1의 `active` 구독자에게 메일을 보냅니다.
+구독자 전체 발송은 사용자가 "구독자에게 보내줘"라고 명시한 뒤에만 아래 명령으로 진행합니다. 이 명령은 작업 트리가 깨끗하고 현재 브랜치가 원격에 푸시된 상태일 때만 `send-newsletter.yml` 워크플로를 실행합니다.
+
+```bash
+npm run send:subscribers
+```
 
 메일 발송 전 `scripts/send_issue_email.py`는 생성된 웹 데이터를 읽고, 메일 상단 링크와 히어로 이미지를 `RUNEORRRI_SITE_BASE_URL/NN`(회차 번호)으로 연결합니다. 기본값은 검수용 `MAIL_TO` 발송이며, 구독자 발송은 D1의 `active` 구독자 목록을 사용합니다.
 
@@ -141,14 +145,14 @@ python3 scripts/run_newsletter_pipeline.py --issue-id 2026-05-05-05
 ```
 
 9. 사용자가 "메일발송해줘"라고 하면 검수용 `MAIL_TO`로만 발송합니다.
-   사용자가 "구독자에게 보내줘"라고 명시한 뒤에만 `npm run publish`로 GitHub Actions 워크플로를 실행합니다.
+   사용자가 "구독자에게 보내줘"라고 명시한 뒤에만 `npm run send:subscribers`로 GitHub Actions 워크플로를 실행합니다.
    워크플로는 검증과 생성, 웹 빌드, Cloudflare Pages 배포, 라이브 확인, D1의 `active` 구독자 발송을 한 번에 처리합니다.
 
 ## 발송 설정
 
 GitHub Actions 워크플로 `.github/workflows/send-newsletter.yml`은 예약 실행하지 않습니다. 수동 실행(`workflow_dispatch`)에서 `confirm_subscriber_send`를 `true`로 지정한 경우에만 실행됩니다. 워크플로는 웹 배포와 라이브 확인을 먼저 끝내고, 마지막 단계에서 구독자에게 메일을 발송합니다.
 
-검수용 메일은 수동으로 `--recipients test`를 사용합니다. 구독자 전체 발송은 `npm run publish` 또는 워크플로 수동 실행으로만 진행합니다.
+검수용 메일은 수동으로 `--recipients test`를 사용합니다. 구독자 전체 발송은 `npm run send:subscribers` 또는 워크플로 수동 실행으로만 진행합니다.
 
 Cloudflare Pages 배포 설정은 저장소 루트 기준으로 봅니다.
 
