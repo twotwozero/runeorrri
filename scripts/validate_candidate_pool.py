@@ -146,7 +146,7 @@ def main():
         "--mode",
         choices=["collect", "publish"],
         default="publish",
-        help="collect validates a 10-item reviewed pool; publish validates the approved 5 selected rows.",
+        help="collect validates a 10-item reviewed, unselected pool; publish validates the approved 5 selected rows.",
     )
     parser.add_argument("--pool-size", type=int, default=None)
     args = parser.parse_args()
@@ -163,7 +163,7 @@ def main():
     rows_to_check_for_overlap = [row for row in current_rows if is_selected(row)]
     if args.mode == "collect":
         expected_pool_size = 10 if expected_pool_size is None else expected_pool_size
-        selected_count = None
+        selected_count = 0
         rows_to_check_for_overlap = current_rows
 
     validate_pool_size(current_rows, expected_pool_size, errors)

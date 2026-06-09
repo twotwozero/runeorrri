@@ -67,7 +67,7 @@ def latest_run_id_for_current_sha():
     raise SystemExit("Workflow was triggered, but its run id was not found. Check GitHub Actions.")
 
 
-def trigger_workflow(issue_id, watch, allow_non_today):
+def trigger_workflow(issue_id, watch):
     run([
         "gh",
         "workflow",
@@ -77,8 +77,6 @@ def trigger_workflow(issue_id, watch, allow_non_today):
         "confirm_subscriber_send=true",
         "-f",
         f"issue_id={issue_id}",
-        "-f",
-        f"allow_non_today={'true' if allow_non_today else 'false'}",
     ])
     run_id = latest_run_id_for_current_sha()
     print(f"Triggered {WORKFLOW}: https://github.com/twotwozero/runeorrri/actions/runs/{run_id}")
@@ -90,16 +88,11 @@ def main():
     parser = argparse.ArgumentParser(
         description="Publish the newsletter through GitHub Actions so D1 subscriber access uses repository secrets."
     )
-    parser.add_argument("--issue-id", default="today", help="Issue id to publish, or today/latest.")
+    parser.add_argument("--issue-id", default="latest", help="Issue id to publish, or latest.")
     parser.add_argument(
         "--confirm-subscriber-send",
         action="store_true",
         help="Required to trigger the subscriber-send workflow.",
-    )
-    parser.add_argument(
-        "--allow-non-today",
-        action="store_true",
-        help="Allow sending an approved issue whose issue_date is not today's KST date.",
     )
     parser.add_argument("--no-watch", action="store_true", help="Trigger the workflow without waiting for completion.")
     args = parser.parse_args()
@@ -110,7 +103,7 @@ def main():
     try:
         ensure_clean_worktree()
         ensure_branch_pushed()
-        trigger_workflow(args.issue_id, watch=not args.no_watch, allow_non_today=args.allow_non_today)
+        trigger_workflow(args.issue_id, watch=not args.no_watch)
     except subprocess.CalledProcessError as error:
         if error.stdout:
             sys.stderr.write(error.stdout)

@@ -1,9 +1,6 @@
 name: Send Newsletter
 
 on:
-  schedule:
-    # Tue/Thu/Sat 08:00 KST. GitHub cron uses UTC, so this runs Mon/Wed/Fri 23:00 UTC.
-    - cron: '0 23 * * 1,3,5'
   workflow_dispatch:
     inputs:
       confirm_subscriber_send:
@@ -16,19 +13,13 @@ on:
         required: true
         type: string
         default: latest
-      allow_non_today:
-        description: 'Allow sending an approved issue whose issue_date is not today in KST.'
-        required: false
-        type: boolean
-        default: false
 
 jobs:
   send:
-    if: ${{ github.event_name == 'schedule' || inputs.confirm_subscriber_send == true }}
+    if: ${{ inputs.confirm_subscriber_send == true }}
     runs-on: ubuntu-latest
     env:
-      ISSUE_ID: ${{ github.event_name == 'schedule' && 'latest' || inputs.issue_id }}
-      ALLOW_NON_TODAY: ${{ github.event_name == 'schedule' && 'false' || inputs.allow_non_today }}
+      ISSUE_ID: ${{ inputs.issue_id }}
     steps:
       - uses: actions/checkout@v4
 
@@ -40,6 +31,23 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      - name: Validate and generate issue
+        run: python scripts/run_newsletter_pipeline.py --issue-id "$ISSUE_ID"
+
+      - name: Build web
+        run: npm run build
+
+      - name: Deploy web to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npm run deploy
+
+      - name: Verify issue is live
+        env:
+          RUNEORRRI_SITE_BASE_URL: ${{ secrets.RUNEORRRI_SITE_BASE_URL }}
+        run: npm run verify:live -- --issue-id "$ISSUE_ID"
 
       - name: Send newsletter to all subscribers
         env:
@@ -53,23 +61,4 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: |
-          args=(python scripts/send_issue_email.py --recipients subscribers --confirm-subscriber-send --issue-id "$ISSUE_ID")
-          if [ "$ALLOW_NON_TODAY" = "true" ]; then
-            args+=(--allow-non-today)
-          fi
-          "${args[@]}"
-
-      - name: Build web
-        run: npm run build
-
-      - name: Deploy web to Cloudflare Pages
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npm run deploy
-
-      - name: Verify current issue is live
-        env:
-          RUNEORRRI_SITE_BASE_URL: ${{ secrets.RUNEORRRI_SITE_BASE_URL }}
-        run: npm run verify:live
+        run: python scripts/send_issue_email.py --recipients subscribers --confirm-subscriber-send --issue-id "$ISSUE_ID"

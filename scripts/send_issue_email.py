@@ -3,7 +3,6 @@ import argparse
 import csv
 import json
 import os
-import re
 import smtplib
 import urllib.parse
 import urllib.request
@@ -343,47 +342,36 @@ def get_subscriber_recipients():
     db_id = os.environ.get("CLOUDFLARE_D1_DATABASE_ID")
     token = os.environ.get("CLOUDFLARE_API_TOKEN")
 
-    if account_id and db_id and token:
-        url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/d1/database/{db_id}/query"
-        payload = json.dumps({
-            "sql": "SELECT email FROM subscribers WHERE status = 'active' ORDER BY subscribed_at ASC"
-        }).encode()
-        req = urllib.request.Request(url, data=payload, headers={
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-        })
-        try:
-            with urllib.request.urlopen(req) as resp:
-                result = json.loads(resp.read())
-                return [row["email"] for row in result["result"][0]["results"]]
-        except urllib.error.HTTPError as error:
-            print(f"Cloudflare API recipient lookup failed ({error.code}); trying Wrangler OAuth token.")
+    missing = [
+        name
+        for name, value in {
+            "CLOUDFLARE_ACCOUNT_ID": account_id,
+            "CLOUDFLARE_D1_DATABASE_ID": db_id,
+            "CLOUDFLARE_API_TOKEN": token,
+        }.items()
+        if not value
+    ]
+    if missing:
+        raise SystemExit(
+            "Missing subscriber lookup environment variable(s): "
+            + ", ".join(missing)
+            + ". Use `npm run publish` so GitHub Actions supplies repository secrets."
+        )
 
-    if db_id:
-        wrangler_config = Path.home() / "Library/Preferences/.wrangler/config/default.toml"
-        if wrangler_config.exists():
-            match = re.search(r'oauth_token\s*=\s*"([^"]+)"', wrangler_config.read_text(encoding="utf-8"))
-            if match:
-                account = account_id or "079d5d6e99333e9cb2d6f9f6a12de55e"
-                url = f"https://api.cloudflare.com/client/v4/accounts/{account}/d1/database/{db_id}/query"
-                payload = json.dumps({
-                    "sql": "SELECT email FROM subscribers WHERE status = 'active' ORDER BY subscribed_at ASC"
-                }).encode()
-                req = urllib.request.Request(url, data=payload, headers={
-                    "Authorization": f"Bearer {match.group(1)}",
-                    "Content-Type": "application/json",
-                })
-                try:
-                    with urllib.request.urlopen(req) as resp:
-                        result = json.loads(resp.read())
-                        return [row["email"] for row in result["result"][0]["results"]]
-                except urllib.error.HTTPError as error:
-                    raise SystemExit(f"Wrangler OAuth recipient lookup failed ({error.code}).")
-
-    raise SystemExit(
-        "No subscriber recipients found. Check Cloudflare D1 settings and auth. "
-        "For normal publishing, use `npm run publish` so subscriber lookup runs in GitHub Actions with repository secrets."
-    )
+    url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/d1/database/{db_id}/query"
+    payload = json.dumps({
+        "sql": "SELECT email FROM subscribers WHERE status = 'active' ORDER BY subscribed_at ASC"
+    }).encode()
+    req = urllib.request.Request(url, data=payload, headers={
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    })
+    try:
+        with urllib.request.urlopen(req) as resp:
+            result = json.loads(resp.read())
+            return [row["email"] for row in result["result"][0]["results"]]
+    except urllib.error.HTTPError as error:
+        raise SystemExit(f"Cloudflare D1 recipient lookup failed ({error.code}).")
 
 
 def main():
@@ -404,11 +392,6 @@ def main():
         action="store_true",
         help="Required for --recipients subscribers.",
     )
-    parser.add_argument(
-        "--allow-non-today",
-        action="store_true",
-        help="Allow subscriber sends when the issue date is not today's KST date.",
-    )
     args = parser.parse_args()
 
     global ACTIVE_ISSUE_ID, TODAY, NEWSLETTER, ART_DIR
@@ -420,12 +403,6 @@ def main():
     if args.recipients == "subscribers":
         if not args.confirm_subscriber_send:
             raise SystemExit("Refusing subscriber send without --confirm-subscriber-send.")
-        today_kst = korean_today()
-        if TODAY != today_kst and not args.allow_non_today:
-            raise SystemExit(
-                f"Refusing subscriber send for non-today issue {ACTIVE_ISSUE_ID} ({TODAY}); "
-                f"today in KST is {today_kst}. Pass --allow-non-today only for an intentional resend."
-            )
 
     load_dotenv(ROOT)
     site_base_url = os.environ.get("RUNEORRRI_SITE_BASE_URL") or os.environ.get("RUNNERI_SITE_BASE_URL")

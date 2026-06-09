@@ -20,7 +20,7 @@
 - `data/candidates_archive.csv`: 모든 회차 후보 소식 누적 기록이자 생성 스크립트의 원본
 - `issues/`: 회차별 뉴스레터 원고(md) 저장 위치
 - `web/public/assets/issues/YYYY-MM-DD/`: 회차별 메일/웹 공용 이미지 저장 위치 (단일 출처)
-- `scripts/run_newsletter_pipeline.py`: 후보 검증부터 원고·이미지·웹 데이터 생성과 선택적 메일 발송까지 실행하는 표준 파이프라인
+- `scripts/run_newsletter_pipeline.py`: 후보 검증부터 원고·이미지·웹 데이터 생성까지 실행하는 표준 파이프라인
 - `scripts/generate_issue.py`: `issue_id` 기준으로 archive에서 뉴스레터 초안을 생성하는 스크립트
 - `scripts/generate_newsletter_art.py`: 회차별 메일/웹용 이미지를 생성하는 스크립트
 - `scripts/generate_web_data.py`: 뉴스레터 원고를 웹사이트 데이터(JSON)로 변환하는 스크립트
@@ -37,33 +37,20 @@
 python3 scripts/validate_candidate_pool.py 2026-05-05-05 --mode collect
 ```
 
-3. 후보 10개를 보여줄 때 에디터 추천 5개도 함께 제안합니다.
+3. `collect` 검증을 통과한 후보 10개를 보여줄 때 에디터 추천 5개도 함께 제안합니다.
    추천은 아직 승인으로 보지 않으며, 이 단계에서는 `selected=no`를 유지합니다.
 4. 사용자가 추천안 그대로 진행하거나 10개 중 발행할 5개를 고르면 그 5개만 `selected=yes`로 표시하고 나머지는 `selected=no`로 둡니다.
-5. `selected` 값을 `yes`로 표시한 소식 5개를 확인합니다.
-6. 아래 명령으로 초안을 생성합니다.
+5. 아래 명령으로 발행 검증, 원고, 이미지, 웹 데이터를 생성합니다.
 
 ```bash
-python3 scripts/generate_issue.py --issue-id 2026-05-05-05
-```
-
-7. 메일/웹용 이미지를 생성합니다. 기본 Python에 Pillow가 없다면 `python3 -m pip install Pillow`를 먼저 실행합니다.
-
-```bash
-python3 scripts/generate_newsletter_art.py --issue-id 2026-05-05-05
-```
-
-8. 러너리 웹사이트용 데이터를 생성합니다.
-
-```bash
-python3 scripts/generate_web_data.py
+python3 scripts/run_newsletter_pipeline.py --issue-id 2026-05-05-05
 ```
 
 기본 출력 파일:
 
 - `web/src/data/issues.json`: 웹앱이 읽는 회차 데이터
 
-9. 웹사이트를 로컬에서 확인합니다.
+6. 웹사이트를 로컬에서 확인합니다.
 
 ```bash
 npm run dev
@@ -81,22 +68,22 @@ Cloudflare Pages 배포는 Functions(`functions/`)까지 포함되도록 아래 
 npm run deploy
 ```
 
-10. 생성된 `issues/YYYY-MM-DD-running-newsletter.md`, `web/public/assets/issues/YYYY-MM-DD/`, `web/`을 열어 사람이 최종 검수합니다.
-11. SMTP 환경변수와 `RUNEORRRI_SITE_BASE_URL`을 설정했다면 검수용 메일을 보냅니다.
+7. 생성된 `issues/YYYY-MM-DD-running-newsletter.md`, `web/public/assets/issues/YYYY-MM-DD/`, `web/`을 열어 사람이 최종 검수합니다.
+8. SMTP 환경변수와 `RUNEORRRI_SITE_BASE_URL`을 설정했다면 검수용 메일을 보냅니다.
 
 ```bash
 python3 scripts/send_issue_email.py --recipients test --issue-id 2026-05-05-05
 ```
 
-구독자 전체 발송은 사용자가 명시적으로 승인한 뒤 아래 명령으로만 진행합니다. 기본 운영 경로는 GitHub Actions 수동 워크플로이며, D1 구독자 조회와 SMTP 발송은 저장소 시크릿으로 실행됩니다. 로컬 Wrangler OAuth나 로컬 Cloudflare 토큰 만료에 의존하지 않습니다.
+구독자 전체 발송은 사용자가 명시적으로 승인한 뒤 아래 명령으로만 진행합니다. 기본 운영 경로는 GitHub Actions 수동 워크플로이며, D1 구독자 조회와 SMTP 발송은 저장소 시크릿으로 실행됩니다.
 
 ```bash
 npm run publish
 ```
 
-위 명령은 작업 트리가 깨끗하고 현재 브랜치가 원격에 푸시된 상태일 때만 `send-newsletter.yml` 워크플로를 실행합니다. 로컬에서 직접 D1을 조회해 발송해야 하는 예외 상황에만 `npm run send:subscribers:local`을 사용합니다. 직접 발송 스크립트는 `--confirm-subscriber-send`가 없으면 구독자 발송을 거부하고, 기본적으로 한국 기준 오늘 날짜의 회차가 아니면 발송하지 않습니다.
+위 명령은 작업 트리가 깨끗하고 현재 브랜치가 원격에 푸시된 상태일 때만 `send-newsletter.yml` 워크플로를 실행합니다. 워크플로는 검증과 생성, 웹 빌드, Cloudflare Pages 배포, 라이브 확인을 끝낸 뒤 D1의 `active` 구독자에게 메일을 보냅니다.
 
-메일 발송 전 `scripts/send_issue_email.py`는 웹사이트 데이터를 다시 생성하고, 메일 상단 `@runeorrri`, 제목, 히어로 이미지를 `RUNEORRRI_SITE_BASE_URL/NN`(회차 번호)로 연결합니다. 기본값은 검수용 `MAIL_TO` 발송이며, 구독자 발송은 D1의 `active` 구독자 목록을 사용합니다.
+메일 발송 전 `scripts/send_issue_email.py`는 생성된 웹 데이터를 읽고, 메일 상단 링크와 히어로 이미지를 `RUNEORRRI_SITE_BASE_URL/NN`(회차 번호)으로 연결합니다. 기본값은 검수용 `MAIL_TO` 발송이며, 구독자 발송은 D1의 `active` 구독자 목록을 사용합니다.
 
 뉴스레터 원고는 이메일 본문 텍스트와 웹사이트 데이터의 원천으로 사용하고, `web/public/assets/issues/YYYY-MM-DD/` 이미지는 메일 인라인 이미지와 웹사이트 대표 이미지로 함께 사용합니다.
 
@@ -105,16 +92,16 @@ npm run publish
 아래 명령 하나가 발행 전 후보 검증, 원고 생성, 메일/웹 이미지 생성, 웹 데이터 생성을 순서대로 실행합니다.
 
 ```bash
-python3 scripts/run_newsletter_pipeline.py --issue-id today --no-email
+python3 scripts/run_newsletter_pipeline.py --issue-id 2026-05-05-05
 ```
 
-검수용 메일까지 보내려면 `.env` 설정 후 아래처럼 실행합니다.
+검수용 메일은 `.env` 설정 후 별도로 보냅니다.
 
 ```bash
-python3 scripts/run_newsletter_pipeline.py --issue-id today --send-email
+python3 scripts/send_issue_email.py --recipients test --issue-id 2026-05-05-05
 ```
 
-`--issue-id today`는 `data/candidates_archive.csv`에서 오늘 날짜(`issue_date`)의 후보를 찾습니다. 오늘 후보가 없거나 선택된 후보가 5개가 아니거나 검수가 끝나지 않았으면 발송하지 않고 실패합니다.
+발행 작업에서는 `today`보다 명시적인 `issue-id`를 권장합니다. `today`와 `latest`는 보조 옵션입니다.
 
 ## 자료 수집 요청을 받았을 때
 
@@ -125,31 +112,31 @@ python3 scripts/run_newsletter_pipeline.py --issue-id today --send-email
    같은 대회, 같은 브랜드/제품군, 같은 엘리트 레이스, 같은 기사 URL, 같은 주제 후속 기사처럼 보이면 제외합니다.
 3. 후보 10개를 `data/candidates_archive.csv`에 같은 `issue_id`로 추가합니다.
    이 단계에서는 기본값을 `selected=no`로 둡니다.
-4. 아래 명령으로 10개 후보 풀을 검증합니다.
+4. 아래 명령으로 10개 후보 풀을 검증합니다. 이 검증은 추천 전 단계이므로 10개 모두 `selected=no`일 때만 통과합니다.
 
 ```bash
 python3 scripts/validate_candidate_pool.py 2026-05-05-05 --mode collect
 ```
 
-5. 사용자에게 후보 10개를 제목, 출처, 왜 중요한지 중심으로 보여주고, 그중 에디터 추천 5개를 함께 표시합니다.
+5. 검증을 통과한 뒤 사용자에게 후보 10개를 제목, 출처, 왜 중요한지 중심으로 보여주고, 그중 에디터 추천 5개를 함께 표시합니다.
    추천 5개는 국내 일반 러너에게 바로 쓸모 있는 순서, 마감 임박성, 카테고리 균형, 기존 발행호와의 차별성을 기준으로 고릅니다.
    추천은 아직 승인으로 보지 않으며, 사용자가 "추천대로"라고 하거나 다른 5개를 지정하기 전까지는 `selected=no`를 유지합니다.
 6. 사용자가 승인한 5개만 `selected=yes`로 바꿉니다.
 7. 아래 명령으로 발행 검증과 생성까지 진행합니다.
 
 ```bash
-python3 scripts/run_newsletter_pipeline.py --issue-id 2026-05-05-05 --no-email
+python3 scripts/run_newsletter_pipeline.py --issue-id 2026-05-05-05
 ```
 
 8. 사용자가 "메일발송해줘"라고 하면 검수용 `MAIL_TO`로만 발송합니다.
    사용자가 "구독자에게 보내줘"라고 명시한 뒤에만 `npm run publish`로 GitHub Actions 워크플로를 실행합니다.
-   워크플로는 웹 빌드, Cloudflare Pages 배포, 라이브 확인, D1의 `active` 구독자 발송을 한 번에 처리합니다.
+   워크플로는 검증과 생성, 웹 빌드, Cloudflare Pages 배포, 라이브 확인, D1의 `active` 구독자 발송을 한 번에 처리합니다.
 
 ## 발송 설정
 
-GitHub Actions 워크플로 `.github/workflows/send-newsletter.yml`은 예약 실행하지 않습니다. 수동 실행(`workflow_dispatch`)에서 `confirm_subscriber_send`를 `true`로 지정한 경우에만 구독자에게 메일을 발송한 뒤 웹을 빌드하고 Cloudflare Pages에 배포한 다음 최신 회차 URL을 검증합니다.
+GitHub Actions 워크플로 `.github/workflows/send-newsletter.yml`은 예약 실행하지 않습니다. 수동 실행(`workflow_dispatch`)에서 `confirm_subscriber_send`를 `true`로 지정한 경우에만 실행됩니다. 워크플로는 웹 배포와 라이브 확인을 먼저 끝내고, 마지막 단계에서 구독자에게 메일을 발송합니다.
 
-검수용 메일은 수동으로 `--recipients test`를 사용합니다. 구독자 전체 발송은 기본적으로 `npm run publish` 또는 워크플로 수동 실행으로만 진행합니다. 로컬 직접 발송은 인증 점검용 예외 경로인 `npm run send:subscribers:local`을 사용합니다.
+검수용 메일은 수동으로 `--recipients test`를 사용합니다. 구독자 전체 발송은 `npm run publish` 또는 워크플로 수동 실행으로만 진행합니다.
 
 Cloudflare Pages 배포 설정은 저장소 루트 기준으로 봅니다.
 
@@ -157,7 +144,7 @@ Cloudflare Pages 배포 설정은 저장소 루트 기준으로 봅니다.
 - 빌드 출력: `web/dist`
 - Pages Functions 위치: `functions/`
 
-검수용 이메일 발송은 `.env.example`을 참고해 `.env` 파일에 SMTP 설정과 `MAIL_TO`를 넣습니다. 구독자 전체 발송은 GitHub Actions 저장소 시크릿의 Cloudflare D1 설정과 SMTP 설정을 사용합니다. 로컬에서 직접 `send:subscribers:local`을 실행하는 경우에만 로컬 `CLOUDFLARE_API_TOKEN` 또는 Wrangler 로그인이 필요합니다.
+검수용 이메일 발송은 `.env.example`을 참고해 `.env` 파일에 SMTP 설정과 `MAIL_TO`를 넣습니다. 구독자 전체 발송은 GitHub Actions 저장소 시크릿의 Cloudflare D1 설정과 SMTP 설정을 사용합니다.
 
 ## 발행 전 필수 체크
 

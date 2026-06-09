@@ -4,13 +4,13 @@ import csv
 import os
 import subprocess
 import sys
-from datetime import date
 from pathlib import Path
 
+from utils import korean_today
 
 ROOT = Path(__file__).resolve().parents[1]
 ARCHIVE = ROOT / "data" / "candidates_archive.csv"
-TODAY = date.today().isoformat()
+TODAY = korean_today()
 
 
 def run(command):
@@ -73,14 +73,12 @@ def resolve_issue_id(value):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Build and optionally send one runeorrri newsletter issue.")
+    parser = argparse.ArgumentParser(description="Validate and build one runeorrri newsletter issue.")
     parser.add_argument(
         "--issue-id",
         default="today",
         help="Issue id to build from candidates_archive.csv, or one of: today, latest.",
     )
-    parser.add_argument("--send-email", action="store_true", help="Send the newsletter via SMTP after generation.")
-    parser.add_argument("--no-email", action="store_true", help="Generate files only. This is the default.")
     args = parser.parse_args()
 
     issue_id = resolve_issue_id(args.issue_id)
@@ -90,11 +88,6 @@ def main():
     art_python = python_with_pillow()
     run([art_python, "scripts/generate_newsletter_art.py", "--issue-id", issue_id])
     run([sys.executable, "scripts/generate_web_data.py"])
-
-    if args.send_email and not args.no_email:
-        run([sys.executable, "scripts/send_issue_email.py", "--recipients", "test", "--issue-id", issue_id])
-    else:
-        print("Email skipped. Pass --send-email to send via SMTP.")
 
 
 if __name__ == "__main__":
