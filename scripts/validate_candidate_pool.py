@@ -25,6 +25,32 @@ REQUIRED_FIELDS = [
     "verification_status",
 ]
 
+# Issue 20 was already sent before this source-diversity rule existed.
+SOURCE_DIVERSITY_START_ISSUE_ID = "2026-06-11-21"
+
+AGGREGATOR_SOURCES = {
+    "고러닝",
+    "KorMarathon",
+    "Runxel",
+    "Runningwiki",
+    "RunnerGuides",
+    "김러닝",
+    "마라톤모아",
+    "런마일",
+    "dot195",
+}
+
+PRIMARY_SOURCE_HINTS = {
+    "공식",
+    "서울시",
+    "World Athletics",
+    "Runner's World",
+    "PUMA",
+    "ASICS",
+    "adidas",
+    "Nike",
+}
+
 GENERIC_TOKENS = {
     "2026",
     "마라톤",
@@ -57,6 +83,21 @@ def resolve_issue_id(value, rows):
 
 def is_selected(row):
     return is_selected_value(row.get("selected", ""))
+
+
+def source_name(row):
+    return row.get("source", "").strip()
+
+
+def source_is_aggregator(row):
+    source = source_name(row).lower()
+    return any(name.lower() in source for name in AGGREGATOR_SOURCES)
+
+
+def source_is_primary(row):
+    source = source_name(row)
+    notes = row.get("notes", "")
+    return any(hint.lower() in source.lower() or hint.lower() in notes.lower() for hint in PRIMARY_SOURCE_HINTS)
 
 
 def normalize(text):
@@ -105,6 +146,68 @@ def validate_internal_duplicates(rows, errors):
         seen_titles[title_key] = index
 
 
+def validate_source_quality(rows, mode, errors):
+    if mode == "collect":
+        max_same_aggregator = 3
+        max_total_aggregators = 6
+    else:
+        max_same_aggregator = 2
+        max_total_aggregators = 2
+
+    aggregator_count = 0
+    aggregator_counts = {}
+    primary_count = 0
+    for index, row in enumerate(rows, start=1):
+        if source_is_primary(row):
+            primary_count += 1
+        if not source_is_aggregator(row):
+            continue
+        source = source_name(row)
+        aggregator_count += 1
+        aggregator_counts[source] = aggregator_counts.get(source, 0) + 1
+        if row.get("category", "").strip().lower() == "event":
+            notes = row.get("notes", "")
+            if "공식" not in notes and "교차" not in notes:
+                errors.append(
+                    f"row {index}: aggregator event source needs official/cross-check note: {source}"
+                )
+
+    if aggregator_count > max_total_aggregators:
+        errors.append(
+            f"{mode}: too many aggregator-sourced rows "
+            f"({aggregator_count} > {max_total_aggregators})"
+        )
+    for source, count in sorted(aggregator_counts.items()):
+        if count > max_same_aggregator:
+            errors.append(
+                f"{mode}: too many rows from {source} ({count} > {max_same_aggregator})"
+            )
+    if mode in {"publish", "recommend"} and primary_count < 2:
+        errors.append(f"{mode}: rows need at least 2 primary/official sources")
+
+
+def parse_recommend_indices(value, row_count, errors):
+    if not value:
+        return []
+    indices = []
+    for part in value.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        if not part.isdigit():
+            errors.append(f"--recommend must be a comma-separated list of row numbers, got: {value}")
+            return []
+        index = int(part)
+        if index < 1 or index > row_count:
+            errors.append(f"--recommend row number out of range: {index}")
+        indices.append(index)
+    if len(indices) != 5:
+        errors.append(f"--recommend must contain exactly 5 row numbers, found {len(indices)}")
+    if len(set(indices)) != len(indices):
+        errors.append("--recommend contains duplicate row numbers")
+    return indices
+
+
 def validate_archive_overlap(issue_id, current_rows, archive_rows, errors):
     published = [
         row
@@ -149,6 +252,11 @@ def main():
         help="collect validates a 10-item reviewed, unselected pool; publish validates the approved 5 selected rows.",
     )
     parser.add_argument("--pool-size", type=int, default=None)
+    parser.add_argument(
+        "--recommend",
+        default="",
+        help="With --mode collect, also validate a proposed 5-row recommendation, e.g. 1,2,5,7,9.",
+    )
     args = parser.parse_args()
 
     archive_rows = read_archive()
@@ -171,6 +279,23 @@ def main():
     validate_selection(current_rows, selected_count, errors)
     validate_internal_duplicates(current_rows, errors)
     validate_archive_overlap(issue_id, rows_to_check_for_overlap, archive_rows, errors)
+    enforce_source_quality = issue_id >= SOURCE_DIVERSITY_START_ISSUE_ID
+    if enforce_source_quality:
+        source_rows = current_rows if args.mode == "collect" else rows_to_check_for_overlap
+        validate_source_quality(source_rows, args.mode, errors)
+    if args.recommend:
+        if args.mode != "collect":
+            errors.append("--recommend can only be used with --mode collect")
+        else:
+            indices = parse_recommend_indices(args.recommend, len(current_rows), errors)
+            recommended_rows = [
+                current_rows[index - 1]
+                for index in indices
+                if 1 <= index <= len(current_rows)
+            ]
+            if len(recommended_rows) == 5:
+                validate_archive_overlap(issue_id, recommended_rows, archive_rows, errors)
+                validate_source_quality(recommended_rows, "recommend", errors)
 
     if errors:
         detail = "\n".join(f"- {error}" for error in errors)

@@ -39,8 +39,14 @@ python3 scripts/validate_candidate_pool.py 2026-05-05-05 --mode collect
 
 3. `collect` 검증을 통과한 후보 10개를 보여줄 때 에디터 추천 5개도 함께 제안합니다.
    추천은 아직 승인으로 보지 않으며, 이 단계에서는 `selected=no`를 유지합니다.
-4. 사용자가 추천안 그대로 진행하거나 10개 중 발행할 5개를 고르면 그 5개만 `selected=yes`로 표시하고 나머지는 `selected=no`로 둡니다.
-5. 아래 명령으로 발행 검증, 원고, 이미지, 웹 데이터를 생성합니다.
+4. 추천 5개를 보여주기 전 추천 row 번호도 검증합니다.
+
+```bash
+python3 scripts/validate_candidate_pool.py 2026-05-05-05 --mode collect --recommend 1,2,5,7,9
+```
+
+5. 사용자가 추천안 그대로 진행하거나 10개 중 발행할 5개를 고르면 그 5개만 `selected=yes`로 표시하고 나머지는 `selected=no`로 둡니다.
+6. 아래 명령으로 발행 검증, 원고, 이미지, 웹 데이터를 생성합니다.
 
 ```bash
 python3 scripts/run_newsletter_pipeline.py --issue-id 2026-05-05-05
@@ -50,7 +56,7 @@ python3 scripts/run_newsletter_pipeline.py --issue-id 2026-05-05-05
 
 - `web/src/data/issues.json`: 웹앱이 읽는 회차 데이터
 
-6. 웹사이트를 로컬에서 확인합니다.
+7. 웹사이트를 로컬에서 확인합니다.
 
 ```bash
 npm run dev
@@ -68,8 +74,8 @@ Cloudflare Pages 배포는 Functions(`functions/`)까지 포함되도록 아래 
 npm run deploy
 ```
 
-7. 생성된 `issues/YYYY-MM-DD-running-newsletter.md`, `web/public/assets/issues/YYYY-MM-DD/`, `web/`을 열어 사람이 최종 검수합니다.
-8. SMTP 환경변수와 `RUNEORRRI_SITE_BASE_URL`을 설정했다면 검수용 메일을 보냅니다.
+8. 생성된 `issues/YYYY-MM-DD-running-newsletter.md`, `web/public/assets/issues/YYYY-MM-DD/`, `web/`을 열어 사람이 최종 검수합니다.
+9. SMTP 환경변수와 `RUNEORRRI_SITE_BASE_URL`을 설정했다면 검수용 메일을 보냅니다.
 
 ```bash
 python3 scripts/send_issue_email.py --recipients test --issue-id 2026-05-05-05
@@ -118,17 +124,23 @@ python3 scripts/send_issue_email.py --recipients test --issue-id 2026-05-05-05
 python3 scripts/validate_candidate_pool.py 2026-05-05-05 --mode collect
 ```
 
-5. 검증을 통과한 뒤 사용자에게 후보 10개를 제목, 출처, 왜 중요한지 중심으로 보여주고, 그중 에디터 추천 5개를 함께 표시합니다.
+5. 에디터 추천 5개를 정한 뒤, 추천 row 번호를 넣어 추천 조합도 검증합니다.
+
+```bash
+python3 scripts/validate_candidate_pool.py 2026-05-05-05 --mode collect --recommend 1,2,5,7,9
+```
+
+6. 검증을 통과한 뒤 사용자에게 후보 10개를 제목, 출처, 왜 중요한지 중심으로 보여주고, 그중 에디터 추천 5개를 함께 표시합니다.
    추천 5개는 국내 일반 러너에게 바로 쓸모 있는 순서, 마감 임박성, 카테고리 균형, 기존 발행호와의 차별성을 기준으로 고릅니다.
    추천은 아직 승인으로 보지 않으며, 사용자가 "추천대로"라고 하거나 다른 5개를 지정하기 전까지는 `selected=no`를 유지합니다.
-6. 사용자가 승인한 5개만 `selected=yes`로 바꿉니다.
-7. 아래 명령으로 발행 검증과 생성까지 진행합니다.
+7. 사용자가 승인한 5개만 `selected=yes`로 바꿉니다.
+8. 아래 명령으로 발행 검증과 생성까지 진행합니다.
 
 ```bash
 python3 scripts/run_newsletter_pipeline.py --issue-id 2026-05-05-05
 ```
 
-8. 사용자가 "메일발송해줘"라고 하면 검수용 `MAIL_TO`로만 발송합니다.
+9. 사용자가 "메일발송해줘"라고 하면 검수용 `MAIL_TO`로만 발송합니다.
    사용자가 "구독자에게 보내줘"라고 명시한 뒤에만 `npm run publish`로 GitHub Actions 워크플로를 실행합니다.
    워크플로는 검증과 생성, 웹 빌드, Cloudflare Pages 배포, 라이브 확인, D1의 `active` 구독자 발송을 한 번에 처리합니다.
 
