@@ -120,6 +120,8 @@ python3 scripts/send_issue_email.py --recipients test --issue-id 2026-05-05-05
 1. `docs/editorial-guidelines.md`를 기준으로 최근 48~72시간 러닝 소식 10개를 찾습니다.
 2. 기존 발행호(`issues/`, `web/src/data/issues.json`, `data/candidates_archive.csv`의 selected rows)를 먼저 대조합니다.
    같은 대회, 같은 브랜드/제품군, 같은 엘리트 레이스, 같은 기사 URL, 같은 주제 후속 기사처럼 보이면 제외합니다.
+   동일 출처는 후보 10개, 추천 5개, 발행 5개 각각에서 최대 2개까지만 허용합니다.
+   해외 소식은 한 매체에 몰리지 않도록 국제 경기 단체, 대회 공식 홈페이지, 브랜드 공식 뉴스룸, 러닝 전문 매체, 스포츠·문화권 주요 매체 같은 1차·전문 출처를 함께 확인합니다.
 3. 후보 10개를 `data/candidates_archive.csv`에 같은 `issue_id`로 추가합니다.
    이 단계에서는 기본값을 `selected=no`로 둡니다.
 4. 아래 명령으로 10개 후보 풀을 검증합니다. 이 검증은 추천 전 단계이므로 10개 모두 `selected=no`일 때만 통과합니다.

@@ -26,6 +26,7 @@ REQUIRED_FIELDS = [
 ]
 
 SOURCE_DIVERSITY_START_ISSUE_ID = "2026-06-09-20"
+MAX_ROWS_PER_SOURCE = 2
 
 AGGREGATOR_SOURCES = {
     "고러닝",
@@ -155,13 +156,15 @@ def validate_source_quality(rows, mode, errors):
 
     aggregator_count = 0
     aggregator_counts = {}
+    source_counts = {}
     primary_count = 0
     for index, row in enumerate(rows, start=1):
+        source = source_name(row)
+        source_counts[source] = source_counts.get(source, 0) + 1
         if source_is_primary(row):
             primary_count += 1
         if not source_is_aggregator(row):
             continue
-        source = source_name(row)
         aggregator_count += 1
         aggregator_counts[source] = aggregator_counts.get(source, 0) + 1
         if row.get("category", "").strip().lower() == "event":
@@ -180,6 +183,12 @@ def validate_source_quality(rows, mode, errors):
         if count > max_same_aggregator:
             errors.append(
                 f"{mode}: too many rows from {source} ({count} > {max_same_aggregator})"
+            )
+    for source, count in sorted(source_counts.items()):
+        if count > MAX_ROWS_PER_SOURCE:
+            errors.append(
+                f"{mode}: too many rows from same source {source} "
+                f"({count} > {MAX_ROWS_PER_SOURCE})"
             )
     if mode in {"publish", "recommend"} and primary_count < 2:
         errors.append(f"{mode}: rows need at least 2 primary/official sources")
