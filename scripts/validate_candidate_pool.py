@@ -26,6 +26,7 @@ REQUIRED_FIELDS = [
 ]
 
 SOURCE_DIVERSITY_START_ISSUE_ID = "2026-06-09-20"
+SUMMARY_STYLE_START_ISSUE_ID = "2026-06-27-28"
 MAX_ROWS_PER_SOURCE = 2
 
 AGGREGATOR_SOURCES = {
@@ -194,6 +195,47 @@ def validate_source_quality(rows, mode, errors):
         errors.append(f"{mode}: rows need at least 2 primary/official sources")
 
 
+def validate_summary_style(rows, errors):
+    source_process_patterns = [
+        r"[^.\n]{1,30}\s기준",
+        r"[^.\n]{1,30}\s공식\s?(홈페이지|사이트|신청\s?페이지)(는|은)",
+        r"[^.\n]{1,30}\s신청\s?페이지(는|은)",
+        r"(기사|보도자료)(에서는|는|은)",
+    ]
+    source_led_verbs = [
+        "보도했습니다",
+        "정리했습니다",
+        "소개했습니다",
+        "전했습니다",
+        "다뤘습니다",
+        "발표했습니다",
+        "안내했습니다",
+    ]
+
+    for index, row in enumerate(rows, start=1):
+        summary = row.get("summary", "")
+        source = source_name(row)
+        for pattern in source_process_patterns:
+            if re.search(pattern, summary):
+                errors.append(
+                    f"row {index}: summary exposes source-checking process"
+                )
+        if source and summary.startswith(f"{source}는"):
+            errors.append(
+                f"row {index}: summary should start with the fact, not the source name"
+            )
+        if source and summary.startswith(f"{source}은"):
+            errors.append(
+                f"row {index}: summary should start with the fact, not the source name"
+            )
+        first_sentence = summary.strip().split(". ", 1)[0]
+        if any(verb in first_sentence for verb in source_led_verbs):
+            if re.search(r"^[^.\n]{1,80}(는|은)\s", first_sentence):
+                errors.append(
+                    f"row {index}: summary first sentence should not describe what a source reported"
+                )
+
+
 def parse_recommend_indices(value, row_count, errors):
     if not value:
         return []
@@ -291,6 +333,9 @@ def main():
     if enforce_source_quality:
         source_rows = current_rows if args.mode == "collect" else rows_to_check_for_overlap
         validate_source_quality(source_rows, args.mode, errors)
+    if issue_id >= SUMMARY_STYLE_START_ISSUE_ID:
+        style_rows = current_rows if args.mode == "collect" else rows_to_check_for_overlap
+        validate_summary_style(style_rows, errors)
     if args.recommend:
         if args.mode != "collect":
             errors.append("--recommend can only be used with --mode collect")

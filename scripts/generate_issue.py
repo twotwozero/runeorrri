@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import csv
+import re
 from pathlib import Path
 
 from utils import category_label, clean_text, is_selected, issue_date_from_id
@@ -52,6 +53,27 @@ def topic_particle(text):
         if char.isalnum():
             return "은"
     return "는"
+
+
+def event_checkpoint(row):
+    summary = clean_text(row.get("summary", "").strip())
+    date_match = re.search(r"\d{1,2}월\s*\d{1,2}일", summary)
+    time_match = re.search(r"\d{1,2}시(?:\s*\d{1,2}분)?", summary)
+    if date_match and time_match:
+        return f"첫 체크포인트는 {date_match.group(0)} {time_match.group(0)} 출발입니다."
+    if date_match:
+        return f"첫 체크포인트는 {date_match.group(0)} 일정입니다."
+    return "첫 체크포인트는 접수 마감일과 출발 시간입니다."
+
+
+def concise_one_liner(row):
+    one_liner = clean_text(row.get("one_liner", "").strip())
+    one_liner = one_liner.rstrip(".")
+    if one_liner.endswith("보기"):
+        return f"{one_liner[:-2]}보세요"
+    if one_liner.endswith("확인"):
+        return f"{one_liner[:-2]}확인하세요"
+    return one_liner
 
 
 def format_newsletter_item(index, row):
@@ -156,9 +178,11 @@ def build_editorial_meta(rows, number, korea_count, global_count):
     )
     issue_focus = build_issue_focus(rows, has_trail, has_gear, has_training)
     if main_category == "event":
+        main_checkpoint = event_checkpoint(main)
+        main_angle = concise_one_liner(main)
         main_editorial = (
             f"{main_title} 소식을 이번 호의 첫머리에 둔 이유는 실제 참가 결정에 필요한 변수가 한 번에 걸려 있기 때문입니다. "
-            "날짜와 모집 정보는 본문 요약에서 확인하고, 여기서는 선택 기준만 잡겠습니다. "
+            f"{main_checkpoint} {main_angle}. "
             "접수 시작 시간, 마감일, 선착순 여부를 한 표에 놓고 보면 핵심은 '갈 수 있나'보다 '마감 전에 확정할 수 있나'입니다. "
             "접수 전에는 계정 로그인, 결제수단, 교통편, 동반자 일정을 먼저 고정하세요."
         )
